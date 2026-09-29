@@ -245,6 +245,19 @@ async function openRoutineWizard(from) {
   }
   wizard.from = from || 'editor';
   if (typeof hideWelcome === 'function') hideWelcome();
+  if (from === 'regenerate' && currentRoutine && currentRoutine.generatedFrom && currentRoutine.generatedFrom.answers) {
+    const [profile, metrics] = await Promise.all([Storage.getProfile(), Storage.getBodyMetrics()]);
+    wizard.storedProfile = profile;
+    wizard.prefill = preloadWizardProfile(profile, metrics);
+    wizard.answers = Object.assign({ profile: emptyProfile() }, currentRoutine.generatedFrom.answers);
+    wizard.skipProfile = true;
+    wizard.forceProfile = false;
+    wizard.phase = 'summary';
+    wizard.stepKey = 'goal';
+    showWizardShell();
+    renderWizard();
+    return;
+  }
   const [draft, profile, metrics] = await Promise.all([
     Storage.getWizardDraft(),
     Storage.getProfile(),
@@ -302,10 +315,9 @@ function wizardBack() {
     persistWizard();
     return;
   }
-  if (wizard.phase === 'json') {
+  if (wizard.phase === 'preview' || wizard.phase === 'save-choice') {
     wizard.phase = 'summary';
     renderWizard();
-    persistWizard();
     return;
   }
   if (wizard.phase === 'summary') {
@@ -327,9 +339,11 @@ function wizardBack() {
 async function wizardNext() {
   clearTimeout(wizard.timer);
   if (wizard.phase === 'summary') {
-    wizard.phase = 'json';
-    renderWizard();
-    await persistWizard();
+    await buildWizardRoutine();
+    return;
+  }
+  if (wizard.phase === 'preview') {
+    await askSaveGenerated(false);
     return;
   }
   if (wizard.phase !== 'questions') return;
@@ -580,16 +594,23 @@ function renderWizard() {
     next.textContent = 'Siguiente';
     return;
   }
-  if (wizard.phase === 'summary' || wizard.phase === 'json') {
-    label.textContent = wizard.phase === 'json' ? 'Listo' : 'Resumen';
+  if (wizard.phase === 'summary') {
+    label.textContent = 'Resumen';
     bar.style.width = '100%';
-    body.innerHTML = `<div class="wizard-pane">${wizard.phase === 'json'
-      ? `<h2 id="wizardTitle" class="wizard-title">Tus respuestas</h2><p class="wizard-help">En el próximo paso esto arma la rutina. Por ahora podés revisar el resultado.</p><pre class="wizard-json"></pre>`
-      : `<div id="wizardTitle">${renderSummary()}</div>`}</div>`;
-    if (wizard.phase === 'json') body.querySelector('.wizard-json').textContent = JSON.stringify(publicAnswers(), null, 2);
+    body.innerHTML = `<div class="wizard-pane"><div id="wizardTitle">${renderSummary()}</div></div>`;
     back.disabled = false;
-    next.disabled = wizard.phase === 'json';
+    next.disabled = false;
     next.textContent = 'Generar mi rutina';
+    next.onclick = () => wizardNext();
+    return;
+  }
+  if (wizard.phase === 'preview' || wizard.phase === 'save-choice' || wizard.phase === 'swap') {
+    label.textContent = 'Tu rutina';
+    bar.style.width = '100%';
+    body.innerHTML = `<div class="wizard-pane" id="wizardTitle">${renderPreview()}</div>`;
+    back.disabled = false;
+    next.disabled = wizard.phase !== 'preview';
+    next.textContent = 'Guardar rutina';
     next.onclick = () => wizardNext();
     return;
   }
@@ -606,4 +627,225 @@ function renderWizard() {
 
 function wizardResumeNew() {
   beginWizard(false);
+}
+
+function catalogExercise(key) {
+  return (wizard.catalog || []).find((exercise) => exercise.key === key);
+}
+
+function cleanAnswers(answers) {
+  const next = Object.assign({}, answers);
+  next.priorities = (next.priorities || []).filter((item) => item !== 'balanced');
+  next.limitations = (next.limitations || []).filter((item) => item !== 'none');
+  return next;
+}
+
+async function buildWizardRoutine(seed) {
+  try {
+  const next = document.getElementById('wizardNext');
+  if (next) {
+    next.disabled = true;
+    next.textContent = 'Armando…';
+  }
+  if (!wizard.catalog) {
+    const response = await fetch('data/exercise-catalog.json');
+    if (!response.ok) throw new Error('No se pudo cargar el catálogo');
+    wizard.catalog = await response.json();
+  }
+  const generated = generateRoutine(cleanAnswers(publicAnswers()), wizard.catalog, seed == null ? {} : { seed: seed >>> 0 });
+  generated.routine.generatedFrom.createdAt = new Date().toISOString();
+  wizard.generated = generated;
+  wizard.seed = generated.meta.seed;
+  wizard.previewDay = 0;
+  wizard.phase = 'preview';
+  renderWizard();
+  } catch (error) {
+    if (typeof alert === 'function') alert(error.message || 'No se pudo armar la rutina');
+    wizard.phase = 'summary';
+    renderWizard();
+  }
+}
+
+function previewVolume() {
+  const totals = {};
+  wizard.generated.routine.days.forEach((day) => {
+    day.sections.forEach((section) => {
+      section.exercises.forEach((slot) => {
+        if (!slot.muscleGroup || slot.muscleGroup === 'Otro' || slot.pattern === 'cardio') return;
+        totals[slot.muscleGroup] = (totals[slot.muscleGroup] || 0) + slot.sets.count;
+      });
+    });
+  });
+  return totals;
+}
+
+function formatSlot(slot) {
+  if (slot.pattern === 'cardio') return slot.sets.note || '15–20 min';
+  const sets = slot.sets;
+  const reps = sets.repMin === sets.repMax ? String(sets.repMin) : sets.repMin + '–' + sets.repMax;
+  const rest = sets.restSec ? ' · ' + sets.restSec + ' s' : '';
+  return sets.count + ' × ' + reps + rest;
+}
+
+function renderPreview() {
+  if (wizard.phase === 'save-choice') {
+    return `<h2 class="wizard-title">¿Qué hacemos con la rutina actual?</h2>
+      <p class="wizard-help">El historial de pesos no se borra.</p>
+      <button type="button" class="log-btn" onclick="saveGeneratedRoutine('replace')">Reemplazar la actual</button>
+      <button type="button" class="btn-secondary modal-btn" onclick="saveGeneratedRoutine('new')">Guardar como rutina nueva</button>`;
+  }
+  const generated = wizard.generated;
+  const routine = generated.routine;
+  const day = routine.days[wizard.previewDay] || routine.days[0];
+  if (wizard.phase === 'swap' && wizard.swap) {
+    const options = wizard.swap.options.map((exercise) => `<button type="button" class="wizard-option" onclick="applyWizardSwap('${exercise.key}')"><strong>${escapeHtml(exercise.name)}</strong><em>${escapeHtml(exercise.muscleGroup)}</em></button>`).join('');
+    return `<h2 class="wizard-title">Cambiar ejercicio</h2><p class="wizard-help">Mismo movimiento, otras opciones para tu equipo.</p>${options || '<p class="wizard-help">No hay otra opción con estos filtros.</p>'}<button type="button" class="btn-secondary" onclick="cancelWizardSwap()">Volver</button>`;
+  }
+  const tabs = routine.days.map((item, index) => `<button type="button" class="wizard-option wizard-day${index === wizard.previewDay ? ' selected' : ''}" onclick="selectPreviewDay(${index})">${escapeHtml(item.short || item.name)}</button>`).join('');
+  const blocks = day.sections.map((section, sectionIndex) => {
+    const rows = section.exercises.map((slot, slotIndex) => {
+      const exercise = catalogExercise(slot.exerciseId);
+      const name = exercise ? exercise.name : slot.exerciseId;
+      return `<div class="wizard-summary-row">
+        <div><strong>${escapeHtml(section.label)}</strong><span>${escapeHtml(name)}</span><em class="wizard-help">${escapeHtml(formatSlot(slot))}</em></div>
+        <button type="button" class="btn-secondary" onclick="openWizardSwap(${wizard.previewDay}, ${sectionIndex}, ${slotIndex})" aria-label="Cambiar ${escapeHtml(name)}">🔄</button>
+        <button type="button" class="btn-secondary" onclick="removeWizardExercise(${wizard.previewDay}, ${sectionIndex}, ${slotIndex})" aria-label="Quitar ${escapeHtml(name)}">🗑️</button>
+      </div>`;
+    }).join('');
+    return rows;
+  }).join('');
+  const volume = previewVolume();
+  const bars = Object.keys(volume).map((group) => {
+    const width = Math.min(100, volume[group] * 4);
+    return `<div class="muscle-bar"><div class="muscle-bar-label"><span>${escapeHtml(group)}</span><span>${volume[group]}</span></div><div class="muscle-track"><div class="muscle-fill ok" style="width:${width}%"></div></div></div>`;
+  }).join('');
+  const reasons = (generated.meta.reasons || []).map((line) => `<li>${escapeHtml(line)}</li>`).join('');
+  const warnings = (generated.meta.warnings || []).map((line) => `<p class="wizard-note">${escapeHtml(line)}</p>`).join('');
+  return `<h2 class="wizard-title">${escapeHtml(routine.title)}</h2>
+    <p class="wizard-help">${escapeHtml(routine.subtitle || '')}</p>
+    <div class="wizard-days">${tabs}</div>
+    <h3 class="wizard-title" style="font-size:18px;margin-top:16px">${escapeHtml(day.name)}</h3>
+    <p class="wizard-help">${escapeHtml(day.focus || '')}</p>
+    ${blocks}
+    <h3 class="wizard-title" style="font-size:18px;margin-top:16px">Volumen semanal</h3>
+    ${bars}
+    <h3 class="wizard-title" style="font-size:18px;margin-top:16px">Por qué esta rutina</h3>
+    <ul class="wizard-reasons">${reasons}</ul>
+    ${warnings}
+    <button type="button" class="btn-secondary modal-btn" onclick="buildWizardRoutine(${(wizard.seed + 17) >>> 0})">🎲 Otra variante</button>
+    <button type="button" class="btn-secondary modal-btn" onclick="wizard.phase='summary'; renderWizard()">✏️ Cambiar respuestas</button>
+    <button type="button" class="btn-secondary modal-btn" onclick="askSaveGenerated(true)">Guardar y editar</button>`;
+}
+
+function selectPreviewDay(index) {
+  wizard.previewDay = index;
+  renderWizard();
+}
+
+function openWizardSwap(dayIndex, sectionIndex, slotIndex) {
+  const slot = wizard.generated.routine.days[dayIndex].sections[sectionIndex].exercises[slotIndex];
+  const answers = cleanAnswers(publicAnswers());
+  const options = (wizard.catalog || []).filter((exercise) => {
+    if (exercise.pattern !== slot.pattern || exercise.key === slot.exerciseId) return false;
+    if (!exercise.equipment.includes(answers.equipment)) return false;
+    if ((exercise.avoidIf || []).some((item) => (answers.limitations || []).includes(item))) return false;
+    if (answers.level === 'beginner' && exercise.difficulty >= 3) return false;
+    return true;
+  }).slice(0, 5);
+  wizard.swap = { dayIndex, sectionIndex, slotIndex, options };
+  wizard.phase = 'swap';
+  renderWizard();
+}
+
+function cancelWizardSwap() {
+  wizard.phase = 'preview';
+  wizard.swap = null;
+  renderWizard();
+}
+
+function applyWizardSwap(key) {
+  const exercise = catalogExercise(key);
+  const slot = wizard.generated.routine.days[wizard.swap.dayIndex].sections[wizard.swap.sectionIndex].exercises[wizard.swap.slotIndex];
+  slot.exerciseId = exercise.key;
+  slot.catalogKey = exercise.key;
+  slot.muscleGroup = exercise.muscleGroup;
+  slot.type = exercise.type;
+  slot.pattern = exercise.pattern;
+  wizard.phase = 'preview';
+  wizard.swap = null;
+  renderWizard();
+}
+
+function removeWizardExercise(dayIndex, sectionIndex, slotIndex) {
+  const day = wizard.generated.routine.days[dayIndex];
+  const total = day.sections.reduce((sum, section) => sum + section.exercises.length, 0);
+  if (total <= 3) {
+    showToast('Dejá al menos 3 ejercicios en el día');
+    return;
+  }
+  day.sections[sectionIndex].exercises.splice(slotIndex, 1);
+  day.sections = day.sections.filter((section) => section.exercises.length);
+  renderWizard();
+}
+
+async function askSaveGenerated(openEditor) {
+  wizard.openEditorAfter = !!openEditor;
+  const existing = typeof getCurrentRoutine === 'function' ? getCurrentRoutine() : null;
+  if (existing && existing.days && existing.days.some((day) => (day.sections || []).some((section) => (section.exercises || []).length))) {
+    wizard.phase = 'save-choice';
+    renderWizard();
+    return;
+  }
+  await saveGeneratedRoutine('replace');
+}
+
+async function saveGeneratedRoutine(mode) {
+  const routine = JSON.parse(JSON.stringify(wizard.generated.routine));
+  const library = await Storage.getExercises();
+  const byKey = new Map(library.filter((exercise) => exercise.catalogKey).map((exercise) => [exercise.catalogKey, exercise]));
+  const byName = new Map(library.map((exercise) => [normalizeName(exercise.name), exercise]));
+  routine.days.forEach((day) => {
+    day.sections.forEach((section) => {
+      section.exercises.forEach((slot) => {
+        const cat = catalogExercise(slot.catalogKey || slot.exerciseId);
+        if (!cat) return;
+        let stored = byKey.get(cat.key) || byName.get(normalizeName(cat.name));
+        if (!stored) {
+          stored = {
+            id: createId('ex'),
+            catalogKey: cat.key,
+            name: cat.name,
+            muscleGroup: cat.muscleGroup,
+            muscles: cat.primary || [],
+            tip: cat.tip || '',
+            linkUrl: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(cat.name + ' técnica'),
+            linkLabel: cat.linkLabel || '▶ Buscar técnica en YouTube',
+            archived: false,
+          };
+          library.push(stored);
+          byKey.set(cat.key, stored);
+          byName.set(normalizeName(cat.name), stored);
+        } else if (!stored.catalogKey) {
+          stored.catalogKey = cat.key;
+        }
+        slot.exerciseId = stored.id;
+        delete slot.catalogKey;
+        delete slot.muscleGroup;
+        delete slot.type;
+        delete slot.pattern;
+      });
+    });
+  });
+  await Storage.replaceExercises(library);
+  const existing = typeof getCurrentRoutine === 'function' ? getCurrentRoutine() : null;
+  if (mode === 'new' || !existing) routine.id = createId('rt');
+  else routine.id = existing.id;
+  routine.generatedFrom.createdAt = new Date().toISOString();
+  const saved = await Storage.saveRoutine(routine);
+  if (typeof setCurrentRoutine === 'function') await setCurrentRoutine(saved);
+  await Storage.clearWizardDraft();
+  hideWizardShell();
+  if (typeof showToast === 'function') showToast('¡Rutina lista!');
+  const page = wizard.openEditorAfter ? 'editor' : 'rutina';
+  if (typeof showPage === 'function') showPage(page, document.querySelector('[data-page="' + page + '"]'));
 }

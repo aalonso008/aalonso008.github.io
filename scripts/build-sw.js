@@ -18,6 +18,7 @@ const assets = [
   './js/routine-store.js',
   './js/routine-render.js',
   './js/routine-editor.js',
+  './js/routine-generator.js',
   './js/routine-wizard.js',
   './js/log.js',
   './js/workout.js',
@@ -30,6 +31,7 @@ const assets = [
   './content/log.html',
   './content/progression.html',
   './data/default-routine.json',
+  './data/exercise-catalog.json',
   './manifest.webmanifest',
   './manifest.json',
   './assets/icons/icon-192.png',
@@ -39,7 +41,7 @@ const assets = [
   'https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js',
 ];
 
-const sw = `const CACHE = 'tu-rutina-v19';
+const sw = `const CACHE = 'tu-rutina-v20';
 const ASSETS = ${JSON.stringify(assets, null, 2)};
 
 self.addEventListener('install', (event) => {
