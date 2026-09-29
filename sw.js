@@ -1,4 +1,4 @@
-const CACHE = 'tu-rutina-v18';
+const CACHE = 'tu-rutina-v19';
 const ASSETS = [
   "./",
   "./index.html",
@@ -13,6 +13,7 @@ const ASSETS = [
   "./js/routine-store.js",
   "./js/routine-render.js",
   "./js/routine-editor.js",
+  "./js/routine-wizard.js",
   "./js/log.js",
   "./js/workout.js",
   "./js/progress.js",

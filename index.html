@@ -39,6 +39,7 @@
   </header>
 
   <div id="page-rutina" class="active">
+    <button type="button" class="wizard-entry" onclick="openRoutineWizard('routine')">✨ Armá tu rutina</button>
     <div class="day-tabs" id="dayTabs"></div>
     <div id="routineDays"></div>
   </div>
@@ -80,10 +81,11 @@
   <div id="welcomeModal" class="modal">
     <div class="modal-card">
       <h2>Bienvenido a Tu Rutina</h2>
-      <p>Creá tu propia rutina de entrenamiento o empezá con un ejemplo de 5 días.</p>
-      <button type="button" class="log-btn" onclick="startBlankRoutine()">Crear desde cero</button>
-      <button type="button" class="btn-secondary modal-btn" onclick="startTemplateRoutine()">Usar rutina de ejemplo</button>
-      <button type="button" class="btn-secondary modal-btn" onclick="openAccount()">Entrar con una cuenta</button>
+      <p>Elegí cómo querés armar tu rutina.</p>
+      <button type="button" class="log-btn" onclick="openRoutineWizard('welcome')">✨ Armá tu rutina</button>
+      <p class="welcome-hint">Respondé unas preguntas y te armamos una rutina a medida.</p>
+      <button type="button" class="btn-secondary modal-btn" onclick="startBlankRoutine()">✏️ Crear desde cero</button>
+      <button type="button" class="btn-secondary modal-btn" onclick="startTemplateRoutine()">📋 Usar rutina de ejemplo</button>
     </div>
   </div>
 
@@ -151,6 +153,19 @@
     </div>
   </div>
 
+  <div id="routineWizard" class="wizard" role="dialog" aria-modal="true" aria-labelledby="wizardTitle" hidden>
+    <div class="wizard-top">
+      <button type="button" class="wizard-close" onclick="closeRoutineWizard()" aria-label="Salir">✕</button>
+      <p id="wizardStepLabel" class="wizard-step-label" aria-live="polite"></p>
+      <div class="wizard-progress" aria-hidden="true"><div id="wizardProgressBar" class="wizard-progress-bar"></div></div>
+    </div>
+    <div id="wizardBody" class="wizard-body"></div>
+    <div class="wizard-nav">
+      <button type="button" id="wizardBack" class="btn-secondary" onclick="wizardBack()">Atrás</button>
+      <button type="button" id="wizardNext" class="log-btn" onclick="wizardNext()">Siguiente</button>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/model.js"></script>
@@ -160,6 +175,7 @@
   <script src="js/routine-store.js"></script>
   <script src="js/routine-render.js"></script>
   <script src="js/routine-editor.js"></script>
+  <script src="js/routine-wizard.js"></script>
   <script src="js/log.js"></script>
   <script src="js/workout.js"></script>
   <script src="js/progress.js"></script>
