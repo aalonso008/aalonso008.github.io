@@ -118,6 +118,7 @@ async function renderEditor() {
     <div id="editorSections">${renderEditorSections(day)}</div>
     <button type="button" class="btn-secondary" onclick="addEditorSection()">+ Agregar sección</button>
     <div class="editor-footer">
+      <button type="button" class="btn-secondary" onclick="openRoutineWizard('editor')">✨ Generar nueva rutina</button>
       <button type="button" class="btn-secondary" onclick="resetToTemplate()">Restaurar ejemplo</button>
       <button type="button" class="log-btn" onclick="showPage('rutina', document.querySelector('[data-page=rutina]'))">Ver rutina</button>
     </div>`;

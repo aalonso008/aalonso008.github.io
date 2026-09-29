@@ -15,6 +15,7 @@ const Storage = (function () {
     syncMeta: 'tu_rutina_sync_meta',
     backupRoutine: 'tu_rutina_data_backup_v1',
     backupLogs: 'gym_logs_backup_v1',
+    wizardDraft: 'routine_wizard_draft',
   };
 
   const SCHEMA_VERSION = 2;
@@ -261,6 +262,25 @@ const Storage = (function () {
     });
   }
 
+  function getWizardDraft() {
+    return enqueue(() => readJson(KEYS.wizardDraft, null));
+  }
+
+  function saveWizardDraft(draft) {
+    const snapshot = clone(draft);
+    return enqueue(() => {
+      writeJson(KEYS.wizardDraft, snapshot);
+      return snapshot;
+    });
+  }
+
+  function clearWizardDraft() {
+    return enqueue(() => {
+      localStorage.removeItem(KEYS.wizardDraft);
+      return null;
+    });
+  }
+
   function getProfile() {
     return enqueue(() => readJson(KEYS.profile, null));
   }
@@ -432,6 +452,9 @@ const Storage = (function () {
     getBodyMetrics,
     addBodyMetric,
     deleteBodyMetric,
+    getWizardDraft,
+    saveWizardDraft,
+    clearWizardDraft,
     getProfile,
     saveProfile,
     getSettings,
