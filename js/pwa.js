@@ -166,4 +166,35 @@
     hideBanner();
     hideInstallModal();
   });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (window.__reloadingForSw) return;
+      window.__reloadingForSw = true;
+      window.location.reload();
+    });
+    navigator.serviceWorker.getRegistration().then(function (registration) {
+      if (!registration) return;
+      if (registration.waiting) showUpdate(registration);
+      registration.addEventListener('updatefound', function () {
+        var worker = registration.installing;
+        if (!worker) return;
+        worker.addEventListener('statechange', function () {
+          if (worker.state === 'installed' && navigator.serviceWorker.controller) showUpdate(registration);
+        });
+      });
+    });
+  }
+
+  function showUpdate(registration) {
+    var bar = document.getElementById('updateBanner');
+    if (!bar) return;
+    bar.hidden = false;
+    var button = document.getElementById('updateNow');
+    if (button) {
+      button.onclick = function () {
+        if (registration.waiting) registration.waiting.postMessage('skip-waiting');
+      };
+    }
+  }
 })();
