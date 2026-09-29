@@ -52,12 +52,13 @@
   .ex-link:active { opacity: 0.7; }
   .ex-main-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .ex-log-btn {
-    width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--accent);
-    background: #1a2200; color: var(--accent); font-size: 18px; font-weight: 700;
+    width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--accent);
+    background: #1a2200; color: var(--accent); font-size: 22px; font-weight: 700;
     line-height: 1; cursor: pointer; flex-shrink: 0;
   }
   .ex-log-btn:active { opacity: 0.7; }
   .ex-detail-actions { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .ex-detail .ex-quick-log { margin-top: 12px; }
   .ex-quick-log {
     background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px;
   }

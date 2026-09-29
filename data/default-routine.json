@@ -19,28 +19,25 @@
           "exercises": [
             {
               "id": "id_97lzltjg",
-              "name": "Hammer Strength Iso-Lateral Incline Press",
-              "sets": "4 series × 6–8 reps",
-              "tip": "Tu movimiento principal. Cada brazo trabaja de forma independiente — sin compensación. Ajustá el asiento para que sientas el pecho superior, no el hombro. Descanso 2–2:30 min. El iso-lateral es superior a la barra para vos porque no fuerza el manguito rotador.",
-              "muscles": [
-                "Pecho clavicular",
-                "Deltoides anterior",
-                "Tríceps"
-              ],
-              "linkUrl": "https://www.youtube.com/results?search_query=hammer+strength+iso+lateral+incline+press+technique",
-              "linkLabel": "▶ Buscar técnica en YouTube"
+              "sets": {
+                "count": 4,
+                "repMin": 6,
+                "repMax": 8,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_an32i925"
             },
             {
               "id": "id_bmg24zp7",
-              "name": "Hammer Strength Iso-Lateral Wide Chest",
-              "sets": "3 series × 8–10 reps",
-              "tip": "Ángulo más abierto que el Incline Press. Trabaja más la porción exterior del pecho superior. Rango de movimiento completo, dejá que el pecho estire bien en la bajada.",
-              "muscles": [
-                "Pecho clavicular (porción exterior)",
-                "Deltoides anterior"
-              ],
-              "linkUrl": "https://www.youtube.com/results?search_query=hammer+strength+iso+lateral+wide+chest+technique",
-              "linkLabel": "▶ Buscar técnica en YouTube"
+              "sets": {
+                "count": 3,
+                "repMin": 8,
+                "repMax": 10,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_rgme3rdq"
             }
           ]
         },
@@ -50,27 +47,25 @@
           "exercises": [
             {
               "id": "id_n9kcb5p3",
-              "name": "Life Fitness Pectoral Fly",
-              "sets": "3 series × 12–15 reps",
-              "tip": "Llegás con el pecho prefatigado de los dos Hammer — lo vas a sentir mucho más con menos peso. Pausa 1 seg en la contracción (manos juntas). Bajada lenta y controlada, sin rebotar en el pecho abierto. Descanso 60–90 seg.",
-              "muscles": [
-                "Pecho esternal",
-                "Pecho clavicular"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/PectoralSternal/MFly",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 12,
+                "repMax": 15,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_69u8g0rh"
             },
             {
               "id": "id_w6tcsr6x",
-              "name": "Hammer Strength Iso-Lateral Bench Press",
-              "sets": "3 series × 10 reps",
-              "tip": "Pecho plano/medio para no descuidarlo. Al final del día cuando ya estás fatigado — no necesitás carga máxima acá. Rango completo, sin lock-out del codo arriba para mantener tensión.",
-              "muscles": [
-                "Pecho esternal",
-                "Tríceps"
-              ],
-              "linkUrl": "https://www.youtube.com/results?search_query=hammer+strength+iso+lateral+bench+press+technique",
-              "linkLabel": "▶ Buscar técnica en YouTube"
+              "sets": {
+                "count": 3,
+                "repMin": 10,
+                "repMax": 10,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_j5nfypa1"
             }
           ]
         },
@@ -80,26 +75,25 @@
           "exercises": [
             {
               "id": "id_w1otbdf4",
-              "name": "Tríceps en polea (cuerda)",
-              "sets": "3 series × 12 reps",
-              "tip": "Codos pegados al cuerpo, fijos. Al bajar, abrí un poco la cuerda para máxima contracción. No balancées el cuerpo.",
-              "muscles": [
-                "Tríceps (cabeza lateral)",
-                "Tríceps (cabeza medial)"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/Triceps/CBPushdown",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 12,
+                "repMax": 12,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_yqpoo2qb"
             },
             {
               "id": "id_xuceflp8",
-              "name": "Press francés con mancuerna",
-              "sets": "3 series × 10–12 reps",
-              "tip": "Skull crusher o behind the head. Cabeza larga del tríceps. Codos apuntando al techo durante todo el movimiento.",
-              "muscles": [
-                "Tríceps (cabeza larga)"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/Triceps/DBFrenchPress",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 10,
+                "repMax": 12,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_l6n9kb6l"
             }
           ]
         }
@@ -122,16 +116,14 @@
           "exercises": [
             {
               "id": "id_lll874vi",
-              "name": "Dominadas (o jalón al pecho)",
-              "sets": "4 series × 6–10 reps",
-              "tip": "Agarre prono ancho. Iniciá el movimiento retrayendo escápulas, llevá codos hacia abajo y atrás. Si no llegás a 4×6, hacé jalón.",
-              "muscles": [
-                "Dorsal",
-                "Bíceps",
-                "Romboides"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/LatissimusDorsi/WtPullUp",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 4,
+                "repMin": 6,
+                "repMax": 10,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_1csd7222"
             }
           ]
         },
@@ -141,42 +133,36 @@
           "exercises": [
             {
               "id": "id_150ij7t4",
-              "name": "Remo con barra",
-              "sets": "4 series × 6–8 reps",
-              "tip": "Torso 45° o más horizontal. Tirón al ombligo (overhand). Espalda baja neutral. Sin rebote en el peso.",
-              "muscles": [
-                "Dorsal",
-                "Romboides",
-                "Trapecio medio"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/LatissimusDorsi/BBBentOverRow",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 4,
+                "repMin": 6,
+                "repMax": 8,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_mfyxmtck"
             },
             {
               "id": "id_gu8i5pcv",
-              "name": "Remo en cable sentado",
-              "sets": "3 series × 10–12 reps",
-              "tip": "Pausa 1 seg al final del recorrido. Dejá estirar la espalda al frente sin redondear. Tensión constante.",
-              "muscles": [
-                "Dorsal",
-                "Romboides",
-                "Bíceps"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/LatissimusDorsi/CBSeatedRow",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 10,
+                "repMax": 12,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_2hsh5m4a"
             },
             {
               "id": "id_ualaohwg",
-              "name": "Pull-over en polea",
-              "sets": "3 series × 12 reps",
-              "tip": "De pie frente a la polea alta, brazos extendidos. Movimiento de arco hacia abajo. Activá dorsal y serrato.",
-              "muscles": [
-                "Dorsal largo",
-                "Serrato",
-                "Pecho"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/LatissimusDorsi/CBPullover",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 12,
+                "repMax": 12,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_2t6f7vei"
             }
           ]
         },
@@ -186,28 +172,25 @@
           "exercises": [
             {
               "id": "id_l9flheq9",
-              "name": "Curl con barra EZ",
-              "sets": "3 series × 8–10 reps",
-              "tip": "Sin balanceo del cuerpo. Rango completo, bajar lento (2 seg). Codos fijos a los costados del torso.",
-              "muscles": [
-                "Bíceps (porción corta)",
-                "Braquial"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/Biceps/BBCurl",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 8,
+                "repMax": 10,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_hiwlwtzz"
             },
             {
               "id": "id_zv969tnz",
-              "name": "Curl martillo con mancuernas",
-              "sets": "3 series × 10–12 reps",
-              "tip": "Agarre neutro. Trabaja braquial y braquiorradial, le da grosor al brazo. Alternando o simultáneo.",
-              "muscles": [
-                "Braquial",
-                "Braquiorradial",
-                "Bíceps"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/Brachioradialis/DBHammerCurl",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 10,
+                "repMax": 12,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_f1f8tgns"
             }
           ]
         }
@@ -230,16 +213,14 @@
           "exercises": [
             {
               "id": "id_cckc6aig",
-              "name": "Press militar (barra o mancuernas)",
-              "sets": "4 series × 6–8 reps",
-              "tip": "Movimiento base del día. Sentado o parado. No arquees excesivamente la espalda baja. Bajá hasta altura de mentón.",
-              "muscles": [
-                "Deltoides anterior",
-                "Deltoides medio",
-                "Tríceps"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/DeltoidAnterior/BBSeatedMilitaryPress",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 4,
+                "repMin": 6,
+                "repMax": 8,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_1kx8tv4s"
             }
           ]
         },
@@ -249,25 +230,25 @@
           "exercises": [
             {
               "id": "id_cppwosaz",
-              "name": "Elevaciones laterales con mancuernas",
-              "sets": "4 series × 12–15 reps",
-              "tip": "Codo ligeramente doblado, fijo durante todo el movimiento. Levantá hasta que el brazo quede paralelo al piso. No uses inercia.",
-              "muscles": [
-                "Deltoides lateral"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/DeltoidLateral/DBLateralRaise",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 4,
+                "repMin": 12,
+                "repMax": 15,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_dnf0ioki"
             },
             {
               "id": "id_ccw4jduu",
-              "name": "Elevaciones laterales en cable bajo",
-              "sets": "3 series × 15 reps",
-              "tip": "Tensión constante en todo el rango, incluso abajo. Supera a las mancuernas en pico de contracción. Cable cruzado delante del cuerpo.",
-              "muscles": [
-                "Deltoides lateral"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/DeltoidLateral/CBLateralRaise",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 15,
+                "repMax": 15,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_2w5lcg8k"
             }
           ]
         },
@@ -277,28 +258,25 @@
           "exercises": [
             {
               "id": "id_5mgaa2mx",
-              "name": "Vuelos posteriores con mancuernas",
-              "sets": "4 series × 12–15 reps",
-              "tip": "Torso inclinado, codos ligeramente doblados. O usá la peck deck invertida en la máquina. Pausa al abrir.",
-              "muscles": [
-                "Deltoides posterior",
-                "Romboides"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/DeltoidPosterior/DBBentLateralRaise",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 4,
+                "repMin": 12,
+                "repMax": 15,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_a318p3dk"
             },
             {
               "id": "id_h57ewfmu",
-              "name": "Face pulls en polea ⚠️ obligatorio",
-              "sets": "3 series × 15 reps",
-              "tip": "Polea a altura de cara. Tirá hacia la nariz con rotación externa. Fundamental para la salud del manguito rotador. No se saltea.",
-              "muscles": [
-                "Manguito rotador",
-                "Deltoides posterior",
-                "Trapecio"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/DeltoidPosterior/CBFacePull",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 15,
+                "repMax": 15,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_8vj2y848"
             }
           ]
         }
@@ -321,16 +299,14 @@
           "exercises": [
             {
               "id": "id_7p8328ge",
-              "name": "Sentadilla búlgara o goblet",
-              "sets": "3 series × 6–8 reps",
-              "tip": "Goblet con mancuerna o búlgara. Evitá squat con barra pesada si no querés desarrollar cuádruple. Rango de fuerza, no hipertrofia.",
-              "muscles": [
-                "Glúteo",
-                "Cuádriceps",
-                "Core"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/Gluteus/DBSplitSquat",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 6,
+                "repMax": 8,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_bajg2zxu"
             }
           ]
         },
@@ -340,39 +316,36 @@
           "exercises": [
             {
               "id": "id_alpbpw5x",
-              "name": "Romanian Deadlift (RDL)",
-              "sets": "3 series × 8–10 reps",
-              "tip": "Bisagra de cadera. Espalda recta, empuje caderas hacia atrás, barra cerca del cuerpo. Sentís estiramiento en el isquio. No doblar rodillas más de lo necesario.",
-              "muscles": [
-                "Isquiotibiales",
-                "Glúteo",
-                "Erector espinal"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/GluteusMaximus/BBRomanianDeadlift",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 8,
+                "repMax": 10,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_v5h81bee"
             },
             {
               "id": "id_fpo0r8a9",
-              "name": "Hip thrust",
-              "sets": "3 series × 12 reps",
-              "tip": "Hombros sobre el banco, barra en cadera (protegé con pad). Empuje la pelvis hacia arriba, apretá glúteo 1 seg arriba. No hiperestendas la lumbar.",
-              "muscles": [
-                "Glúteo máximo",
-                "Isquiotibiales"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/GluteusMaximus/BBHipThrust",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 12,
+                "repMax": 12,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_6edqoi6l"
             },
             {
               "id": "id_mc6r8z3p",
-              "name": "Curl femoral en máquina",
-              "sets": "3 series × 12–15 reps",
-              "tip": "Aislamiento del posterior. Control en la bajada (excéntrico lento 3 seg). Retiene forma sin inflar cuádriceps.",
-              "muscles": [
-                "Isquiotibiales"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/Hamstrings/MLegCurl",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 12,
+                "repMax": 15,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_l9k64dxj"
             }
           ]
         },
@@ -382,15 +355,14 @@
           "exercises": [
             {
               "id": "id_2m1xivuw",
-              "name": "Elevaciones de gemelos de pie",
-              "sets": "4 series × 15–20 reps",
-              "tip": "Control total. 3 seg en la subida, 3 seg en la bajada. Rango completo: estiramiento completo abajo. Los gemelos responden bien a volumen.",
-              "muscles": [
-                "Gastrocnemio",
-                "Sóleo"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/Gastrocnemius/BBStandingCalfRaise",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 4,
+                "repMin": 15,
+                "repMax": 20,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_hjpfc63k"
             }
           ]
         }
@@ -413,27 +385,25 @@
           "exercises": [
             {
               "id": "id_9a92l09a",
-              "name": "Hammer Strength Iso-Lateral Incline Press",
-              "sets": "3 series × 10–12 reps",
-              "tip": "Segunda frecuencia semanal — clave para grupos atrasados. Menos peso que el lunes, más reps. Enfocate en la conexión mente-músculo más que en la carga.",
-              "muscles": [
-                "Pecho clavicular",
-                "Deltoides anterior"
-              ],
-              "linkUrl": "https://www.youtube.com/results?search_query=hammer+strength+iso+lateral+incline+press+technique",
-              "linkLabel": "▶ Buscar técnica en YouTube"
+              "sets": {
+                "count": 3,
+                "repMin": 10,
+                "repMax": 12,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_an32i925"
             },
             {
               "id": "id_l785akhy",
-              "name": "Life Fitness Pectoral Fly",
-              "sets": "3 series × 15 reps",
-              "tip": "Segunda exposición en fly. Viernes es más acumulación que intensidad — peso liviano, mucho feeling. Pausa en contracción, excéntrico lento.",
-              "muscles": [
-                "Pecho esternal",
-                "Pecho clavicular"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/PectoralSternal/MFly",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 15,
+                "repMax": 15,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_69u8g0rh"
             }
           ]
         },
@@ -443,26 +413,25 @@
           "exercises": [
             {
               "id": "id_b79szt6y",
-              "name": "Jalón agarre supino",
-              "sets": "3 series × 10 reps",
-              "tip": "Agarre supinado (palmas hacia vos), ancho de hombros. Más bíceps y dorsal bajo. Llevá la barra a la clavícula.",
-              "muscles": [
-                "Dorsal bajo",
-                "Bíceps"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/LatissimusDorsi/CBUndergripFrontPulldown",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 10,
+                "repMax": 10,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_790c3doc"
             },
             {
               "id": "id_3hcunmnz",
-              "name": "Elevaciones laterales",
-              "sets": "3 series × 15 reps",
-              "tip": "Segunda exposición semanal del deltoides lateral. Peso más liviano, más reps. Tensión constante, sin impulso.",
-              "muscles": [
-                "Deltoides lateral"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/DeltoidLateral/DBLateralRaise",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 15,
+                "repMax": 15,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_v0ra41ar"
             }
           ]
         },
@@ -472,30 +441,402 @@
           "exercises": [
             {
               "id": "id_dtp85e7t",
-              "name": "Curl en polea o concentrado",
-              "sets": "3 series × 12 reps",
-              "tip": "Aislamiento bíceps. Polea baja o curl concentrado con mancuerna. Pausa en la contracción 1 seg. Peak contraction.",
-              "muscles": [
-                "Bíceps (porción larga)"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/Biceps/CBCurl",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 12,
+                "repMax": 12,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_ckyafp4b"
             },
             {
               "id": "id_s48zeuo0",
-              "name": "Fondos en paralelas (tríceps)",
-              "sets": "3 series × 8–12 reps",
-              "tip": "Torso recto (vertical) para énfasis en tríceps. Si podés, agregá peso en cinturón. Bajá hasta que el brazo quede paralelo al piso.",
-              "muscles": [
-                "Tríceps",
-                "Pecho inferior"
-              ],
-              "linkUrl": "https://exrx.net/WeightExercises/Triceps/WtDip",
-              "linkLabel": "▶ Ver técnica en ExRx"
+              "sets": {
+                "count": 3,
+                "repMin": 8,
+                "repMax": 12,
+                "restSec": 90,
+                "note": ""
+              },
+              "exerciseId": "ex_p942x3hk"
             }
           ]
         }
       ]
+    }
+  ],
+  "version": 2,
+  "id": "rt_i5rpkb8a",
+  "updatedAt": "2026-09-28T22:32:04.672Z",
+  "exercises": [
+    {
+      "id": "ex_an32i925",
+      "name": "Hammer Strength Iso-Lateral Incline Press",
+      "muscleGroup": "Pecho",
+      "muscles": [
+        "Pecho clavicular",
+        "Deltoides anterior",
+        "Tríceps"
+      ],
+      "tip": "Tu movimiento principal. Cada brazo trabaja de forma independiente — sin compensación. Ajustá el asiento para que sientas el pecho superior, no el hombro. Descanso 2–2:30 min. El iso-lateral es superior a la barra para vos porque no fuerza el manguito rotador.",
+      "linkUrl": "https://www.youtube.com/results?search_query=hammer+strength+iso+lateral+incline+press+technique",
+      "linkLabel": "▶ Buscar técnica en YouTube",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.676Z"
+    },
+    {
+      "id": "ex_rgme3rdq",
+      "name": "Hammer Strength Iso-Lateral Wide Chest",
+      "muscleGroup": "Pecho",
+      "muscles": [
+        "Pecho clavicular (porción exterior)",
+        "Deltoides anterior"
+      ],
+      "tip": "Ángulo más abierto que el Incline Press. Trabaja más la porción exterior del pecho superior. Rango de movimiento completo, dejá que el pecho estire bien en la bajada.",
+      "linkUrl": "https://www.youtube.com/results?search_query=hammer+strength+iso+lateral+wide+chest+technique",
+      "linkLabel": "▶ Buscar técnica en YouTube",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.676Z"
+    },
+    {
+      "id": "ex_69u8g0rh",
+      "name": "Life Fitness Pectoral Fly",
+      "muscleGroup": "Pecho",
+      "muscles": [
+        "Pecho esternal",
+        "Pecho clavicular"
+      ],
+      "tip": "Llegás con el pecho prefatigado de los dos Hammer — lo vas a sentir mucho más con menos peso. Pausa 1 seg en la contracción (manos juntas). Bajada lenta y controlada, sin rebotar en el pecho abierto. Descanso 60–90 seg.",
+      "linkUrl": "https://exrx.net/WeightExercises/PectoralSternal/MFly",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.676Z"
+    },
+    {
+      "id": "ex_j5nfypa1",
+      "name": "Hammer Strength Iso-Lateral Bench Press",
+      "muscleGroup": "Pecho",
+      "muscles": [
+        "Pecho esternal",
+        "Tríceps"
+      ],
+      "tip": "Pecho plano/medio para no descuidarlo. Al final del día cuando ya estás fatigado — no necesitás carga máxima acá. Rango completo, sin lock-out del codo arriba para mantener tensión.",
+      "linkUrl": "https://www.youtube.com/results?search_query=hammer+strength+iso+lateral+bench+press+technique",
+      "linkLabel": "▶ Buscar técnica en YouTube",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.676Z"
+    },
+    {
+      "id": "ex_yqpoo2qb",
+      "name": "Tríceps en polea (cuerda)",
+      "muscleGroup": "Tríceps",
+      "muscles": [
+        "Tríceps (cabeza lateral)",
+        "Tríceps (cabeza medial)"
+      ],
+      "tip": "Codos pegados al cuerpo, fijos. Al bajar, abrí un poco la cuerda para máxima contracción. No balancées el cuerpo.",
+      "linkUrl": "https://exrx.net/WeightExercises/Triceps/CBPushdown",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_l6n9kb6l",
+      "name": "Press francés con mancuerna",
+      "muscleGroup": "Tríceps",
+      "muscles": [
+        "Tríceps (cabeza larga)"
+      ],
+      "tip": "Skull crusher o behind the head. Cabeza larga del tríceps. Codos apuntando al techo durante todo el movimiento.",
+      "linkUrl": "https://exrx.net/WeightExercises/Triceps/DBFrenchPress",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_1csd7222",
+      "name": "Dominadas (o jalón al pecho)",
+      "muscleGroup": "Pecho",
+      "muscles": [
+        "Dorsal",
+        "Bíceps",
+        "Romboides"
+      ],
+      "tip": "Agarre prono ancho. Iniciá el movimiento retrayendo escápulas, llevá codos hacia abajo y atrás. Si no llegás a 4×6, hacé jalón.",
+      "linkUrl": "https://exrx.net/WeightExercises/LatissimusDorsi/WtPullUp",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_mfyxmtck",
+      "name": "Remo con barra",
+      "muscleGroup": "Espalda",
+      "muscles": [
+        "Dorsal",
+        "Romboides",
+        "Trapecio medio"
+      ],
+      "tip": "Torso 45° o más horizontal. Tirón al ombligo (overhand). Espalda baja neutral. Sin rebote en el peso.",
+      "linkUrl": "https://exrx.net/WeightExercises/LatissimusDorsi/BBBentOverRow",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_2hsh5m4a",
+      "name": "Remo en cable sentado",
+      "muscleGroup": "Espalda",
+      "muscles": [
+        "Dorsal",
+        "Romboides",
+        "Bíceps"
+      ],
+      "tip": "Pausa 1 seg al final del recorrido. Dejá estirar la espalda al frente sin redondear. Tensión constante.",
+      "linkUrl": "https://exrx.net/WeightExercises/LatissimusDorsi/CBSeatedRow",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_2t6f7vei",
+      "name": "Pull-over en polea",
+      "muscleGroup": "Pecho",
+      "muscles": [
+        "Dorsal largo",
+        "Serrato",
+        "Pecho"
+      ],
+      "tip": "De pie frente a la polea alta, brazos extendidos. Movimiento de arco hacia abajo. Activá dorsal y serrato.",
+      "linkUrl": "https://exrx.net/WeightExercises/LatissimusDorsi/CBPullover",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_hiwlwtzz",
+      "name": "Curl con barra EZ",
+      "muscleGroup": "Bíceps",
+      "muscles": [
+        "Bíceps (porción corta)",
+        "Braquial"
+      ],
+      "tip": "Sin balanceo del cuerpo. Rango completo, bajar lento (2 seg). Codos fijos a los costados del torso.",
+      "linkUrl": "https://exrx.net/WeightExercises/Biceps/BBCurl",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_f1f8tgns",
+      "name": "Curl martillo con mancuernas",
+      "muscleGroup": "Bíceps",
+      "muscles": [
+        "Braquial",
+        "Braquiorradial",
+        "Bíceps"
+      ],
+      "tip": "Agarre neutro. Trabaja braquial y braquiorradial, le da grosor al brazo. Alternando o simultáneo.",
+      "linkUrl": "https://exrx.net/WeightExercises/Brachioradialis/DBHammerCurl",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_1kx8tv4s",
+      "name": "Press militar (barra o mancuernas)",
+      "muscleGroup": "Hombros",
+      "muscles": [
+        "Deltoides anterior",
+        "Deltoides medio",
+        "Tríceps"
+      ],
+      "tip": "Movimiento base del día. Sentado o parado. No arquees excesivamente la espalda baja. Bajá hasta altura de mentón.",
+      "linkUrl": "https://exrx.net/WeightExercises/DeltoidAnterior/BBSeatedMilitaryPress",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_dnf0ioki",
+      "name": "Elevaciones laterales con mancuernas",
+      "muscleGroup": "Hombros",
+      "muscles": [
+        "Deltoides lateral"
+      ],
+      "tip": "Codo ligeramente doblado, fijo durante todo el movimiento. Levantá hasta que el brazo quede paralelo al piso. No uses inercia.",
+      "linkUrl": "https://exrx.net/WeightExercises/DeltoidLateral/DBLateralRaise",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_2w5lcg8k",
+      "name": "Elevaciones laterales en cable bajo",
+      "muscleGroup": "Hombros",
+      "muscles": [
+        "Deltoides lateral"
+      ],
+      "tip": "Tensión constante en todo el rango, incluso abajo. Supera a las mancuernas en pico de contracción. Cable cruzado delante del cuerpo.",
+      "linkUrl": "https://exrx.net/WeightExercises/DeltoidLateral/CBLateralRaise",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_a318p3dk",
+      "name": "Vuelos posteriores con mancuernas",
+      "muscleGroup": "Espalda",
+      "muscles": [
+        "Deltoides posterior",
+        "Romboides"
+      ],
+      "tip": "Torso inclinado, codos ligeramente doblados. O usá la peck deck invertida en la máquina. Pausa al abrir.",
+      "linkUrl": "https://exrx.net/WeightExercises/DeltoidPosterior/DBBentLateralRaise",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_8vj2y848",
+      "name": "Face pulls en polea ⚠️ obligatorio",
+      "muscleGroup": "Espalda",
+      "muscles": [
+        "Manguito rotador",
+        "Deltoides posterior",
+        "Trapecio"
+      ],
+      "tip": "Polea a altura de cara. Tirá hacia la nariz con rotación externa. Fundamental para la salud del manguito rotador. No se saltea.",
+      "linkUrl": "https://exrx.net/WeightExercises/DeltoidPosterior/CBFacePull",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_bajg2zxu",
+      "name": "Sentadilla búlgara o goblet",
+      "muscleGroup": "Core",
+      "muscles": [
+        "Glúteo",
+        "Cuádriceps",
+        "Core"
+      ],
+      "tip": "Goblet con mancuerna o búlgara. Evitá squat con barra pesada si no querés desarrollar cuádruple. Rango de fuerza, no hipertrofia.",
+      "linkUrl": "https://exrx.net/WeightExercises/Gluteus/DBSplitSquat",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_v5h81bee",
+      "name": "Romanian Deadlift (RDL)",
+      "muscleGroup": "Piernas",
+      "muscles": [
+        "Isquiotibiales",
+        "Glúteo",
+        "Erector espinal"
+      ],
+      "tip": "Bisagra de cadera. Espalda recta, empuje caderas hacia atrás, barra cerca del cuerpo. Sentís estiramiento en el isquio. No doblar rodillas más de lo necesario.",
+      "linkUrl": "https://exrx.net/WeightExercises/GluteusMaximus/BBRomanianDeadlift",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_6edqoi6l",
+      "name": "Hip thrust",
+      "muscleGroup": "Piernas",
+      "muscles": [
+        "Glúteo máximo",
+        "Isquiotibiales"
+      ],
+      "tip": "Hombros sobre el banco, barra en cadera (protegé con pad). Empuje la pelvis hacia arriba, apretá glúteo 1 seg arriba. No hiperestendas la lumbar.",
+      "linkUrl": "https://exrx.net/WeightExercises/GluteusMaximus/BBHipThrust",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_l9k64dxj",
+      "name": "Curl femoral en máquina",
+      "muscleGroup": "Piernas",
+      "muscles": [
+        "Isquiotibiales"
+      ],
+      "tip": "Aislamiento del posterior. Control en la bajada (excéntrico lento 3 seg). Retiene forma sin inflar cuádriceps.",
+      "linkUrl": "https://exrx.net/WeightExercises/Hamstrings/MLegCurl",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_hjpfc63k",
+      "name": "Elevaciones de gemelos de pie",
+      "muscleGroup": "Piernas",
+      "muscles": [
+        "Gastrocnemio",
+        "Sóleo"
+      ],
+      "tip": "Control total. 3 seg en la subida, 3 seg en la bajada. Rango completo: estiramiento completo abajo. Los gemelos responden bien a volumen.",
+      "linkUrl": "https://exrx.net/WeightExercises/Gastrocnemius/BBStandingCalfRaise",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_790c3doc",
+      "name": "Jalón agarre supino",
+      "muscleGroup": "Espalda",
+      "muscles": [
+        "Dorsal bajo",
+        "Bíceps"
+      ],
+      "tip": "Agarre supinado (palmas hacia vos), ancho de hombros. Más bíceps y dorsal bajo. Llevá la barra a la clavícula.",
+      "linkUrl": "https://exrx.net/WeightExercises/LatissimusDorsi/CBUndergripFrontPulldown",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_v0ra41ar",
+      "name": "Elevaciones laterales",
+      "muscleGroup": "Hombros",
+      "muscles": [
+        "Deltoides lateral"
+      ],
+      "tip": "Segunda exposición semanal del deltoides lateral. Peso más liviano, más reps. Tensión constante, sin impulso.",
+      "linkUrl": "https://exrx.net/WeightExercises/DeltoidLateral/DBLateralRaise",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_ckyafp4b",
+      "name": "Curl en polea o concentrado",
+      "muscleGroup": "Bíceps",
+      "muscles": [
+        "Bíceps (porción larga)"
+      ],
+      "tip": "Aislamiento bíceps. Polea baja o curl concentrado con mancuerna. Pausa en la contracción 1 seg. Peak contraction.",
+      "linkUrl": "https://exrx.net/WeightExercises/Biceps/CBCurl",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
+    },
+    {
+      "id": "ex_p942x3hk",
+      "name": "Fondos en paralelas (tríceps)",
+      "muscleGroup": "Pecho",
+      "muscles": [
+        "Tríceps",
+        "Pecho inferior"
+      ],
+      "tip": "Torso recto (vertical) para énfasis en tríceps. Si podés, agregá peso en cinturón. Bajá hasta que el brazo quede paralelo al piso.",
+      "linkUrl": "https://exrx.net/WeightExercises/Triceps/WtDip",
+      "linkLabel": "▶ Ver técnica en ExRx",
+      "archived": false,
+      "updatedAt": "2026-09-28T22:32:04.677Z"
     }
   ]
 }

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Tests — Tu Rutina</title>
+</head>
+<body>
+  <h1>Tests</h1>
+  <pre id="out">Corriendo…</pre>
+  <script src="../js/model.js"></script>
+  <script src="../js/body-calc.js"></script>
+  <script src="../js/progression-calc.js"></script>
+  <script src="checks.js"></script>
+  <script>
+    const failures = [];
+    const assert = {
+      equal(actual, expected) {
+        if (actual !== expected) failures.push(actual + ' !== ' + expected);
+      },
+      ok(value) {
+        if (!value) failures.push('valor falso');
+      },
+      match(value, re) {
+        if (!re.test(value)) failures.push(String(value) + ' no coincide');
+      },
+    };
+    try {
+      runChecks(assert);
+    } catch (error) {
+      failures.push(error.message);
+    }
+    document.getElementById('out').textContent = failures.length ? failures.join('\n') : 'Todo pasó';
+  </script>
+</body>
+</html>

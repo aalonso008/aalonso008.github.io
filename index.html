@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Tu Rutina</title>
   <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/extra.css">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="assets/icons/icon-512.png">
@@ -30,6 +31,9 @@
         <h1 id="headerTitle">Tu Rutina</h1>
         <p id="headerSub">Creá y seguí tu rutina de gym</p>
       </div>
+      <button id="syncDot" class="sync-dot" type="button" aria-label="Estado de sincronización" onclick="openAccount()">☁</button>
+      <button id="accountBtn" class="header-install-btn" type="button" aria-label="Cuenta">Cuenta</button>
+      <button id="settingsBtn" class="header-install-btn" type="button" aria-label="Ajustes">Ajustes</button>
       <button id="headerInstallBtn" class="header-install-btn" type="button" aria-label="Instalar app">Instalar</button>
     </div>
   </header>
@@ -41,7 +45,37 @@
 
   <div id="page-prog" class="prog-page"></div>
   <div id="page-log" class="log-page"></div>
+  <div id="page-cuerpo" class="body-page"></div>
   <div id="page-editor" class="editor-page"></div>
+
+  <div id="resumeBanner" class="resume-banner" hidden>
+    <span>Tenés un entrenamiento a medias.</span>
+    <button id="resumeGo" type="button">Continuar</button>
+    <button id="resumeSkip" type="button" aria-label="Descartar entrenamiento">×</button>
+  </div>
+  <div id="restBar" class="rest-bar" hidden>
+    <strong id="restTime">0:00</strong>
+    <button type="button" onclick="adjustRest(-15)">−15s</button>
+    <button type="button" onclick="adjustRest(15)">+15s</button>
+    <button type="button" onclick="skipRest()">Saltar</button>
+  </div>
+  <div id="updateBanner" class="update-banner" hidden>
+    <span>Hay una versión nueva</span>
+    <button id="updateNow" type="button">Actualizar</button>
+  </div>
+  <div id="toast" class="toast" hidden></div>
+  <div id="workout" class="workout"></div>
+
+  <div id="loginGate" class="login-gate show">
+    <form id="loginForm" onsubmit="sendMagicLink(event)">
+      <h1>Tu Rutina</h1>
+      <p>Entrá con tu email para ver tu rutina.</p>
+      <label for="loginEmail">Email</label>
+      <input id="loginEmail" name="email" type="email" required placeholder="tu@email.com" autocomplete="email">
+      <button type="submit" class="log-btn">Enviar link</button>
+      <p id="loginSent" class="login-sent" hidden>Listo. Revisá tu email y abrí el enlace en este dispositivo.</p>
+    </form>
+  </div>
 
   <div id="welcomeModal" class="modal">
     <div class="modal-card">
@@ -49,6 +83,7 @@
       <p>Creá tu propia rutina de entrenamiento o empezá con un ejemplo de 5 días.</p>
       <button type="button" class="log-btn" onclick="startBlankRoutine()">Crear desde cero</button>
       <button type="button" class="btn-secondary modal-btn" onclick="startTemplateRoutine()">Usar rutina de ejemplo</button>
+      <button type="button" class="btn-secondary modal-btn" onclick="openAccount()">Entrar con una cuenta</button>
     </div>
   </div>
 
@@ -87,13 +122,50 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       Registro
     </button>
+    <button data-page="cuerpo" onclick="showPage('cuerpo', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v3"/><path d="M6 10h12"/><path d="M8 10l-2 8h12l-2-8"/><circle cx="12" cy="7" r="1.2" fill="currentColor" stroke="none"/></svg>
+      Cuerpo
+    </button>
   </nav>
 
+  <div id="settingsModal" class="modal">
+    <div class="modal-card modal-sheet">
+      <button type="button" class="install-close modal-close" onclick="closeSettings()" aria-label="Cerrar ajustes">×</button>
+      <h2>Ajustes</h2>
+      <form id="settingsForm"></form>
+    </div>
+  </div>
+  <div id="accountModal" class="modal">
+    <div class="modal-card modal-sheet">
+      <button type="button" class="install-close modal-close" onclick="closeAccount()" aria-label="Cerrar cuenta">×</button>
+      <h2>Cuenta</h2>
+      <div id="accountBody"></div>
+    </div>
+  </div>
+  <div id="syncChoice" class="modal">
+    <div class="modal-card">
+      <h2>Sincronizar</h2>
+      <p id="syncChoiceText"></p>
+      <button id="syncChoiceOk" type="button" class="log-btn">Continuar</button>
+      <button id="syncChoiceCancel" type="button" class="btn-secondary modal-btn">Cancelar</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/body-calc.js"></script>
+  <script src="js/progression-calc.js"></script>
+  <script src="js/storage.js"></script>
   <script src="js/routine-store.js"></script>
   <script src="js/routine-render.js"></script>
   <script src="js/routine-editor.js"></script>
   <script src="js/log.js"></script>
+  <script src="js/workout.js"></script>
   <script src="js/progress.js"></script>
+  <script src="js/body.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/sync.js"></script>
   <script src="js/app.js"></script>
   <script src="js/pwa.js"></script>
 </body>
