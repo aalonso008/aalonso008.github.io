@@ -1,0 +1,2141 @@
+[
+  {
+    "key": "back_squat",
+    "name": "Sentadilla con barra",
+    "pattern": "squat",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 3,
+    "fatigue": 3,
+    "avoidIf": [
+      "knee",
+      "lower_back"
+    ],
+    "emphasis": [
+      "quads"
+    ],
+    "tip": "Pies al ancho de hombros. Bajá hasta que la cadera pase la rodilla, si tu movilidad lo permite.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "goblet_squat",
+    "name": "Sentadilla goblet",
+    "pattern": "squat",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [
+      "quads"
+    ],
+    "tip": "La mancuerna pegada al pecho. Codos apuntan al piso.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "leg_press",
+    "name": "Prensa de piernas",
+    "pattern": "squat",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [
+      "knee"
+    ],
+    "emphasis": [],
+    "tip": "Bajá sin despegar la zona lumbar del respaldo.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "hack_squat",
+    "name": "Hack squat",
+    "pattern": "squat",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 2,
+    "fatigue": 2,
+    "avoidIf": [
+      "knee"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "air_squat",
+    "name": "Sentadilla al aire",
+    "pattern": "squat",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Talones apoyados. Rodillas siguen la punta de los pies.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "db_rdl",
+    "name": "Peso muerto rumano con mancuernas",
+    "pattern": "hinge",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [
+      "hamstrings"
+    ],
+    "tip": "Cadera atrás, espalda neutra. Bajá hasta sentir el isquio.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "barbell_rdl",
+    "name": "Peso muerto rumano con barra",
+    "pattern": "hinge",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 2,
+    "fatigue": 3,
+    "avoidIf": [
+      "lower_back"
+    ],
+    "emphasis": [
+      "hamstrings"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "conv_deadlift",
+    "name": "Peso muerto convencional",
+    "pattern": "hinge",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 3,
+    "fatigue": 3,
+    "avoidIf": [
+      "lower_back"
+    ],
+    "emphasis": [],
+    "tip": "La barra pegada a las tibias. Empujá el piso.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "hip_hinge",
+    "name": "Bisagra de cadera",
+    "pattern": "hinge",
+    "muscleGroup": "Glúteos",
+    "primary": [
+      "Glúteos"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [
+      "glutes"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "hip_thrust",
+    "name": "Hip thrust",
+    "pattern": "hinge",
+    "muscleGroup": "Glúteos",
+    "primary": [
+      "Glúteos"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [
+      "glutes"
+    ],
+    "tip": "Mentón metido. Apretá glúteos arriba, sin arquear la lumbar.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "back_extension",
+    "name": "Extensión de espalda",
+    "pattern": "hinge",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [
+      "lower_back"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "walking_lunge",
+    "name": "Zancadas",
+    "pattern": "lunge",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells",
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [
+      "knee"
+    ],
+    "emphasis": [],
+    "tip": "Paso largo. La rodilla de atrás baja hacia el piso.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "bulgarian",
+    "name": "Sentadilla búlgara",
+    "pattern": "lunge",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 2,
+    "fatigue": 2,
+    "avoidIf": [
+      "knee"
+    ],
+    "emphasis": [
+      "quads",
+      "glutes"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "step_up",
+    "name": "Step-ups",
+    "pattern": "lunge",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [
+      "knee"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "reverse_lunge",
+    "name": "Zancada hacia atrás",
+    "pattern": "lunge",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "split_squat",
+    "name": "Sentadilla split",
+    "pattern": "lunge",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells",
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [
+      "glutes"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "bench_press",
+    "name": "Press de banca",
+    "pattern": "horizontal_push",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [
+      "Tríceps",
+      "Deltoides anterior"
+    ],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 2,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Escápulas atrás y abajo. Bajá la barra al pecho medio.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "db_bench",
+    "name": "Press plano con mancuernas",
+    "pattern": "horizontal_push",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [
+      "Tríceps"
+    ],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "machine_chest",
+    "name": "Press de pecho en máquina",
+    "pattern": "horizontal_push",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "pushup",
+    "name": "Flexiones",
+    "pattern": "horizontal_push",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Cuerpo en bloque. Pecho casi toca el piso.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "wide_chest",
+    "name": "Wide Chest Press",
+    "pattern": "horizontal_push",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [
+      "chest"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "incline_db",
+    "name": "Press inclinado con mancuernas",
+    "pattern": "incline_push",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [
+      "Deltoides anterior",
+      "Tríceps"
+    ],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [
+      "upper_chest"
+    ],
+    "tip": "Banco a 30°. Bajá controlado hasta sentir estiramiento.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "incline_bar",
+    "name": "Press inclinado con barra",
+    "pattern": "incline_push",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 2,
+    "fatigue": 2,
+    "avoidIf": [
+      "shoulder"
+    ],
+    "emphasis": [
+      "upper_chest"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "hs_incline",
+    "name": "Hammer Strength Iso-Lateral Incline Press",
+    "pattern": "incline_push",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [
+      "upper_chest"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "incline_pushup",
+    "name": "Flexiones inclinadas",
+    "pattern": "incline_push",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [
+      "upper_chest"
+    ],
+    "tip": "Manos en un banco. El cuerpo baja derecho.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "ohp_bar",
+    "name": "Press militar con barra",
+    "pattern": "vertical_push",
+    "muscleGroup": "Hombros",
+    "primary": [
+      "Hombros"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 3,
+    "fatigue": 2,
+    "avoidIf": [
+      "shoulder",
+      "lower_back"
+    ],
+    "emphasis": [
+      "side_delts"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "ohp_db",
+    "name": "Press militar con mancuernas",
+    "pattern": "vertical_push",
+    "muscleGroup": "Hombros",
+    "primary": [
+      "Hombros"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 2,
+    "fatigue": 2,
+    "avoidIf": [
+      "shoulder"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "machine_shoulder",
+    "name": "Press de hombros en máquina",
+    "pattern": "vertical_push",
+    "muscleGroup": "Hombros",
+    "primary": [
+      "Hombros"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "neutral_ohp",
+    "name": "Press de hombros neutro",
+    "pattern": "vertical_push",
+    "muscleGroup": "Hombros",
+    "primary": [
+      "Hombros"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Mancuernas con las palmas enfrentadas. Subí sin arquear la espalda.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "pike_pushup",
+    "name": "Flexiones pike",
+    "pattern": "vertical_push",
+    "muscleGroup": "Hombros",
+    "primary": [
+      "Hombros"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 2,
+    "fatigue": 1,
+    "avoidIf": [
+      "shoulder",
+      "wrist"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "wall_slide",
+    "name": "Deslizamientos en la pared",
+    "pattern": "vertical_push",
+    "muscleGroup": "Hombros",
+    "primary": [
+      "Hombros"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Espalda y brazos contra la pared. Subí sin despegar las costillas.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "db_row",
+    "name": "Remo con mancuerna",
+    "pattern": "horizontal_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [
+      "lats"
+    ],
+    "tip": "Llevá el codo hacia la cadera, sin girar el torso.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "barbell_row",
+    "name": "Remo con barra",
+    "pattern": "horizontal_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 2,
+    "fatigue": 3,
+    "avoidIf": [
+      "lower_back"
+    ],
+    "emphasis": [
+      "lats"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "cable_row",
+    "name": "Remo en cable",
+    "pattern": "horizontal_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [
+      "lats"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "seal_row",
+    "name": "Remo en máquina",
+    "pattern": "horizontal_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "inverted_row",
+    "name": "Remo invertido",
+    "pattern": "horizontal_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Cuerpo derecho debajo de una mesa firme. Llevá el pecho a la barra.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "lat_pulldown",
+    "name": "Jalón al pecho",
+    "pattern": "vertical_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [
+      "lats"
+    ],
+    "tip": "Pecho arriba. Llevá la barra al pecho, sin tirar con los bíceps solos.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "pullup",
+    "name": "Dominadas",
+    "pattern": "vertical_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "bodyweight"
+    ],
+    "difficulty": 3,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [
+      "lats"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "assisted_pullup",
+    "name": "Dominadas asistidas",
+    "pattern": "vertical_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [
+      "lats"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "supine_pulldown",
+    "name": "Jalón supino",
+    "pattern": "vertical_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [
+      "Bíceps"
+    ],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "door_pull",
+    "name": "Jalón en marco de puerta",
+    "pattern": "vertical_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Afirmate del marco y llevá el pecho hacia las manos.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "db_pulldown",
+    "name": "Jalón a un brazo con mancuerna",
+    "pattern": "vertical_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [
+      "lats"
+    ],
+    "tip": "Tronco apenas inclinado. Llevá el codo hacia el bolsillo.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "pec_fly",
+    "name": "Life Fitness Pectoral Fly",
+    "pattern": "chest_fly",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [
+      "chest"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "db_fly",
+    "name": "Aperturas con mancuernas",
+    "pattern": "chest_fly",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [
+      "shoulder"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "floor_db_fly",
+    "name": "Aperturas en el piso con mancuernas",
+    "pattern": "chest_fly",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "cable_fly",
+    "name": "Aperturas en polea",
+    "pattern": "chest_fly",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "floor_fly",
+    "name": "Aperturas en el piso",
+    "pattern": "chest_fly",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "lat_raise_db",
+    "name": "Elevaciones laterales con mancuerna",
+    "pattern": "lateral_raise",
+    "muscleGroup": "Hombros",
+    "primary": [
+      "Hombros"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [
+      "side_delts"
+    ],
+    "tip": "Codos apenas flexionados. Subí hasta la altura del hombro.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "lat_raise_cable",
+    "name": "Elevaciones laterales en polea",
+    "pattern": "lateral_raise",
+    "muscleGroup": "Hombros",
+    "primary": [
+      "Hombros"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [
+      "side_delts"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "lat_raise_machine",
+    "name": "Elevaciones laterales en máquina",
+    "pattern": "lateral_raise",
+    "muscleGroup": "Hombros",
+    "primary": [
+      "Hombros"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [
+      "side_delts"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "lat_raise_bw",
+    "name": "Elevaciones laterales acostado",
+    "pattern": "lateral_raise",
+    "muscleGroup": "Hombros",
+    "primary": [
+      "Hombros"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "reverse_fly_db",
+    "name": "Vuelos posteriores con mancuernas",
+    "pattern": "rear_delt",
+    "muscleGroup": "Hombros",
+    "primary": [
+      "Hombros"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [
+      "rear_delts"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "face_pull",
+    "name": "Face pulls",
+    "pattern": "rear_delt",
+    "muscleGroup": "Hombros",
+    "primary": [
+      "Hombros"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [
+      "rear_delts"
+    ],
+    "tip": "Codos altos. Llevá las manos a la cara.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "reverse_fly_machine",
+    "name": "Vuelos posteriores en máquina",
+    "pattern": "rear_delt",
+    "muscleGroup": "Hombros",
+    "primary": [
+      "Hombros"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "reverse_fly_bw",
+    "name": "Vuelos posteriores en el piso",
+    "pattern": "rear_delt",
+    "muscleGroup": "Hombros",
+    "primary": [
+      "Hombros"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "ez_curl",
+    "name": "Curl con barra EZ",
+    "pattern": "biceps",
+    "muscleGroup": "Bíceps",
+    "primary": [
+      "Bíceps"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [
+      "wrist"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "hammer_curl",
+    "name": "Curl martillo",
+    "pattern": "biceps",
+    "muscleGroup": "Bíceps",
+    "primary": [
+      "Bíceps"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Muñecas neutras. No balancees el torso.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "cable_curl",
+    "name": "Curl en polea",
+    "pattern": "biceps",
+    "muscleGroup": "Bíceps",
+    "primary": [
+      "Bíceps"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "machine_curl",
+    "name": "Curl en máquina",
+    "pattern": "biceps",
+    "muscleGroup": "Bíceps",
+    "primary": [
+      "Bíceps"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "towel_curl",
+    "name": "Curl isométrico con toalla",
+    "pattern": "biceps",
+    "muscleGroup": "Bíceps",
+    "primary": [
+      "Bíceps"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Pisá la toalla y tironeá con el codo pegado.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "pushdown",
+    "name": "Tríceps en polea",
+    "pattern": "triceps",
+    "muscleGroup": "Tríceps",
+    "primary": [
+      "Tríceps"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Codos quietos al costado. Estirá abajo sin adelantar el hombro.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "french_press",
+    "name": "Press francés",
+    "pattern": "triceps",
+    "muscleGroup": "Tríceps",
+    "primary": [
+      "Tríceps"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 2,
+    "fatigue": 1,
+    "avoidIf": [
+      "elbow"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "overhead_cable_ext",
+    "name": "Extensión de tríceps sobre la cabeza",
+    "pattern": "triceps",
+    "muscleGroup": "Tríceps",
+    "primary": [
+      "Tríceps"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "dip",
+    "name": "Fondos en paralelas",
+    "pattern": "triceps",
+    "muscleGroup": "Tríceps",
+    "primary": [
+      "Tríceps"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 2,
+    "fatigue": 2,
+    "avoidIf": [
+      "shoulder",
+      "elbow"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "diamond_pushup",
+    "name": "Flexiones diamante",
+    "pattern": "triceps",
+    "muscleGroup": "Tríceps",
+    "primary": [
+      "Tríceps"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 2,
+    "fatigue": 1,
+    "avoidIf": [
+      "wrist"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "bench_dip",
+    "name": "Fondos en banco",
+    "pattern": "triceps",
+    "muscleGroup": "Tríceps",
+    "primary": [
+      "Tríceps"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [
+      "shoulder"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "floor_tricep",
+    "name": "Extensión de tríceps en el piso",
+    "pattern": "triceps",
+    "muscleGroup": "Tríceps",
+    "primary": [
+      "Tríceps"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "kickback",
+    "name": "Patada de tríceps",
+    "pattern": "triceps",
+    "muscleGroup": "Tríceps",
+    "primary": [
+      "Tríceps"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "leg_extension",
+    "name": "Extensión de cuádriceps",
+    "pattern": "quad_iso",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [
+      "knee"
+    ],
+    "emphasis": [
+      "quads"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "sissy",
+    "name": "Sentadilla sissy asistida",
+    "pattern": "quad_iso",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 2,
+    "fatigue": 1,
+    "avoidIf": [
+      "knee"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "seated_knee_ext",
+    "name": "Extensión de rodilla sentado",
+    "pattern": "quad_iso",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "terminal_knee",
+    "name": "Extensión terminal de rodilla",
+    "pattern": "quad_iso",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "spanish_squat",
+    "name": "Sentadilla española con banda",
+    "pattern": "quad_iso",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "leg_curl",
+    "name": "Curl femoral",
+    "pattern": "hamstring_iso",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [
+      "hamstrings"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "slider_curl",
+    "name": "Curl femoral en el piso",
+    "pattern": "hamstring_iso",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [
+      "hamstrings"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "db_leg_curl",
+    "name": "Curl femoral con mancuerna",
+    "pattern": "hamstring_iso",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "cable_leg_curl",
+    "name": "Curl femoral en polea",
+    "pattern": "hamstring_iso",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "glute_bridge",
+    "name": "Puente de glúteo",
+    "pattern": "glute_iso",
+    "muscleGroup": "Glúteos",
+    "primary": [
+      "Glúteos"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells",
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [
+      "glutes"
+    ],
+    "tip": "Apretá arriba y bajá sin perder el contacto de la espalda alta.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "cable_pullthrough",
+    "name": "Pull-through en polea",
+    "pattern": "glute_iso",
+    "muscleGroup": "Glúteos",
+    "primary": [
+      "Glúteos"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [
+      "glutes"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "frog_pump",
+    "name": "Frog pump",
+    "pattern": "glute_iso",
+    "muscleGroup": "Glúteos",
+    "primary": [
+      "Glúteos"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [
+      "glutes"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "standing_calf",
+    "name": "Gemelos de pie",
+    "pattern": "calves",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells",
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Pausa abajo. Subí lo más alto que puedas.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "seated_calf",
+    "name": "Gemelos sentado",
+    "pattern": "calves",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "single_calf",
+    "name": "Gemelos a una pierna",
+    "pattern": "calves",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "plank",
+    "name": "Plancha",
+    "pattern": "core",
+    "muscleGroup": "Core",
+    "primary": [
+      "Core"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells",
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Costillas hacia abajo. No dejes caer la cadera.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "pallof",
+    "name": "Pallof press",
+    "pattern": "core",
+    "muscleGroup": "Core",
+    "primary": [
+      "Core"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "cable_crunch",
+    "name": "Crunch en polea",
+    "pattern": "core",
+    "muscleGroup": "Core",
+    "primary": [
+      "Core"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "leg_raise",
+    "name": "Elevación de piernas",
+    "pattern": "core",
+    "muscleGroup": "Core",
+    "primary": [
+      "Core"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [
+      "lower_back"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "ab_wheel",
+    "name": "Rueda abdominal",
+    "pattern": "core",
+    "muscleGroup": "Core",
+    "primary": [
+      "Core"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 2,
+    "fatigue": 1,
+    "avoidIf": [
+      "lower_back"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "farmer",
+    "name": "Farmer walk",
+    "pattern": "carry",
+    "muscleGroup": "Core",
+    "primary": [
+      "Core"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Caminá corto, torso alto, sin encoger los hombros.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "suitcase",
+    "name": "Suitcase carry",
+    "pattern": "carry",
+    "muscleGroup": "Core",
+    "primary": [
+      "Core"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "bear_crawl",
+    "name": "Caminata del oso",
+    "pattern": "carry",
+    "muscleGroup": "Core",
+    "primary": [
+      "Core"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "machine_carry",
+    "name": "Caminata con carga en máquina",
+    "pattern": "carry",
+    "muscleGroup": "Core",
+    "primary": [
+      "Core"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "pullover",
+    "name": "Pull-over con mancuerna",
+    "pattern": "horizontal_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [
+      "shoulder"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "decline_pushup",
+    "name": "Flexiones declinadas",
+    "pattern": "horizontal_push",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 2,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [
+      "upper_chest"
+    ],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "cardio_walk",
+    "name": "Cardio suave",
+    "pattern": "cardio",
+    "muscleGroup": "Otro",
+    "primary": [
+      "Otro"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym",
+      "basic_gym",
+      "home_dumbbells",
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Caminadora en pendiente o bici, a un ritmo en el que puedas hablar.",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "cardio_row",
+    "name": "Remo ergómetro suave",
+    "pattern": "cardio",
+    "muscleGroup": "Otro",
+    "primary": [
+      "Otro"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "full_gym"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  }
+]

@@ -1,4 +1,4 @@
-const CACHE = 'tu-rutina-v19';
+const CACHE = 'tu-rutina-v20';
 const ASSETS = [
   "./",
   "./index.html",
@@ -13,6 +13,7 @@ const ASSETS = [
   "./js/routine-store.js",
   "./js/routine-render.js",
   "./js/routine-editor.js",
+  "./js/routine-generator.js",
   "./js/routine-wizard.js",
   "./js/log.js",
   "./js/workout.js",
@@ -25,6 +26,7 @@ const ASSETS = [
   "./content/log.html",
   "./content/progression.html",
   "./data/default-routine.json",
+  "./data/exercise-catalog.json",
   "./manifest.webmanifest",
   "./manifest.json",
   "./assets/icons/icon-192.png",
