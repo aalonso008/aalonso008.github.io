@@ -166,6 +166,15 @@
     </div>
   </div>
 
+  <div id="trainerPanel" class="trainer-panel" role="dialog" aria-modal="true" aria-labelledby="trainerTitle" hidden>
+    <div class="trainer-top">
+      <button type="button" class="wizard-close" onclick="trainerBack()" aria-label="Volver">←</button>
+      <h2 id="trainerTitle">Alumnos</h2>
+      <button type="button" class="wizard-close" onclick="closeTrainer()" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="trainerBody" class="trainer-body"></div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/model.js"></script>
@@ -183,6 +192,7 @@
   <script src="js/body.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/sync.js"></script>
+  <script src="js/trainer.js"></script>
   <script src="js/app.js"></script>
   <script src="js/pwa.js"></script>
 </body>

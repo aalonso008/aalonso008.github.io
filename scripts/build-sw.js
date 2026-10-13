@@ -26,6 +26,7 @@ const assets = [
   './js/body.js',
   './js/settings.js',
   './js/sync.js',
+  './js/trainer.js',
   './js/app.js',
   './js/pwa.js',
   './content/log.html',
@@ -41,7 +42,7 @@ const assets = [
   'https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js',
 ];
 
-const sw = `const CACHE = 'tu-rutina-v20';
+const sw = `const CACHE = 'tu-rutina-v21';
 const ASSETS = ${JSON.stringify(assets, null, 2)};
 
 self.addEventListener('install', (event) => {

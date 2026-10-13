@@ -96,17 +96,35 @@ async function onSignedIn(session) {
   if (typeof bootApp === 'function') await bootApp();
 }
 
+async function trainerPupilIds() {
+  const client = supabaseClient || (await ensureClient());
+  if (!client || !syncUser) return new Set();
+  const { data, error } = await client.from('students').select('id').eq('trainer_id', syncUser.id);
+  if (error) return new Set();
+  return new Set((data || []).map((row) => row.id));
+}
+
+function withoutPupilRows(rows, pupils) {
+  return (rows || []).filter((row) => !row.student_id || !pupils.has(row.student_id));
+}
+
 async function handleSession(session) {
   syncUser = session.user;
   updateSyncDot();
+  try {
+    const client = await ensureClient();
+    await client.rpc('claim_student');
+  } catch (err) {
+    /* La función aparece cuando se vuelve a correr el SQL. */
+  }
   const choice = await Storage.getSyncChoice();
   if (choice === syncUser.id) {
     await pushAndPull();
     return;
   }
-  const remoteSets = await supabaseClient.from('workout_sets').select('id', { count: 'exact', head: true });
-  const remoteExercises = await supabaseClient.from('exercises').select('id', { count: 'exact', head: true });
-  const remoteCount = (remoteSets.count || 0) + (remoteExercises.count || 0);
+  const remoteSets = await countOwnRemote('workout_sets');
+  const remoteExercises = await countOwnRemote('exercises');
+  const remoteCount = remoteSets + remoteExercises;
   const local = await Storage.exportAll();
   const localHas = (local.sets && local.sets.length) || (local.exercises && local.exercises.length) || local.routine;
   if (localHas && !remoteCount) {
@@ -192,11 +210,23 @@ async function pushAndPull() {
   updateSyncDot();
 }
 
+async function countOwnRemote(table) {
+  const client = await ensureClient();
+  const pupils = await trainerPupilIds();
+  const owned = await client.from(table).select('id, student_id').eq('user_id', syncUser.id);
+  if (owned.error) {
+    const fallback = await client.from(table).select('id', { count: 'exact', head: true });
+    return fallback.count || 0;
+  }
+  return withoutPupilRows(owned.data, pupils).length;
+}
+
 async function pullAll(replace) {
   const client = await ensureClient();
   const meta = await Storage.getSyncMeta();
   const since = replace ? '1970-01-01T00:00:00Z' : meta.lastPulledAt || '1970-01-01T00:00:00Z';
   const queued = new Set((await Storage.getSyncQueue()).map((item) => item.id));
+  const pupils = await trainerPupilIds();
   const [exercises, sets, metrics, routines, profile] = await Promise.all([
     client.from('exercises').select('*').gt('updated_at', since),
     client.from('workout_sets').select('*').gt('updated_at', since),
@@ -205,12 +235,12 @@ async function pullAll(replace) {
     client.from('profiles').select('*').limit(1),
   ]);
   const local = await Storage.exportAll();
-  const nextExercises = mergeRows(local.exercises, (exercises.data || []).map(exerciseFromRow), queued, replace);
-  const nextSets = mergeRows(local.sets, (sets.data || []).map(setFromRow), queued, replace);
-  const nextMetrics = mergeRows(local.bodyMetrics, (metrics.data || []).map(metricFromRow), queued, replace);
+  const nextExercises = mergeRows(local.exercises, withoutPupilRows(exercises.data, pupils).map(exerciseFromRow), queued, replace);
+  const nextSets = mergeRows(local.sets, withoutPupilRows(sets.data, pupils).map(setFromRow), queued, replace);
+  const nextMetrics = mergeRows(local.bodyMetrics, withoutPupilRows(metrics.data, pupils).map(metricFromRow), queued, replace);
   const nextRoutines = mergeRows(
     local.routines || [],
-    (routines.data || []).map((row) => Object.assign({}, row.data, { id: row.id, updatedAt: row.updated_at, deleted: !!row.deleted })),
+    withoutPupilRows(routines.data, pupils).map((row) => Object.assign({}, row.data, { id: row.id, updatedAt: row.updated_at, deleted: !!row.deleted })),
     queued,
     replace
   );
@@ -401,9 +431,14 @@ async function openAccount() {
       </form>`;
   } else {
     const queue = await Storage.getSyncQueue();
+    let trainerLabel = 'Soy entrenador';
+    const client = await ensureClient();
+    const role = await client.from('profiles').select('role').eq('user_id', syncUser.id).maybeSingle();
+    if (role.data && role.data.role === 'trainer') trainerLabel = 'Alumnos';
     box.innerHTML = `
       <p>${escapeHtml(syncUser.email || 'Sesión iniciada')}</p>
       <p class="sub">${queue.length ? queue.length + ' cambios pendientes' : 'Al día'}</p>
+      <button type="button" class="btn-secondary" onclick="openTrainer()">${trainerLabel}</button>
       <button type="button" class="log-btn" onclick="syncNow()">Sincronizar ahora</button>
       <button type="button" class="btn-secondary" onclick="exportEverything()">Exportar todo (JSON)</button>
       <button type="button" class="btn-secondary" onclick="signOutAccount()">Cerrar sesión</button>
