@@ -116,6 +116,7 @@ function setAppLocked(locked) {
 }
 
 function showLoginGate() {
+  if (typeof closeTrainer === 'function') closeTrainer();
   const gate = document.getElementById('loginGate');
   if (gate) gate.classList.add('show');
   setAppLocked(true);

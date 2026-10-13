@@ -336,3 +336,48 @@ nav button { font-size: 9px; letter-spacing: 0; padding: 10px 2px 14px; }
   .wizard-pane { animation: none; }
   .wizard-progress-bar { transition: none; }
 }
+
+.trainer-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 85;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+}
+.trainer-panel.show { display: flex; }
+.trainer-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.trainer-top h2 { flex: 1; margin: 0; font-size: 18px; }
+.trainer-body {
+  flex: 1;
+  overflow: auto;
+  padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+}
+.trainer-actions { display: flex; gap: 8px; margin-bottom: 12px; }
+.trainer-actions .btn-secondary { flex: 1; margin: 0; }
+.trainer-template { margin-bottom: 14px; }
+.trainer-tabs { margin-bottom: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.trainer-tabs .wizard-option {
+  margin-bottom: 0;
+  min-width: 0;
+  padding: 10px 2px;
+  font-size: 13px;
+  text-align: center;
+}
+.trainer-ex {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.trainer-sets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.trainer-sets input { min-width: 0; }
