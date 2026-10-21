@@ -233,16 +233,18 @@ async function renderLogPage() {
   currentSettings = settings;
   const exercises = collectRoutineExercises(routine, library);
   const sets = await Storage.getSets();
-  const groups = ['Todos'].concat(MUSCLE_GROUPS);
-  const visible = exercises.filter((ex) => currentFilter === 'Todos' || ex.muscleGroup === currentFilter);
+  const allLabel = typeof I18n !== 'undefined' ? I18n.t('log.all') : 'Todos';
+  if (currentFilter === 'Todos' || currentFilter === 'All') currentFilter = allLabel;
+  const groups = [allLabel].concat(MUSCLE_GROUPS);
+  const visible = exercises.filter((ex) => currentFilter === 'Todos' || currentFilter === allLabel || ex.muscleGroup === currentFilter);
   if (selectedExerciseId && !visible.some((ex) => ex.exerciseId === selectedExerciseId)) selectedExerciseId = '';
   const selected = visible.find((ex) => ex.exerciseId === selectedExerciseId) || null;
 
   el.innerHTML = `
-    <h2>Registro</h2>
-    <p class="sub">Anotá cada serie. El historial queda aunque le cambies el nombre al ejercicio.</p>
+    <h2>${typeof I18n !== 'undefined' ? I18n.t('log.title') : 'Registro'}</h2>
+    <p class="sub">${typeof I18n !== 'undefined' ? I18n.t('log.sub') : 'Anota cada serie. El historial queda aunque le cambies el nombre al ejercicio.'}</p>
     <div class="log-form">
-      <label>Filtrar por grupo</label>
+      <label>${typeof I18n !== 'undefined' ? I18n.t('log.filter') : 'Filtrar por grupo'}</label>
       <div class="muscle-filter">
         ${groups
           .map(
@@ -251,7 +253,7 @@ async function renderLogPage() {
           )
           .join('')}
       </div>
-      <label>Ejercicio</label>
+      <label>${typeof I18n !== 'undefined' ? I18n.t('log.exercise') : 'Ejercicio'}</label>
       <div class="ex-picker" id="exPicker">
         ${
           visible.length
@@ -261,10 +263,10 @@ async function renderLogPage() {
                     `<button type="button" class="ex-option${ex.exerciseId === selectedExerciseId ? ' selected' : ''}" onclick="selectExercise('${ex.exerciseId}')">${escapeHtml(ex.name)}</button>`
                 )
                 .join('')
-            : '<p class="empty-log">Agregá ejercicios en tu rutina primero.</p>'
+            : '<p class="empty-log">' + (typeof I18n !== 'undefined' ? I18n.t('log.empty') : 'Agrega ejercicios en tu rutina primero.') + '</p>'
         }
       </div>
-      ${selected ? renderSetEditor(selected, sets, settings) : '<p class="ex-selected">Elegí un ejercicio para cargar las series.</p>'}
+      ${selected ? renderSetEditor(selected, sets, settings) : '<p class="ex-selected">' + (typeof I18n !== 'undefined' ? I18n.t('log.pick') : 'Elige un ejercicio para cargar las series.') + '</p>'}
     </div>
     <div class="log-toolbar">
       <span>Historial</span>

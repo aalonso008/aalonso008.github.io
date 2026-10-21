@@ -45,6 +45,14 @@
     return { value: best, reliable };
   }
 
+  function phrase(key, vars, fallback) {
+    if (typeof I18n !== 'undefined' && I18n.t) {
+      const value = I18n.t(key, vars);
+      if (value !== key) return value;
+    }
+    return fallback;
+  }
+
   function suggestProgression(input) {
     const prescription = input.prescription || { count: 3, repMin: 8, repMax: 12 };
     const last = input.lastSession || [];
@@ -53,7 +61,7 @@
     if (input.deload) {
       return {
         kind: 'deload',
-        text: 'Semana de descarga: hacé unas 40% menos de series, o bajá 10–20% el peso.',
+        text: phrase('tip.deload', null, 'Semana de descarga: haz unas 40% menos de series, o baja 10–20% el peso.'),
       };
     }
     if (!last.length) return null;
@@ -68,14 +76,14 @@
     };
     if (allHitMax) {
       const next = roundToStep(weight + increment);
-      return { kind: 'up', text: `Subí a ${shown(next)} kg y volvé a ${prescription.repMin} reps` };
+      return { kind: 'up', text: phrase('tip.up', { kg: shown(next), reps: prescription.repMin }, `Sube a ${shown(next)} kg y vuelve a ${prescription.repMin} reps`) };
     }
     const belowMin = (session) => (session || []).some((set) => (Number(set.reps) || 0) < prescription.repMin);
     if (belowMin(last) && prev && belowMin(prev)) {
       const down = Math.round(weight * 0.9 * 2) / 2;
-      return { kind: 'down', text: `Bajá a ${shown(down)} kg o revisá el descanso` };
+      return { kind: 'down', text: phrase('tip.down', { kg: shown(down) }, `Baja a ${shown(down)} kg o revisa el descanso`) };
     }
-    return { kind: 'hold', text: `Mantené ${shown(weight)} kg y buscá +1 rep` };
+    return { kind: 'hold', text: phrase('tip.hold', { kg: shown(weight) }, `Mantén ${shown(weight)} kg y busca +1 rep`) };
   }
 
   function cycleInfo(startIso, now) {

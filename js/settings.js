@@ -52,11 +52,11 @@ async function saveSettingsForm(event) {
 }
 
 async function loadDemoData() {
-  if (!confirm('¿Agregar 8 semanas de entrenamientos y peso de prueba?')) return;
+  if (!confirm(typeof I18n !== 'undefined' ? I18n.t('settings.demo.confirm') : '¿Agregar 8 semanas de entrenamientos y peso de prueba?')) return;
   const routine = await getActiveRoutine();
   const library = await Storage.getExercises();
   const exercises = collectRoutineExercises(routine, library).filter((ex) => !ex.archived).slice(0, 6);
-  if (!exercises.length) return alert('Primero creá una rutina con ejercicios.');
+  if (!exercises.length) return alert(typeof I18n !== 'undefined' ? I18n.t('settings.demo.need') : 'Primero crea una rutina con ejercicios.');
   const sets = await Storage.getSets();
   const now = new Date();
   for (let week = 8; week >= 1; week -= 1) {

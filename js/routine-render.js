@@ -65,10 +65,10 @@ function renderDayPanel(day, index, active, library, logs, settings) {
         <h2>${escapeHtml(day.name)}</h2>
         ${day.focus ? `<div class="focus">${escapeHtml(day.focus)}</div>` : ''}
         ${tag}
-        ${cycle ? `<div class="cycle-chip">Semana ${cycle.week}/8 · ${escapeHtml(cycle.phase)}</div>` : ''}
-        <button type="button" class="log-btn day-start" onclick="startWorkout(${index})">▶ Empezar entrenamiento</button>
+        ${cycle ? `<div class="cycle-chip">${escapeHtml(typeof I18n !== 'undefined' ? I18n.t('cycle.chip', { week: cycle.week, phase: I18n.t('phase.' + cycle.phase) }) : 'Semana ' + cycle.week + '/8 · ' + cycle.phase)}</div>` : ''}
+        <button type="button" class="log-btn day-start" onclick="startWorkout(${index})">${typeof I18n !== 'undefined' ? I18n.t('day.start') : '▶ Empezar entrenamiento'}</button>
       </div>
-      ${sections || '<p class="empty-day">Este día no tiene ejercicios todavía.<br>Andá a <strong>Editar</strong> para agregar.</p>'}
+      ${sections || '<p class="empty-day">' + (typeof I18n !== 'undefined' ? I18n.t('day.empty') : 'Este día no tiene ejercicios todavía. Ve a Editar para agregar.') + '</p>'}
     </div>`;
 }
 

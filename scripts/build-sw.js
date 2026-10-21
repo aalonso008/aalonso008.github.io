@@ -7,11 +7,13 @@ const scopePath = new URL(site + '/').pathname;
 const assets = [
   './',
   './index.html',
+  './app.html',
   './privacy.html',
   './landing.html',
   './css/main.css',
   './css/extra.css',
   './css/landing.css',
+  './js/i18n.js',
   './js/config.js',
   './js/model.js',
   './js/body-calc.js',
@@ -47,7 +49,7 @@ const assets = [
   'https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js',
 ];
 
-const sw = `const CACHE = 'tu-rutina-v24';
+const sw = `const CACHE = 'tu-rutina-v25';
 const ASSETS = ${JSON.stringify(assets, null, 2)};
 
 self.addEventListener('install', (event) => {

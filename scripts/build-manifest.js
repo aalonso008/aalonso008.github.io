@@ -6,7 +6,7 @@ const base = site + '/';
 const manifest = {
   name: 'Tu Rutina — Gym 5 Días',
   short_name: 'Tu Rutina',
-  description: 'Creá tu rutina de gym y registrá tus pesos',
+  description: 'Crea tu rutina de gym y registra tus pesos',
   id: base,
   start_url: './index.html',
   scope: './',

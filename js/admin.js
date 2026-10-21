@@ -10,7 +10,7 @@ const adminState = {
 function adminMessage(error) {
   const text = (error && (error.message || error.details)) || '';
   if (/subscription_plans|subscriptions|admin_users|is_admin|schema cache/i.test(text)) {
-    return 'Falta actualizar la base. Volvé a correr supabase/schema.sql en el editor SQL.';
+    return typeof I18n !== 'undefined' ? I18n.t('admin.schema') : 'Falta actualizar la base. Vuelve a ejecutar supabase/schema.sql en el editor SQL.';
   }
   if (/Solo un admin/i.test(text)) return 'Solo un admin puede dar ese rol.';
   return text || 'No se pudo completar.';
@@ -138,7 +138,7 @@ async function renderAdminHome(body, title) {
   const plans = await loadAdminPlans();
   const users = await loadAdminUsers();
   if (!plans.length) {
-    body.innerHTML = '<p class="wizard-help">No hay planes. Corré supabase/schema.sql en el editor SQL.</p>';
+    body.innerHTML = '<p class="wizard-help">' + (typeof I18n !== 'undefined' ? I18n.t('admin.noplans') : 'No hay planes. Ejecuta supabase/schema.sql en el editor SQL.') + '</p>';
     return;
   }
   const priceFields = plans.map((plan) => `
@@ -162,7 +162,7 @@ async function renderAdminHome(body, title) {
       <label for="adminSearch">Buscar por email</label>
       <input id="adminSearch" value="${escapeHtml(adminState.query)}" placeholder="email" oninput="filterAdminUsers(this.value)">
     </form>
-    <div id="adminUserList">${users.length ? adminUserButtons() : '<p class="wizard-help">Todavía no hay cuentas.</p>'}</div>`;
+    <div id="adminUserList">${users.length ? adminUserButtons() : '<p class="wizard-help">' + (typeof I18n !== 'undefined' ? I18n.t('admin.nousers') : 'Todavía no hay cuentas.') + '</p>'}</div>`;
 }
 
 function filterAdminUsers(value) {
@@ -234,7 +234,7 @@ async function saveAdminPlans(event) {
       const yearly = Math.round(Number(form.get(plan.id + '-yearly')));
       if (!name || monthly < 0 || yearly < 0 || Number.isNaN(monthly) || Number.isNaN(yearly)) {
         button.disabled = false;
-        return alert('Revisá nombre y precios.');
+        return alert(typeof I18n !== 'undefined' ? I18n.t('admin.prices') : 'Revisa nombre y precios.');
       }
       const { data, error } = await client.from('subscription_plans').update({
         name,
