@@ -71,7 +71,7 @@ async function renderBodyPage() {
     <div class="calc-list">${summary.details}</div>
     <h3 class="block-title">Historial</h3>
     ${renderMetricHistory(metrics)}
-    <p class="disclaimer">Las fórmulas son estimaciones. El IMC no distingue músculo de grasa: si entrenás, mirá el % de grasa y el FFMI. Esto no es consejo médico.</p>`;
+    <p class="disclaimer">${typeof I18n !== 'undefined' ? I18n.t('body.disclaimer') : 'Las fórmulas son estimaciones. El IMC no distingue músculo de grasa: si entrenas, mira el % de grasa y el FFMI. Esto no es consejo médico.'}</p>`;
 }
 
 function bodySummary(profile, metrics) {
@@ -118,10 +118,10 @@ function bodySummary(profile, metrics) {
   const healthy = height ? healthyWeightRange(height) : null;
   const ideals = height ? idealWeights(height, profile.sex) : null;
   const protein = weight ? proteinRange(weight) : null;
-  const lossWarn = weight && weekly != null && weekly < -(weight * 0.01) ? '<p class="warn">El ritmo de baja supera ~1% del peso por semana.</p>' : '';
+  const lossWarn = weight && weekly != null && weekly < -(weight * 0.01) ? '<p class="warn">' + (typeof I18n !== 'undefined' ? I18n.t('body.loss') : 'El ritmo de baja supera ~1% del peso por semana.') + '</p>' : '';
   const projection =
     arrival && target != null
-      ? `<p>Al ritmo actual llegás a ${round1(target)} kg aprox. el ${formatDisplayDate(arrival)}.</p>`
+      ? `<p>${typeof I18n !== 'undefined' ? I18n.t('body.arrival', { kg: round1(target), date: formatDisplayDate(arrival) }) : 'Al ritmo actual llegas a ' + round1(target) + ' kg aprox. el ' + formatDisplayDate(arrival) + '.'}</p>`
       : '';
   const details = `
     ${lossWarn}

@@ -2,212 +2,366 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Tu Rutina</title>
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/extra.css">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="assets/icons/icon-512.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tu Rutina — Funciones y planes</title>
+  <meta name="description" content="Arma tu rutina, anota cada serie y sigue el progreso. El primer mes es full, sin tarjeta.">
   <meta name="theme-color" content="#0f0f0f">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Tu Rutina">
-  <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png">
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/sw.js').catch(function () {});
-      });
-    }
-  </script>
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/landing.css">
 </head>
-<body>
-
-  <header>
-    <div class="header-row">
-      <div>
-        <h1 id="headerTitle">Tu Rutina</h1>
-        <p id="headerSub">Creá y seguí tu rutina de gym</p>
-      </div>
-      <button id="syncDot" class="sync-dot" type="button" aria-label="Estado de sincronización" onclick="openAccount()">☁</button>
-      <button id="accountBtn" class="header-install-btn" type="button" aria-label="Cuenta">Cuenta</button>
-      <button id="settingsBtn" class="header-install-btn" type="button" aria-label="Ajustes">Ajustes</button>
-      <button id="headerInstallBtn" class="header-install-btn" type="button" aria-label="Instalar app">Instalar</button>
+<body class="lp">
+  <a class="lp-skip" href="#funciones" data-i18n="skip">Ir al contenido</a>
+  <header class="lp-nav">
+    <a class="lp-logo" href="#top">Tu Rutina</a>
+    <nav class="lp-nav-links" data-i18n-aria="aria.sections" aria-label="Secciones">
+      <a href="#funciones" data-i18n="nav.features">Funciones</a>
+      <a href="#planes" data-i18n="nav.plans">Planes</a>
+      <a href="#preguntas" data-i18n="nav.faq">Preguntas</a>
+    </nav>
+    <div class="lp-lang" role="group" data-i18n-aria="lang.group" aria-label="Idioma">
+      <button type="button" data-set-lang="es" aria-pressed="true">ES</button>
+      <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
     </div>
+    <button type="button" class="lp-btn" data-start data-cta="main">Empieza el mes gratis</button>
   </header>
-  <div id="trialStrip" class="trial-strip" hidden></div>
 
-  <div id="page-rutina" class="active">
-    <button type="button" class="wizard-entry" onclick="openRoutineWizard('routine')">✨ Armá tu rutina</button>
-    <div class="day-tabs" id="dayTabs"></div>
-    <div id="routineDays"></div>
-  </div>
+  <main id="top">
+    <section class="lp-hero">
+      <div class="lp-wrap lp-hero-grid">
+        <div class="lp-hero-copy">
+          <p class="lp-kicker" data-i18n="kicker.gym">Gym, en el teléfono</p>
+          <h1 data-i18n-html="hero.title">Tu rutina, tus pesos, <span class="lp-accent">tu progreso</span>.</h1>
+          <p data-i18n="hero.lead">Respondes unas preguntas y la app arma el plan. Después anotas cada serie y ves si el peso sube. El primer mes entra con todo full.</p>
+          <div class="lp-actions">
+            <button type="button" class="lp-btn" data-start data-cta="main">Empieza el mes gratis</button>
+            <a class="lp-btn-ghost" href="#planes" data-i18n="cta.plans">Ver planes</a>
+          </div>
+          <p class="lp-note" id="heroNote">Sin tarjeta. El mes incluye rutina, progresión, cuerpo y alumnos.</p>
+          <div class="lp-steps" role="tablist" data-i18n-aria="aria.tour" aria-label="Recorrido">
+            <button type="button" class="is-on" role="tab" data-show="rutina" aria-selected="true" data-i18n="step.1">1 · Arma</button>
+            <button type="button" role="tab" data-show="entreno" aria-selected="false" data-i18n="step.2">2 · Anota</button>
+            <button type="button" role="tab" data-show="progreso" aria-selected="false" data-i18n="step.3">3 · Mide</button>
+          </div>
+        </div>
 
-  <div id="page-prog" class="prog-page"></div>
-  <div id="page-log" class="log-page"></div>
-  <div id="page-cuerpo" class="body-page"></div>
-  <div id="page-editor" class="editor-page"></div>
+        <div class="lp-phone" data-i18n-aria="aria.phone" aria-label="Vista previa de la app">
+          <div class="lp-phone-speaker"></div>
+          <div class="lp-phone-screen">
+            <div class="lp-phone-top">
+              <strong>Tu Rutina</strong>
+              <span data-i18n="phone.preview">Prueba la vista, no es una foto</span>
+            </div>
+            <div class="lp-screen is-on" data-screen="rutina">
+              <div class="lp-dayline"><i class="is-on" data-i18n="dow.lun">Lun</i><i data-i18n="dow.mar">Mar</i><i data-i18n="dow.jue">Jue</i><i data-i18n="dow.vie">Vie</i></div>
+              <article class="lp-ex">
+                <button type="button" class="lp-ex-head" aria-expanded="false">
+                  <span><span data-i18n="phone.ex1">Press banca inclinado</span><small data-i18n="phone.ex1.meta">4 × 6–8 · 90s</small></span>
+                  <span aria-hidden="true">⌄</span>
+                </button>
+                <div class="lp-ex-body" data-i18n="phone.ex1.body">Escápulas juntas y baja controlado. El detalle de técnica vive en la ficha del ejercicio.</div>
+              </article>
+              <article class="lp-ex">
+                <button type="button" class="lp-ex-head" aria-expanded="false">
+                  <span><span data-i18n="phone.ex2">Aperturas en polea</span><small data-i18n="phone.ex2.meta">3 × 12–15</small></span>
+                  <span aria-hidden="true">⌄</span>
+                </button>
+                <div class="lp-ex-body" data-i18n="phone.ex2.body">Codo apenas flexionado. Prioriza el estiramiento, no el peso.</div>
+              </article>
+            </div>
+            <div class="lp-screen" data-screen="entreno" inert>
+              <p class="lp-label" data-i18n="phone.bench">Press de banca</p>
+              <div class="lp-set">
+                <button type="button" class="lp-icon-btn" data-phone-delta="-2.5" data-i18n-aria="aria.down" aria-label="Bajar 2,5 kg">−</button>
+                <strong><span id="phoneWeight">60</span> kg</strong>
+                <button type="button" class="lp-icon-btn" data-phone-delta="2.5" data-i18n-aria="aria.up" aria-label="Subir 2,5 kg">+</button>
+              </div>
+              <button type="button" class="lp-btn" id="phoneSave" data-i18n="phone.save">Guardar serie</button>
+              <p class="lp-toast" id="phoneToast" hidden>Serie guardada</p>
+            </div>
+            <div class="lp-screen" data-screen="progreso" inert>
+              <p class="lp-label">Press · kg</p>
+              <div class="lp-bars" aria-hidden="true"><span style="height:42%"></span><span style="height:55%"></span><span style="height:63%"></span><span style="height:74%"></span><span style="height:88%"></span></div>
+              <p class="lp-suggest" data-i18n="phone.gain">+2,5 kg en cuatro semanas</p>
+              <div class="lp-heat" aria-hidden="true"><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i></div>
+            </div>
+            <div class="lp-screen" data-screen="cuerpo" inert>
+              <div class="lp-metric"><span data-i18n="phone.weight">Peso</span><strong>74 kg</strong></div>
+              <div class="lp-metric"><span data-i18n="phone.bmi">IMC</span><strong data-i18n="phone.bmi.value">24,2 · normal</strong></div>
+              <p class="lp-muted" data-i18n="phone.body.note">En la app se suman cintura, cuello, % de grasa y FFMI. En Funciones puedes mover los números.</p>
+            </div>
+            <nav class="lp-phone-nav" data-i18n-aria="aria.screens" aria-label="Pantallas de la demo">
+              <button type="button" data-show="rutina" class="is-on" data-i18n="nav.routine">Rutina</button>
+              <button type="button" data-show="entreno" data-i18n="phone.workout">Entreno</button>
+              <button type="button" data-show="progreso" data-i18n="phone.progress">Progreso</button>
+              <button type="button" data-show="cuerpo" data-i18n="nav.body">Cuerpo</button>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <div id="resumeBanner" class="resume-banner" hidden>
-    <span>Tenés un entrenamiento a medias.</span>
-    <button id="resumeGo" type="button">Continuar</button>
-    <button id="resumeSkip" type="button" aria-label="Descartar entrenamiento">×</button>
-  </div>
-  <div id="restBar" class="rest-bar" hidden>
-    <strong id="restTime">0:00</strong>
-    <button type="button" onclick="adjustRest(-15)">−15s</button>
-    <button type="button" onclick="adjustRest(15)">+15s</button>
-    <button type="button" onclick="skipRest()">Saltar</button>
-  </div>
-  <div id="updateBanner" class="update-banner" hidden>
-    <span>Hay una versión nueva</span>
-    <button id="updateNow" type="button">Actualizar</button>
-  </div>
-  <div id="toast" class="toast" hidden></div>
-  <div id="workout" class="workout"></div>
+    <section class="lp-section" id="funciones">
+      <div class="lp-wrap">
+        <p class="lp-kicker" data-i18n="kicker.features">Funciones</p>
+        <h2 data-i18n="lab.title">Pruébalas, no las leas de una lista.</h2>
+        <p class="lp-lead" data-i18n="lab.lead">Cada bloque usa la misma idea que la app: el asistente arma días, el registro sugiere el próximo peso y el cuerpo calcula con las fórmulas reales.</p>
+        <div class="lp-lab">
+          <div class="lp-lab-nav" role="tablist" data-i18n-aria="aria.labs" aria-label="Funciones">
+            <button type="button" class="is-on" role="tab" data-lab-tab="armar" aria-selected="true" aria-controls="panel-armar" data-i18n="lab.armar">Armar rutina</button>
+            <button type="button" role="tab" data-lab-tab="anotar" aria-selected="false" aria-controls="panel-anotar" tabindex="-1" data-i18n="lab.anotar">Anotar series</button>
+            <button type="button" role="tab" data-lab-tab="progresar" aria-selected="false" aria-controls="panel-progresar" tabindex="-1" data-i18n="lab.progresar">Progresión</button>
+            <button type="button" role="tab" data-lab-tab="cuerpo" aria-selected="false" aria-controls="panel-cuerpo" tabindex="-1" data-i18n="lab.cuerpo">Cuerpo</button>
+            <button type="button" role="tab" data-lab-tab="entrenador" aria-selected="false" aria-controls="panel-entrenador" tabindex="-1" data-i18n="lab.entrenador">Entrenador</button>
+          </div>
 
-  <div id="loginGate" class="login-gate show">
-    <form id="loginForm" onsubmit="sendMagicLink(event)">
-      <h1>Tu Rutina</h1>
-      <p>Entrá con tu email para ver tu rutina.</p>
-      <label for="loginEmail">Email</label>
-      <input id="loginEmail" name="email" type="email" required placeholder="tu@email.com" autocomplete="email">
-      <button type="submit" class="log-btn">Enviar link</button>
-      <p id="loginSent" class="login-sent" hidden>Listo. Revisá tu email y abrí el enlace en este dispositivo.</p>
-      <p id="loginTrial" class="login-trial">30 días gratis con todo desbloqueado.</p>
-      <p class="login-extra"><a href="landing.html">Ver funciones y planes</a></p>
-    </form>
-  </div>
+          <div class="lp-panel" id="panel-armar" data-lab="armar" role="tabpanel">
+            <h3 data-i18n="armar.title">Un plan según tu semana</h3>
+            <p class="lp-help" data-i18n="armar.help">En la app también preguntamos experiencia, minutos, zonas a priorizar, molestias y cardio. Esta demo arma el esqueleto.</p>
+            <span class="lp-label" data-i18n="label.goal">Objetivo</span>
+            <div class="lp-choice">
+              <button type="button" class="lp-chip is-on" data-goal="hypertrophy" aria-pressed="true" data-i18n="goal.hypertrophy">Ganar músculo</button>
+              <button type="button" class="lp-chip" data-goal="strength" aria-pressed="false" data-i18n="goal.strength">Ganar fuerza</button>
+              <button type="button" class="lp-chip" data-goal="fat_loss" aria-pressed="false" data-i18n="goal.fat_loss">Perder grasa</button>
+              <button type="button" class="lp-chip" data-goal="general" aria-pressed="false" data-i18n="goal.general">Estar en forma</button>
+            </div>
+            <span class="lp-label" data-i18n="label.days">Días</span>
+            <div class="lp-choice">
+              <button type="button" class="lp-chip" data-days="2" aria-pressed="false">2</button>
+              <button type="button" class="lp-chip" data-days="3" aria-pressed="false">3</button>
+              <button type="button" class="lp-chip is-on" data-days="4" aria-pressed="true">4</button>
+              <button type="button" class="lp-chip" data-days="5" aria-pressed="false">5</button>
+              <button type="button" class="lp-chip" data-days="6" aria-pressed="false">6</button>
+            </div>
+            <span class="lp-label" data-i18n="label.place">Dónde entrenas</span>
+            <div class="lp-choice">
+              <button type="button" class="lp-chip is-on" data-place="full_gym" aria-pressed="true" data-i18n="place.full_gym">Gym completo</button>
+              <button type="button" class="lp-chip" data-place="basic_gym" aria-pressed="false" data-i18n="place.basic_gym">Gym básico</button>
+              <button type="button" class="lp-chip" data-place="home_dumbbells" aria-pressed="false" data-i18n="place.home_dumbbells">Mancuernas</button>
+              <button type="button" class="lp-chip" data-place="bodyweight" aria-pressed="false" data-i18n="place.bodyweight">Peso corporal</button>
+            </div>
+            <div class="lp-result" id="routineOut" aria-live="polite"></div>
+          </div>
 
-  <div id="welcomeModal" class="modal">
-    <div class="modal-card">
-      <h2>Bienvenido a Tu Rutina</h2>
-      <p>Elegí cómo querés armar tu rutina.</p>
-      <button type="button" class="log-btn" onclick="openRoutineWizard('welcome')">✨ Armá tu rutina</button>
-      <p class="welcome-hint">Respondé unas preguntas y te armamos una rutina a medida.</p>
-      <button type="button" class="btn-secondary modal-btn" onclick="startBlankRoutine()">✏️ Crear desde cero</button>
-      <button type="button" class="btn-secondary modal-btn" onclick="startTemplateRoutine()">📋 Usar rutina de ejemplo</button>
-    </div>
-  </div>
+          <div class="lp-panel" id="panel-anotar" data-lab="anotar" role="tabpanel" hidden>
+            <h3 data-i18n="anotar.title">Cada serie queda anotada</h3>
+            <p class="lp-help" data-i18n="anotar.help">Press de banca, 3 series de 8 a 12. Si las tres llegan a 12, la sugerencia es subir. Es la doble progresión de la app.</p>
+            <div class="lp-log-grid">
+              <div class="lp-stepper">
+                <button type="button" class="lp-icon-btn" data-log-delta="-2.5" data-i18n-aria="aria.weightDown" aria-label="Bajar peso">−</button>
+                <strong><span id="logWeight">60</span> kg</strong>
+                <button type="button" class="lp-icon-btn" data-log-delta="2.5" data-i18n-aria="aria.weightUp" aria-label="Subir peso">+</button>
+              </div>
+              <div class="lp-stepper">
+                <button type="button" class="lp-icon-btn" data-log-reps="-1" data-i18n-aria="aria.repsDown" aria-label="Menos reps">−</button>
+                <strong><span id="logReps">10</span> <span data-i18n="reps.word">reps</span></strong>
+                <button type="button" class="lp-icon-btn" data-log-reps="1" data-i18n-aria="aria.repsUp" aria-label="Más reps">+</button>
+              </div>
+            </div>
+            <div class="lp-inline">
+              <button type="button" class="lp-btn" id="logSave" data-i18n="log.save">Anotar serie</button>
+              <button type="button" class="lp-btn-ghost" id="logReset" data-i18n="log.reset">Reiniciar</button>
+            </div>
+            <p class="lp-suggest" id="logSuggest"></p>
+            <p class="lp-muted" id="logEpley"></p>
+            <p class="lp-note" id="restLabel">El descanso arranca al anotar</p>
+            <ul class="lp-log-list" id="logList"></ul>
+          </div>
 
-  <div id="installBanner" class="install-banner">
-    <div class="install-banner-text">
-      <strong>Instalá Tu Rutina</strong>
-      <span id="installHint">Acceso directo en tu pantalla de inicio, modo app</span>
-    </div>
-    <button id="installBtn" class="install-btn" type="button">Instalar</button>
-    <button id="installClose" class="install-close" type="button" aria-label="Cerrar">×</button>
-  </div>
+          <div class="lp-panel" id="panel-progresar" data-lab="progresar" role="tabpanel" hidden>
+            <h3 data-i18n="prog.title">Ocho semanas, un ciclo</h3>
+            <p class="lp-help" data-i18n="prog.help">Mueve la semana. El ciclo de la app pasa por base, reps, peso y una descarga. En el registro real también ves rachas, volumen por músculo y el calendario.</p>
+            <div class="lp-cycle" aria-hidden="true">
+              <span data-bar="1" style="--h:46%"></span>
+              <span data-bar="2" style="--h:50%"></span>
+              <span data-bar="3" style="--h:58%"></span>
+              <span data-bar="4" class="is-on" style="--h:64%"></span>
+              <span data-bar="5" style="--h:74%"></span>
+              <span data-bar="6" style="--h:82%"></span>
+              <span data-bar="7" style="--h:48%"></span>
+              <span data-bar="8" style="--h:52%"></span>
+            </div>
+            <label class="lp-label" for="cycleWeek" data-i18n="label.week">Semana del ciclo</label>
+            <input class="lp-range" id="cycleWeek" type="range" min="1" max="8" value="4">
+            <p class="lp-suggest" id="cycleLabel"></p>
+          </div>
 
-  <div id="installModal" class="modal">
-    <div class="modal-card install-modal-card">
-      <button id="installModalClose" class="install-close modal-close" type="button" aria-label="Cerrar">×</button>
-      <h2>Instalar Tu Rutina</h2>
-      <p>Seguí estos pasos en tu celular:</p>
-      <ol id="installSteps" class="install-steps"></ol>
-    </div>
-  </div>
+          <div class="lp-panel" id="panel-cuerpo" data-lab="cuerpo" role="tabpanel" hidden>
+            <h3 data-i18n="body.title">Peso, IMC y calorías</h3>
+            <p class="lp-help" data-i18n="body.help">Misma cuenta que la pantalla Cuerpo. La edad de esta demo está fija en 30. No reemplaza un control médico.</p>
+            <label class="lp-label" for="bodyWeight"><span data-i18n="label.weight">Peso ·</span> <span id="bodyWeightLabel">74 kg</span></label>
+            <input class="lp-range" id="bodyWeight" type="range" min="45" max="140" value="74">
+            <label class="lp-label" for="bodyHeight"><span data-i18n="label.height">Altura ·</span> <span id="bodyHeightLabel">175 cm</span></label>
+            <input class="lp-range" id="bodyHeight" type="range" min="140" max="210" value="175">
+            <span class="lp-label" data-i18n="label.sex">Sexo para la fórmula</span>
+            <div class="lp-choice">
+              <button type="button" class="lp-chip is-on" data-sex="M" aria-pressed="true" data-i18n="sex.m">Hombre</button>
+              <button type="button" class="lp-chip" data-sex="F" aria-pressed="false" data-i18n="sex.f">Mujer</button>
+            </div>
+            <label class="lp-label" for="bodyActivity" data-i18n="label.activity">Actividad</label>
+            <select class="lp-select" id="bodyActivity"></select>
+            <p class="lp-suggest" id="bodyBmi"></p>
+            <p class="lp-muted" id="bodyCalories"></p>
+            <p class="lp-muted" id="bodyProtein"></p>
+          </div>
 
-  <nav>
-    <button class="active" data-page="rutina" onclick="showPage('rutina', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg>
-      Rutina
-    </button>
-    <button data-page="editor" onclick="showPage('editor', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      Editar
-    </button>
-    <button data-page="prog" onclick="showPage('prog', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Progresión
-    </button>
-    <button data-page="log" onclick="showPage('log', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Registro
-    </button>
-    <button data-page="cuerpo" onclick="showPage('cuerpo', this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v3"/><path d="M6 10h12"/><path d="M8 10l-2 8h12l-2-8"/><circle cx="12" cy="7" r="1.2" fill="currentColor" stroke="none"/></svg>
-      Cuerpo
-    </button>
-  </nav>
+          <div class="lp-panel" id="panel-entrenador" data-lab="entrenador" role="tabpanel" hidden>
+            <h3 data-i18n="coach.title">Alumnos aparte de tu rutina</h3>
+            <p class="lp-help" data-i18n="coach.help">El modo entrenador crea alumnos, guarda plantillas y les asigna días. Lo que ves aquí es una muestra: en la app queda ligado a tu cuenta.</p>
+            <div id="studentList"></div>
+            <div id="studentDetail"></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <div id="settingsModal" class="modal">
-    <div class="modal-card modal-sheet">
-      <button type="button" class="install-close modal-close" onclick="closeSettings()" aria-label="Cerrar ajustes">×</button>
-      <h2>Ajustes</h2>
-      <form id="settingsForm"></form>
-    </div>
-  </div>
-  <div id="accountModal" class="modal">
-    <div class="modal-card modal-sheet">
-      <button type="button" class="install-close modal-close" onclick="closeAccount()" aria-label="Cerrar cuenta">×</button>
-      <h2>Cuenta</h2>
-      <div id="accountBody"></div>
-    </div>
-  </div>
-  <div id="syncChoice" class="modal">
-    <div class="modal-card">
-      <h2>Sincronizar</h2>
-      <p id="syncChoiceText"></p>
-      <button id="syncChoiceOk" type="button" class="log-btn">Continuar</button>
-      <button id="syncChoiceCancel" type="button" class="btn-secondary modal-btn">Cancelar</button>
-    </div>
-  </div>
+    <section class="lp-section" id="planes">
+      <div class="lp-wrap">
+        <p class="lp-kicker" data-i18n="kicker.plans">Planes</p>
+        <h2 data-i18n="plans.title">Un mes full. Después, el que te sirva.</h2>
+        <p class="lp-lead" data-i18n="plans.lead">Los 30 días incluyen Esencial, Pro y Entrenador a la vez. No pedimos tarjeta para empezar. Al terminar, eliges con cuál seguir.</p>
 
-  <div id="routineWizard" class="wizard" role="dialog" aria-modal="true" aria-labelledby="wizardTitle" hidden>
-    <div class="wizard-top">
-      <button type="button" class="wizard-close" onclick="closeRoutineWizard()" aria-label="Salir">✕</button>
-      <p id="wizardStepLabel" class="wizard-step-label" aria-live="polite"></p>
-      <div class="wizard-progress" aria-hidden="true"><div id="wizardProgressBar" class="wizard-progress-bar"></div></div>
-    </div>
-    <div id="wizardBody" class="wizard-body"></div>
-    <div class="wizard-nav">
-      <button type="button" id="wizardBack" class="btn-secondary" onclick="wizardBack()">Atrás</button>
-      <button type="button" id="wizardNext" class="log-btn" onclick="wizardNext()">Siguiente</button>
-    </div>
-  </div>
+        <div class="lp-trial">
+          <div class="lp-ring" id="trialRing" style="--p: 100">
+            <div class="lp-ring-inner">
+              <strong id="trialDays">30</strong>
+              <span data-i18n="trial.days">días</span>
+            </div>
+          </div>
+          <div>
+            <h3 data-i18n="trial.title">Prueba con todo full</h3>
+            <p id="trialCaption">Arranca hoy. Durante 30 días se desbloquean los tres planes, completos.</p>
+          </div>
+        </div>
 
-  <div id="adminPanel" class="trainer-panel" role="dialog" aria-modal="true" aria-labelledby="adminTitle" hidden>
-    <div class="trainer-top">
-      <button type="button" class="wizard-close" onclick="adminBack()" aria-label="Volver">←</button>
-      <h2 id="adminTitle">Administrar</h2>
-      <button type="button" class="wizard-close" onclick="closeAdmin()" aria-label="Cerrar">✕</button>
-    </div>
-    <div id="adminBody" class="trainer-body"></div>
-  </div>
+        <div class="lp-switch" role="group" data-i18n-aria="aria.billing" aria-label="Periodo de pago">
+          <button type="button" data-cycle="month" class="is-on" aria-pressed="true" data-i18n="cycle.month">Mensual</button>
+          <button type="button" data-cycle="year" aria-pressed="false" data-i18n="cycle.year">Anual · 2 meses gratis</button>
+        </div>
 
-  <div id="trainerPanel" class="trainer-panel" role="dialog" aria-modal="true" aria-labelledby="trainerTitle" hidden>
-    <div class="trainer-top">
-      <button type="button" class="wizard-close" onclick="trainerBack()" aria-label="Volver">←</button>
-      <h2 id="trainerTitle">Alumnos</h2>
-      <button type="button" class="wizard-close" onclick="closeTrainer()" aria-label="Cerrar">✕</button>
-    </div>
-    <div id="trainerBody" class="trainer-body"></div>
-  </div>
+        <div class="lp-plans">
+          <article class="lp-plan" data-plan="esencial" aria-pressed="false" tabindex="0">
+            <div class="lp-plan-top"><h3 data-plan-name="esencial" data-i18n="plan.esencial">Esencial</h3></div>
+            <p class="lp-tagline" data-i18n="plan.esencial.tag">Para armar la rutina y no perder una serie.</p>
+            <p class="lp-price"><span data-price="esencial" data-value="3900">$3.900</span> <small data-period>/ mes</small></p>
+            <p class="lp-equiv" data-equiv="esencial">En anual ahorras 2 meses</p>
+            <ul>
+              <li data-i18n="feat.esencial.1">Asistente según objetivo, días, equipo y molestias</li>
+              <li data-i18n="feat.esencial.2">Editor de días, ejercicios y orden</li>
+              <li data-i18n="feat.esencial.3">Peso, reps y RPE de cada serie</li>
+              <li data-i18n="feat.esencial.4">Descanso y retomar el entreno</li>
+              <li data-i18n="feat.esencial.5">Instalable, también sin señal</li>
+            </ul>
+            <button type="button" class="lp-btn-line lp-btn" data-start data-plan="esencial" data-cta="plan">Probar 30 días full</button>
+          </article>
 
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+          <article class="lp-plan is-popular is-selected" data-plan="pro" aria-pressed="true" tabindex="0">
+            <div class="lp-plan-top"><h3 data-plan-name="pro" data-i18n="plan.pro">Pro</h3><span class="lp-badge" data-i18n="badge.popular">Más elegido</span></div>
+            <p class="lp-tagline" data-i18n="plan.pro.tag">Para ver si estás mejorando de verdad.</p>
+            <p class="lp-price"><span data-price="pro" data-value="6900">$6.900</span> <small data-period>/ mes</small></p>
+            <p class="lp-equiv" data-equiv="pro">En anual ahorras 2 meses</p>
+            <ul>
+              <li data-i18n="feat.pro.1">Todo Esencial</li>
+              <li data-i18n="feat.pro.2">1RM, doble progresión y gráficos</li>
+              <li data-i18n="feat.pro.3">Volumen por músculo, racha y calendario</li>
+              <li data-i18n="feat.pro.4">Peso, medidas, grasa, FFMI y calorías</li>
+              <li data-i18n="feat.pro.5">Cuenta para otro dispositivo y exportar</li>
+            </ul>
+            <button type="button" class="lp-btn" data-start data-plan="pro" data-cta="plan">Probar 30 días full</button>
+          </article>
+
+          <article class="lp-plan" data-plan="entrenador" aria-pressed="false" tabindex="0">
+            <div class="lp-plan-top"><h3 data-plan-name="entrenador" data-i18n="plan.entrenador">Entrenador</h3></div>
+            <p class="lp-tagline" data-i18n="plan.entrenador.tag">Para armarle la rutina a otras personas.</p>
+            <p class="lp-price"><span data-price="entrenador" data-value="14900">$14.900</span> <small data-period>/ mes</small></p>
+            <p class="lp-equiv" data-equiv="entrenador">En anual ahorras 2 meses</p>
+            <ul>
+              <li data-i18n="feat.entrenador.1">Todo Pro</li>
+              <li data-i18n="feat.entrenador.2">Alumnos, separados de tu rutina</li>
+              <li data-i18n="feat.entrenador.3">Plantillas para reutilizar</li>
+              <li data-i18n="feat.entrenador.4">Les asignas días y ves sus series</li>
+              <li data-i18n="feat.entrenador.5">Incluido en el mes de prueba</li>
+            </ul>
+            <button type="button" class="lp-btn-line lp-btn" data-start data-plan="entrenador" data-cta="plan">Probar 30 días full</button>
+          </article>
+        </div>
+
+        <div class="lp-switch" role="group" data-i18n-aria="aria.compare" aria-label="Qué incluye la tabla">
+          <button type="button" data-compare="trial" class="is-on" aria-pressed="true" data-i18n="compare.trial">Durante el mes gratis</button>
+          <button type="button" data-compare="after" aria-pressed="false" data-i18n="compare.after">Después del mes</button>
+        </div>
+        <div class="lp-table-wrap">
+          <table class="lp-table" data-hot="pro">
+            <thead>
+              <tr>
+                <th scope="col" data-i18n="table.includes">Incluye</th>
+                <th scope="col" data-i18n="plan.esencial">Esencial</th>
+                <th scope="col" data-i18n="plan.pro">Pro</th>
+                <th scope="col" data-i18n="plan.entrenador">Entrenador</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-plans="esencial pro entrenador"><th scope="row" data-i18n="table.r1">Asistente y editor de rutina</th><td></td><td></td><td></td></tr>
+              <tr data-plans="esencial pro entrenador"><th scope="row" data-i18n="table.r2">Registro, RPE y descanso</th><td></td><td></td><td></td></tr>
+              <tr data-plans="esencial pro entrenador"><th scope="row" data-i18n="table.r3">App instalable sin conexión</th><td></td><td></td><td></td></tr>
+              <tr data-plans="pro entrenador"><th scope="row" data-i18n="table.r4">Gráficos, 1RM y rachas</th><td></td><td></td><td></td></tr>
+              <tr data-plans="pro entrenador"><th scope="row" data-i18n="table.r5">Peso, grasa, FFMI y calorías</th><td></td><td></td><td></td></tr>
+              <tr data-plans="pro entrenador"><th scope="row" data-i18n="table.r6">Sync y exportar datos</th><td></td><td></td><td></td></tr>
+              <tr data-plans="entrenador"><th scope="row" data-i18n="table.r7">Alumnos y plantillas</th><td></td><td></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p id="compareCaption" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="lp-section" id="preguntas">
+      <div class="lp-wrap">
+        <p class="lp-kicker" data-i18n="faq.kicker">Preguntas</p>
+        <h2 data-i18n="faq.title">Antes de arrancar</h2>
+        <div class="lp-faq">
+          <details>
+            <summary data-i18n="faq.q1">¿El mes gratis es realmente full?</summary>
+            <p data-i18n="faq.a1">Sí. Durante 30 días tienes el asistente, el editor, el registro, la progresión, el cuerpo y el modo entrenador. No es una versión recortada del plan Esencial.</p>
+          </details>
+          <details>
+            <summary data-i18n="faq.q2">¿Hace falta tarjeta?</summary>
+            <p data-i18n="faq.a2">No para empezar. Entra con tu email, como siempre, y la prueba queda guardada en este dispositivo. El plan que marques es el que te proponemos cuando se acaban los 30 días.</p>
+          </details>
+          <details>
+            <summary data-i18n="faq.q3">¿Qué pasa el día 31?</summary>
+            <p data-i18n="faq.a3">Te avisamos en la app para que elijas Esencial, Pro o Entrenador, mensual o anual. La rutina, las series y las medidas siguen en el teléfono. El mes gratis no se renueva solo.</p>
+          </details>
+          <details>
+            <summary data-i18n="faq.q4">¿Puedo cambiar de plan?</summary>
+            <p data-i18n="faq.a4">Sí. Toca una tarjeta para dejarla elegida y, si quieres, pasa de mensual a anual. El anual equivale a pagar 10 meses.</p>
+          </details>
+          <details>
+            <summary data-i18n="faq.q5">¿Funciona sin internet?</summary>
+            <p data-i18n="faq.a5">La puedes instalar y anotar el entreno sin señal. Ver la misma cuenta en otro dispositivo pide conexión y el inicio de sesión.</p>
+          </details>
+          <details>
+            <summary data-i18n="faq.q6">¿Esto reemplaza a un médico o a un profe?</summary>
+            <p data-i18n="faq.a6">No. Las fórmulas de grasa, IMC y calorías son estimaciones para seguir el peso. Si hay una lesión, conviene consultarlo con alguien que te vea.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="lp-wrap lp-footer">
+    <p data-i18n="footer.note">Tu Rutina. Las cuentas de la demo usan las fórmulas de la app y no son consejo médico.</p>
+    <nav data-i18n-aria="aria.footer" aria-label="Pie">
+      <a href="app.html" data-i18n="footer.app">Abrir la app</a>
+      <a href="privacy.html" data-i18n="footer.privacy">Privacidad</a>
+    </nav>
+  </footer>
+
+  <script src="js/i18n.js"></script>
   <script src="js/config.js"></script>
-  <script src="js/model.js"></script>
   <script src="js/body-calc.js"></script>
   <script src="js/progression-calc.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/routine-store.js"></script>
-  <script src="js/routine-render.js"></script>
-  <script src="js/routine-editor.js"></script>
-  <script src="js/routine-generator.js"></script>
-  <script src="js/routine-wizard.js"></script>
-  <script src="js/log.js"></script>
-  <script src="js/workout.js"></script>
-  <script src="js/progress.js"></script>
-  <script src="js/body.js"></script>
-  <script src="js/settings.js"></script>
-  <script src="js/sync.js"></script>
-  <script src="js/trainer.js"></script>
   <script src="js/subscription.js"></script>
-  <script src="js/admin.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/pwa.js"></script>
+  <script src="js/landing.js"></script>
 </body>
 </html>

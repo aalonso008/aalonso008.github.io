@@ -130,7 +130,7 @@ function showLoginGate() {
   const title = document.getElementById('headerTitle');
   if (title) title.textContent = 'Tu Rutina';
   const sub = document.getElementById('headerSub');
-  if (sub) sub.textContent = 'Entrá para ver tu rutina';
+  if (sub) sub.textContent = typeof I18n !== 'undefined' ? I18n.t('login.sub') : 'Entra para ver tu rutina';
   if (typeof Subscription !== 'undefined') Subscription.refreshUi();
 }
 
@@ -154,7 +154,9 @@ async function bootApp() {
   if (!appBooted) {
     appBooted = true;
     const theory = await loadHtml('content/progression.html');
-    document.getElementById('page-prog').innerHTML = '<div id="progressCharts"></div><div class="prog-theory">' + theory + '</div>';
+    const progPage = document.getElementById('page-prog');
+    progPage.innerHTML = '<div id="progressCharts"></div><div class="prog-theory">' + theory + '</div>';
+    if (typeof I18n !== 'undefined') I18n.apply(progPage);
     tickRest();
     offerResumeWorkout();
   }
@@ -166,7 +168,7 @@ async function bootApp() {
     if (document.getElementById('progressCharts')) await renderProgressCharts();
   } else {
     showWelcome();
-    document.getElementById('routineDays').innerHTML = '<p class="empty-day">Creá tu rutina para empezar.</p>';
+    document.getElementById('routineDays').innerHTML = '<p class="empty-day">' + (typeof I18n !== 'undefined' ? I18n.t('empty.routine') : 'Crea tu rutina para empezar.') + '</p>';
     await renderLogPage();
   }
 }
@@ -190,12 +192,30 @@ async function initApp() {
     document.getElementById('resumeBanner').hidden = true;
   });
   await initSync();
+  document.addEventListener('lang:change', () => {
+    const gate = document.getElementById('loginGate');
+    if (gate && gate.classList.contains('show')) {
+      const sub = document.getElementById('headerSub');
+      if (sub) sub.textContent = I18n.t('login.sub');
+    }
+    if (typeof Subscription !== 'undefined') Subscription.refreshUi();
+    const wizardEl = document.getElementById('routineWizard');
+    if (wizardEl && !wizardEl.hidden && typeof renderWizard === 'function') renderWizard();
+    if (!appBooted) return;
+    if (typeof renderLogPage === 'function') renderLogPage();
+    if (typeof renderBodyPage === 'function' && document.getElementById('page-cuerpo') && document.getElementById('page-cuerpo').classList.contains('active')) {
+      renderBodyPage();
+    }
+    if (typeof renderProgressCharts === 'function' && document.getElementById('progressCharts')) renderProgressCharts();
+    if (typeof currentRoutine !== 'undefined' && currentRoutine && typeof renderRoutineView === 'function') renderRoutineView(currentRoutine);
+    if (typeof I18n !== 'undefined') I18n.apply(document.getElementById('page-prog'));
+  });
 }
 
 initApp().catch((err) => {
   console.error(err);
   document.body.insertAdjacentHTML(
     'afterbegin',
-    '<p style="padding:16px;color:#eb5757">Error cargando la app. Usá <code>npm start</code> para servirla.</p>'
+    '<p style="padding:16px;color:#eb5757">' + (typeof I18n !== 'undefined' ? I18n.t('boot.error') : 'Error cargando la app. Usa <code>npm start</code> para servirla.') + '</p>'
   );
 });

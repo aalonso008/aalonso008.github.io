@@ -7,32 +7,20 @@
   let restTimer = null;
   let restLeft = 0;
 
-  const GOALS = {
-    hypertrophy: { label: 'Ganar músculo', reps: '8–12' },
-    strength: { label: 'Ganar fuerza', reps: '4–6' },
-    fat_loss: { label: 'Perder grasa', reps: '8–12' },
-    general: { label: 'Estar en forma', reps: '8–15' },
-  };
-  const PLACES = {
-    full_gym: ['Press en banca', 'Remo en polea', 'Prensa'],
-    basic_gym: ['Press con barra', 'Remo con barra', 'Sentadilla'],
-    home_dumbbells: ['Press con mancuernas', 'Remo a una mano', 'Sentadilla goblet'],
-    bodyweight: ['Flexiones', 'Remo invertido', 'Sentadilla'],
-  };
-  const SPLITS = {
-    2: ['Cuerpo completo A', 'Cuerpo completo B'],
-    3: ['Empuje', 'Tirón', 'Piernas'],
-    4: ['Torso', 'Piernas', 'Torso', 'Piernas'],
-    5: ['Pecho', 'Espalda', 'Piernas', 'Hombros', 'Brazos'],
-    6: ['Empuje', 'Tirón', 'Piernas', 'Empuje', 'Tirón', 'Piernas'],
-  };
+  const GOAL_REPS = { hypertrophy: '8–12', strength: '4–6', fat_loss: '8–12', general: '8–15' };
   const STUDENTS = [
-    { id: 'lucia', name: 'Lucía', goal: 'Glúteos · 4 días', last: 'Ayer · hip thrust 70 kg' },
-    { id: 'martin', name: 'Martín', goal: 'Fuerza · 3 días', last: 'Lunes · sentadilla 100 kg' },
-    { id: 'sofia', name: 'Sofía', goal: 'Recomposición · 5 días', last: 'Todavía sin series' },
+    { id: 'lucia', name: 'Lucía' },
+    { id: 'martin', name: 'Martín' },
+    { id: 'sofia', name: 'Sofía' },
   ];
+  const BMI_KEY = { 'bajo peso': 'low', normal: 'normal', sobrepeso: 'over', obesidad: 'obese' };
   let studentId = 'lucia';
   let applied = {};
+
+  function num(value) {
+    const text = String(value);
+    return I18n.get() === 'en' ? text : text.replace('.', ',');
+  }
 
   function $(id) {
     return document.getElementById(id);
@@ -59,9 +47,11 @@
 
   function ctaLabel() {
     const info = Subscription.status();
-    if (info.state === 'trial') return 'Entrar · ' + info.daysLeft + (info.daysLeft === 1 ? ' día full' : ' días full');
-    if (info.state === 'none') return 'Empezar mes gratis';
-    return 'Entrar a la app';
+    if (info.state === 'trial') {
+      return info.daysLeft === 1 ? I18n.t('cta.enter.one') : I18n.t('cta.enter', { n: info.daysLeft });
+    }
+    if (info.state === 'none') return I18n.t('cta.free');
+    return I18n.t('cta.app');
   }
 
   function paintTrial() {
@@ -72,24 +62,24 @@
     if ($('trialDays')) $('trialDays').textContent = String(days);
     if ($('trialCaption')) {
       $('trialCaption').textContent = info.state === 'trial'
-        ? 'Tu prueba ya está corriendo, con Esencial, Pro y Entrenador juntos.'
+        ? I18n.t('trial.running')
         : info.state === 'none'
-          ? 'Arranca hoy. Durante 30 días se desbloquean los tres planes, completos.'
-          : 'El mes gratis ya se usó. Elegí con qué plan seguir: los datos quedan en el teléfono.';
+          ? I18n.t('trial.start')
+          : I18n.t('trial.used');
     }
     const main = ctaLabel();
     document.querySelectorAll('[data-cta="main"]').forEach((el) => {
       el.textContent = main;
     });
-    const planLabel = info.state === 'none' ? 'Probar 30 días full' : 'Elegir y entrar';
+    const planLabel = info.state === 'none' ? I18n.t('cta.try') : I18n.t('cta.choose');
     document.querySelectorAll('[data-cta="plan"]').forEach((el) => {
       el.textContent = planLabel;
     });
     const note = $('heroNote');
     if (note) {
       note.textContent = info.state === 'trial'
-        ? 'Te quedan ' + info.daysLeft + (info.daysLeft === 1 ? ' día' : ' días') + ' con todo full.'
-        : 'Sin tarjeta. El mes incluye rutina, progresión, cuerpo y alumnos.';
+        ? I18n.t('hero.left', { n: info.daysLeft, days: info.daysLeft === 1 ? I18n.t('day.one') : I18n.t('day.many') })
+        : I18n.t('hero.note');
     }
   }
 
@@ -101,11 +91,11 @@
       animateNumber(el, year ? plan.yearly : plan.monthly);
     });
     document.querySelectorAll('[data-period]').forEach((el) => {
-      el.textContent = year ? '/ año' : '/ mes';
+      el.textContent = year ? I18n.t('price.year') : I18n.t('price.month');
     });
     document.querySelectorAll('[data-equiv]').forEach((el) => {
       if (!Subscription.PLANS[el.dataset.equiv]) return;
-      el.textContent = year ? 'Pagás 10 meses, 2 quedan gratis' : 'En anual ahorrás 2 meses';
+      el.textContent = year ? I18n.t('price.pay10') : I18n.t('price.save2');
     });
     document.querySelectorAll('[data-cycle]').forEach((btn) => {
       const on = btn.dataset.cycle === state.cycle;
@@ -134,7 +124,7 @@
       const allowed = (row.dataset.plans || '').split(/\s+/);
       [...row.children].slice(1).forEach((cell, index) => {
         const on = trial || allowed.includes(order[index]);
-        cell.textContent = on ? 'Sí' : 'No';
+        cell.textContent = on ? I18n.t('yes') : I18n.t('no');
         cell.classList.toggle('is-yes', on);
         cell.classList.toggle('is-no', !on);
       });
@@ -146,9 +136,7 @@
     });
     const caption = $('compareCaption');
     if (caption) {
-      caption.textContent = trial
-        ? 'Durante los 30 días, los tres planes tienen todo.'
-        : 'Así queda cada plan cuando termina el mes gratis.';
+      caption.textContent = trial ? I18n.t('compare.trial.caption') : I18n.t('compare.after.caption');
     }
   }
 
@@ -159,7 +147,7 @@
     } catch (err) {
       /* si el almacenamiento falla, igual entra a la app */
     }
-    window.location.href = new URL('./', window.location.href).href;
+    window.location.href = new URL('app.html', window.location.href).href;
   }
 
   function showScreen(name) {
@@ -190,15 +178,15 @@
   }
 
   function renderRoutine() {
-    const goal = GOALS[routine.goal];
-    const days = SPLITS[routine.days] || SPLITS[4];
-    const moves = PLACES[routine.place] || PLACES.full_gym;
+    const reps = GOAL_REPS[routine.goal] || GOAL_REPS.hypertrophy;
+    const days = I18n.t('split.' + routine.days).split('|');
+    const moves = I18n.t('move.' + routine.place).split('|');
     const box = $('routineOut');
     if (!box) return;
     box.replaceChildren();
     const title = document.createElement('p');
     title.className = 'lp-result-title';
-    title.textContent = days.length + ' días · ' + goal.label;
+    title.textContent = I18n.t('routine.line', { days: days.length, goal: I18n.t('goal.' + routine.goal) });
     box.append(title);
     days.forEach((day, index) => {
       const row = document.createElement('div');
@@ -206,7 +194,7 @@
       const name = document.createElement('strong');
       name.textContent = day;
       const detail = document.createElement('span');
-      detail.textContent = moves[index % moves.length] + ' · ' + goal.reps + ' reps';
+      detail.textContent = moves[index % moves.length] + ' · ' + reps + ' ' + I18n.t('reps.word');
       row.append(name, detail);
       box.append(row);
     });
@@ -228,21 +216,21 @@
   }
 
   function renderLog() {
-    if ($('logWeight')) $('logWeight').textContent = String(log.weight).replace('.', ',');
+    if ($('logWeight')) $('logWeight').textContent = num(log.weight);
     if ($('logReps')) $('logReps').textContent = String(log.reps);
     const list = $('logList');
     if (list) {
       list.replaceChildren();
       log.sets.forEach((set, index) => {
         const item = document.createElement('li');
-        item.textContent = 'Serie ' + (index + 1) + ' · ' + String(set.weight).replace('.', ',') + ' kg × ' + set.reps;
+        item.textContent = I18n.t('set.line', { n: index + 1, kg: num(set.weight), reps: set.reps });
         list.append(item);
       });
     }
     const suggest = $('logSuggest');
     const epley = $('logEpley');
     if (!log.sets.length) {
-      if (suggest) suggest.textContent = 'Anotá una serie. Si llegás al tope de reps, la app te propone subir el peso.';
+      if (suggest) suggest.textContent = I18n.t('tip.empty');
       if (epley) epley.textContent = '';
       return;
     }
@@ -251,25 +239,25 @@
       lastSession: log.sets,
       increment: 2.5,
     });
-    if (suggest) suggest.textContent = tip ? tip.text : 'Seguí anotando.';
+    if (suggest) suggest.textContent = tip ? tip.text : I18n.t('tip.more');
     const best = sessionBestEpley(log.sets);
     if (epley) {
       const value = Math.round(best.value * 10) / 10;
-      epley.textContent = '1RM estimado ' + String(value).replace('.', ',') + ' kg' + (best.reliable ? '' : ' · más fino con 10 reps o menos');
+      epley.textContent = I18n.t('epley.line', { value: num(value) }) + (best.reliable ? '' : I18n.t('epley.soft'));
     }
   }
 
   function phaseForWeek(week) {
-    if (week >= 7) return { name: 'Deload', text: 'Semana de descarga: unas 40% menos de series, o bajá 10–20% el peso.' };
-    if (week >= 5) return { name: 'Peso', text: 'Si llegaste al tope de reps, subí el peso y volvé al piso del rango.' };
-    if (week >= 3) return { name: 'Reps', text: 'Mantené el peso y buscá una rep más.' };
-    return { name: 'Base', text: 'Aprendé la técnica y dejá asentado desde dónde partís.' };
+    if (week >= 7) return { name: I18n.t('phase.Deload'), text: I18n.t('phase.deload.text') };
+    if (week >= 5) return { name: I18n.t('phase.Peso'), text: I18n.t('phase.weight.text') };
+    if (week >= 3) return { name: I18n.t('phase.Reps'), text: I18n.t('phase.reps.text') };
+    return { name: I18n.t('phase.Base'), text: I18n.t('phase.base.text') };
   }
 
   function paintCycle(week) {
     const info = phaseForWeek(week);
     const label = $('cycleLabel');
-    if (label) label.textContent = 'Semana ' + week + ' · ' + info.name + '. ' + info.text;
+    if (label) label.textContent = I18n.t('cycle.line', { week, name: info.name, text: info.text });
     document.querySelectorAll('[data-bar]').forEach((bar) => {
       bar.classList.toggle('is-on', Number(bar.dataset.bar) === week);
     });
@@ -285,12 +273,15 @@
     const protein = proteinRange(body.weight);
     if ($('bodyWeightLabel')) $('bodyWeightLabel').textContent = body.weight + ' kg';
     if ($('bodyHeightLabel')) $('bodyHeightLabel').textContent = body.height + ' cm';
-    if ($('bodyBmi')) $('bodyBmi').textContent = (Math.round(value * 10) / 10).toString().replace('.', ',') + ' · ' + category;
+    if ($('bodyBmi')) {
+      const shown = num(Math.round(value * 10) / 10);
+      $('bodyBmi').textContent = I18n.t('bmi.line', { value: shown, cat: I18n.t('bmi.' + (BMI_KEY[category] || 'normal')) });
+    }
     if ($('bodyCalories') && targets) {
-      $('bodyCalories').textContent = 'Definir ' + targets.cut + ' · mantener ' + targets.maintain + ' · subir ' + targets.bulk + ' kcal';
+      $('bodyCalories').textContent = I18n.t('cal.line', targets);
     }
     if ($('bodyProtein') && protein) {
-      $('bodyProtein').textContent = 'Proteína aprox. ' + Math.round(protein.min) + '–' + Math.round(protein.max) + ' g';
+      $('bodyProtein').textContent = I18n.t('protein.line', { min: Math.round(protein.min), max: Math.round(protein.max) });
     }
     document.querySelectorAll('[data-sex]').forEach((btn) => {
       const on = btn.dataset.sex === body.sex;
@@ -313,7 +304,7 @@
       const name = document.createElement('strong');
       name.textContent = student.name;
       const goal = document.createElement('span');
-      goal.textContent = student.goal;
+      goal.textContent = I18n.t('student.' + student.id + '.goal');
       btn.append(name, goal);
       btn.addEventListener('click', () => {
         studentId = student.id;
@@ -326,14 +317,16 @@
     if (!detail) return;
     detail.replaceChildren();
     const last = document.createElement('p');
-    last.textContent = applied[current.id] || current.last;
+    last.textContent = applied[current.id]
+      ? I18n.t('student.done', { name: current.name })
+      : I18n.t('student.' + current.id + '.last');
     const apply = document.createElement('button');
     apply.type = 'button';
     apply.className = 'lp-btn';
-    apply.textContent = applied[current.id] ? 'Plantilla aplicada' : 'Aplicar plantilla';
+    apply.textContent = applied[current.id] ? I18n.t('student.applied') : I18n.t('student.apply');
     apply.disabled = !!applied[current.id];
     apply.addEventListener('click', () => {
-      applied[current.id] = 'Plantilla full body aplicada a ' + current.name + '. La rutina personal del profe no se mezcla.';
+      applied[current.id] = true;
       renderStudents();
     });
     detail.append(last, apply);
@@ -346,7 +339,7 @@
 
   function tickRest() {
     const label = $('restLabel');
-    if (label) label.textContent = restLeft > 0 ? 'Descanso ' + restLeft + 's' : 'Listo para la próxima serie';
+    if (label) label.textContent = restLeft > 0 ? I18n.t('rest.sec', { n: restLeft }) : I18n.t('rest.ready');
     if (restLeft <= 0) stopRest();
   }
 
@@ -378,7 +371,7 @@
       btn.addEventListener('click', () => {
         weight.value = Math.round((weight.value + Number(btn.dataset.phoneDelta)) * 10) / 10;
         if (weight.value < 0) weight.value = 0;
-        if (out) out.textContent = String(weight.value).replace('.', ',');
+        if (out) out.textContent = num(weight.value);
       });
     });
     const save = $('phoneSave');
@@ -387,7 +380,7 @@
         const toast = $('phoneToast');
         if (!toast) return;
         toast.hidden = false;
-        toast.textContent = 'Serie guardada · ' + String(weight.value).replace('.', ',') + ' kg';
+        toast.textContent = I18n.t('phone.saved', { kg: num(weight.value) });
       });
     }
   }
@@ -458,7 +451,7 @@
         log.reps = 10;
         stopRest();
         restLeft = 0;
-        if ($('restLabel')) $('restLabel').textContent = 'El descanso arranca al anotar';
+        if ($('restLabel') && !restTimer) $('restLabel').textContent = I18n.t('rest.idle');
         renderLog();
       });
     }
@@ -547,13 +540,30 @@
   function fillActivity() {
     const select = $('bodyActivity');
     if (!select || typeof ACTIVITY_LEVELS === 'undefined') return;
-    ACTIVITY_LEVELS.forEach((level) => {
-      const option = document.createElement('option');
-      option.value = level.id;
-      option.textContent = level.label;
-      if (level.id === body.activity) option.selected = true;
-      select.append(option);
+    if (!select.options.length) {
+      ACTIVITY_LEVELS.forEach((level) => {
+        const option = document.createElement('option');
+        option.value = level.id;
+        if (level.id === body.activity) option.selected = true;
+        select.append(option);
+      });
+    }
+    [...select.options].forEach((option) => {
+      option.textContent = I18n.t('activity.' + option.value);
     });
+  }
+
+  function refreshLang() {
+    fillActivity();
+    renderRoutine();
+    renderLog();
+    paintCycle(Number(($('cycleWeek') && $('cycleWeek').value) || 4));
+    renderBody();
+    renderStudents();
+    paintPrices();
+    paintCompare();
+    paintTrial();
+    if (!restTimer && $('restLabel')) $('restLabel').textContent = I18n.t('rest.idle');
   }
 
   fillActivity();
@@ -578,5 +588,6 @@
       paintTrial();
     });
   }
-  if ($('restLabel')) $('restLabel').textContent = 'El descanso arranca al anotar';
+  if ($('restLabel')) $('restLabel').textContent = I18n.t('rest.idle');
+  document.addEventListener('lang:change', refreshLang);
 })();

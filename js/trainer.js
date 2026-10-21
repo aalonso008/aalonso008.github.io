@@ -100,9 +100,9 @@ async function renderTrainerHome(body) {
   await loadTrainerRole();
   if (trainer.role !== 'trainer') {
     body.innerHTML = `
-      <h2 class="wizard-title">Modo entrenador</h2>
-      <p class="wizard-help">Creá alumnos, guardá plantillas y armales la rutina. Tu rutina personal no se mezcla.</p>
-      <button type="button" class="log-btn" onclick="becomeTrainer()">Soy entrenador</button>`;
+      <h2 class="wizard-title">${typeof I18n !== 'undefined' ? I18n.t('trainer.gate.title') : 'Modo entrenador'}</h2>
+      <p class="wizard-help">${typeof I18n !== 'undefined' ? I18n.t('trainer.gate') : 'Crea alumnos, guarda plantillas y ármales la rutina. Tu rutina personal no se mezcla.'}</p>
+      <button type="button" class="log-btn" onclick="becomeTrainer()">${typeof I18n !== 'undefined' ? I18n.t('trainer.become') : 'Soy entrenador'}</button>`;
     return;
   }
   const client = await ensureClient();

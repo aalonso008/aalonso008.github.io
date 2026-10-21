@@ -74,56 +74,83 @@ const Subscription = (function () {
     return { state: 'expired', daysLeft: 0, sub };
   }
 
+  function tr(key, vars) {
+    if (typeof I18n !== 'undefined' && I18n.t) return I18n.t(key, vars);
+    return key;
+  }
+
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, (ch) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[ch]));
+  }
+
+  function planLabel(plan) {
+    if (!plan) return '';
+    const defaults = { esencial: 'Esencial', pro: 'Pro', entrenador: 'Entrenador' };
+    if (typeof I18n !== 'undefined' && I18n.get() === 'en' && (!plan.name || plan.name === defaults[plan.id])) {
+      return tr('plan.' + plan.id);
+    }
+    return plan.name || '';
+  }
+
+  function daysWord(n) {
+    return tr(n === 1 ? 'day.one' : 'day.many');
+  }
+
+  function cycleWord(billing) {
+    return tr(billing === 'year' ? 'billing.year' : 'billing.month');
+  }
+
   function summaryHtml() {
     const info = status();
-    if (info.state === 'none') {
-      return '<p class="trial-account">Tenés 30 días gratis con todo full. <a href="landing.html">Ver funciones y planes</a></p>';
-    }
+    if (info.state === 'none') return '<p class="trial-account">' + tr('sub.none') + '</p>';
     if (info.state === 'trial') {
       const plan = planById(info.sub.intendedPlan);
-      const cycle = info.sub.billing === 'year' ? 'anual' : 'mensual';
-      const n = info.daysLeft;
-      return `<p class="trial-account">Prueba full: te quedan <strong>${n}</strong> ${n === 1 ? 'día' : 'días'} con todo desbloqueado. Después, ${plan.name} ${cycle}. <a href="landing.html#planes">Cambiar plan</a></p>`;
+      return '<p class="trial-account">' + tr('sub.trial', {
+        n: info.daysLeft,
+        days: daysWord(info.daysLeft),
+        plan: esc(planLabel(plan)),
+        cycle: cycleWord(info.sub.billing),
+      }) + '</p>';
     }
     if (info.state === 'chosen' || info.state === 'active') {
       const plan = planById(info.sub.plan || info.sub.intendedPlan);
-      const cycle = info.sub.billing === 'year' ? 'anual' : 'mensual';
-      const verb = info.state === 'active' ? 'Tenés' : 'Elegiste';
-      return `<p class="trial-account">${verb} <strong>${plan.name}</strong> ${cycle}. <a href="landing.html#planes">Ver planes</a></p>`;
+      const key = info.state === 'active' ? 'sub.have' : 'sub.chose';
+      return '<p class="trial-account">' + tr(key, {
+        plan: esc(planLabel(plan)),
+        cycle: cycleWord(info.sub.billing),
+      }) + '</p>';
     }
-    return '<p class="trial-account">Tu mes gratis terminó. Los datos siguen en este dispositivo. <a href="landing.html#planes">Elegí un plan</a></p>';
+    return '<p class="trial-account">' + tr('sub.expired') + '</p>';
   }
 
   function loginCopy(info) {
     if (info.state === 'trial') {
-      const n = info.daysLeft;
-      return `Prueba full activa: te quedan ${n} ${n === 1 ? 'día' : 'días'} con todo desbloqueado.`;
+      return tr('login.trial', { n: info.daysLeft, days: daysWord(info.daysLeft) });
     }
     if (info.state === 'chosen' || info.state === 'active') {
-      return `Plan ${planById(info.sub.plan || info.sub.intendedPlan).name}. Entrá para seguir entrenando.`;
+      return tr('login.plan', { plan: planLabel(planById(info.sub.plan || info.sub.intendedPlan)) });
     }
-    if (info.state === 'expired') return 'Tu mes gratis terminó. Entrá: los datos siguen en este teléfono.';
-    return '30 días gratis con todo desbloqueado.';
+    if (info.state === 'expired') return tr('login.expired');
+    return tr('login.free');
   }
 
   function fillStrip(strip, info) {
     strip.replaceChildren();
     const span = document.createElement('span');
     const link = document.createElement('a');
-    link.href = 'landing.html#planes';
+    link.href = 'index.html#planes';
     if (info.state === 'trial') {
-      const n = info.daysLeft;
-      span.textContent = `Prueba full activa · ${n} ${n === 1 ? 'día' : 'días'} con todo desbloqueado.`;
-      link.textContent = 'Ver planes';
+      span.textContent = tr('strip.trial', { n: info.daysLeft, days: daysWord(info.daysLeft) });
+      link.textContent = tr('strip.plans');
     } else if (info.state === 'chosen' || info.state === 'active') {
-      const plan = planById(info.sub.plan || info.sub.intendedPlan);
-      span.textContent = info.state === 'active'
-        ? `Plan ${plan.name} activo.`
-        : `Plan ${plan.name} elegido. El mes de prueba ya se usó y tus datos siguen acá.`;
-      link.textContent = 'Ver planes';
+      const plan = planLabel(planById(info.sub.plan || info.sub.intendedPlan));
+      span.textContent = info.state === 'active' ? tr('strip.active', { plan }) : tr('strip.chosen', { plan });
+      link.textContent = tr('strip.plans');
     } else {
-      span.textContent = 'Tu mes gratis terminó. Tus datos siguen en este dispositivo.';
-      link.textContent = 'Elegir plan';
+      span.textContent = tr('strip.expired');
+      link.textContent = tr('strip.pick');
     }
     strip.append(span, link);
   }

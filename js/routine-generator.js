@@ -425,17 +425,19 @@
       core: 'Core',
     };
     const priorityText = priorities.map((item) => priorityNames[item]).filter(Boolean).join(', ');
+    const tr = (key, vars) => (typeof I18n !== 'undefined' && I18n.t ? I18n.t(key, vars) : key);
+    const trainingDays = answers.daysPerWeek || days.length;
     const reasons = [
-      'Elegimos ' + split.name + ' porque entrenás ' + (answers.daysPerWeek || days.length) + ' días por semana.',
+      tr('reason.split', { split: split.name, days: trainingDays }),
     ];
-    if (priorityText) reasons.push(priorityText + ' va primero en los días que lo trabajan, porque lo marcaste como prioridad.');
+    if (priorityText) reasons.push(tr('reason.priority', { zones: priorityText }));
     if ((answers.limitations || []).length && !(answers.limitations || []).includes('none')) {
-      reasons.push('Dejamos afuera los ejercicios que más cargan las molestias que marcaste.');
+      reasons.push(tr('reason.limits'));
     }
     const reps = answers.goal === 'strength' ? '3–6 en los básicos' : answers.goal === 'general' ? '8–12' : '6–10';
-    reasons.push('En los compuestos usamos reps de ' + reps + ' para este objetivo.');
+    reasons.push(tr('reason.reps', { reps }));
     if (answers.cardio === 'regular' && (answers.goal === 'fat_loss' || answers.goal === 'recomp')) {
-      reasons.push('Sumamos cardio corto y, si podés, 8 a 10 mil pasos por día.');
+      reasons.push(tr('reason.cardio'));
     }
 
     const routine = {

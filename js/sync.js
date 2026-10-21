@@ -131,11 +131,23 @@ async function handleSession(session) {
   const local = await Storage.exportAll();
   const localHas = (local.sets && local.sets.length) || (local.exercises && local.exercises.length) || local.routine;
   if (localHas && !remoteCount) {
-    openChoice('Tenés datos en este dispositivo. ¿Subirlos a tu cuenta?', 'Subir', 'upload', 'Ahora no', 'skip');
+    openChoice(
+      typeof I18n !== 'undefined' ? I18n.t('sync.upload.q') : 'Tienes datos en este dispositivo. ¿Subirlos a tu cuenta?',
+      typeof I18n !== 'undefined' ? I18n.t('sync.upload') : 'Subir',
+      'upload',
+      typeof I18n !== 'undefined' ? I18n.t('sync.later') : 'Ahora no',
+      'skip'
+    );
     return;
   }
   if (localHas && remoteCount) {
-    openChoice('La cuenta ya tiene datos y este dispositivo también.', 'Combinar', 'merge', 'Usar los de la cuenta', 'remote');
+    openChoice(
+      typeof I18n !== 'undefined' ? I18n.t('sync.both') : 'La cuenta ya tiene datos y este dispositivo también.',
+      typeof I18n !== 'undefined' ? I18n.t('sync.merge') : 'Combinar',
+      'merge',
+      typeof I18n !== 'undefined' ? I18n.t('sync.remote') : 'Usar los de la cuenta',
+      'remote'
+    );
     return;
   }
   await Storage.setSyncChoice(syncUser.id);
@@ -424,13 +436,13 @@ async function openAccount() {
   const modal = document.getElementById('accountModal');
   const box = document.getElementById('accountBody');
   if (!syncConfigured()) {
-    box.innerHTML = '<p>La app funciona sin cuenta: todo queda en este dispositivo. Para sincronizar, copiá <code>js/config.example.js</code> a <code>js/config.js</code> y poné la URL y la anon key de Supabase.</p>';
+    box.innerHTML = '<p>' + (typeof I18n !== 'undefined' ? I18n.t('sync.offline') : 'La app funciona sin cuenta: todo queda en este dispositivo.') + '</p>';
   } else if (!syncUser) {
     box.innerHTML = `
       <form onsubmit="sendMagicLink(event)">
         <label>Email</label>
         <input type="email" name="email" required placeholder="tu@email.com">
-        <button type="submit" class="log-btn">Enviar link</button>
+        <button type="submit" class="log-btn">${typeof I18n !== 'undefined' ? I18n.t('login.send') : 'Enviar link'}</button>
       </form>`;
   } else {
     const queue = await Storage.getSyncQueue();
@@ -472,16 +484,16 @@ async function sendMagicLink(event) {
     if (error) throw error;
     if (form.closest('#loginGate')) {
       button.disabled = false;
-      button.textContent = 'Reenviar link';
+      button.textContent = typeof I18n !== 'undefined' ? I18n.t('sync.resend') : 'Reenviar link';
       const sent = document.getElementById('loginSent');
       if (sent) sent.hidden = false;
       return;
     }
     closeAccount();
-    showToast('Listo. Revisá tu email para entrar');
+    showToast(typeof I18n !== 'undefined' ? I18n.t('sync.sent.toast') : 'Listo. Revisa tu email para entrar');
   } catch (err) {
     button.disabled = false;
-    button.textContent = 'Enviar link';
+    button.textContent = typeof I18n !== 'undefined' ? I18n.t('login.send') : 'Enviar link';
     alert(err.message || 'No se pudo enviar el link');
   }
 }

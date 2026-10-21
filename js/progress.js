@@ -54,7 +54,7 @@ async function renderProgressCharts() {
 
   el.innerHTML = `
     <p class="section-label" style="padding-top:0">Tu progreso</p>
-    ${cycle ? `<div class="cycle-chip">Semana ${cycle.week}/8 · Fase: ${escapeHtml(cycle.phase)}</div>` : '<p class="empty-log">Marcá el inicio del ciclo de 8 semanas en Ajustes.</p>'}
+    ${cycle ? `<div class="cycle-chip">${escapeHtml(typeof I18n !== 'undefined' ? I18n.t('cycle.progress', { week: cycle.week, phase: I18n.t('phase.' + cycle.phase) }) : 'Semana ' + cycle.week + '/8 · Fase: ' + cycle.phase)}</div>` : '<p class="empty-log">' + (typeof I18n !== 'undefined' ? I18n.t('cycle.empty') : 'Marca el inicio del ciclo de 8 semanas en Ajustes.') + '</p>'}
     <div class="summary-grid">
       <div class="summary-card"><span>Volumen semanal</span><strong>${volumeNow} kg</strong><small>${volumePrev ? (volumeNow - volumePrev >= 0 ? '+' : '') + (volumeNow - volumePrev) + ' vs sem. anterior' : 'Sin semana anterior'}</small></div>
       <div class="summary-card"><span>Sesiones del mes</span><strong>${monthSessions(sets)}</strong><small>Racha ${streakDays(sets)} ${streakDays(sets) === 1 ? 'día' : 'días'}</small></div>

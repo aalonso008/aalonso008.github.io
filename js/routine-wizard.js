@@ -25,7 +25,7 @@ const WIZARD_STEPS = [
   },
   {
     key: 'level',
-    title: '¿Cuánta experiencia tenés entrenando?',
+    title: '¿Cuánta experiencia tienes entrenando?',
     help: 'Para ajustar la dificultad y la cantidad de series.',
     type: 'single',
     options: [
@@ -36,8 +36,8 @@ const WIZARD_STEPS = [
   },
   {
     key: 'daysPerWeek',
-    title: '¿Cuántos días por semana podés entrenar?',
-    help: 'Incluí solo los días que de verdad podés sostener.',
+    title: '¿Cuántos días por semana puedes entrenar?',
+    help: 'Incluye solo los días que de verdad puedes sostener.',
     type: 'single',
     options: [2, 3, 4, 5, 6].map((days) => ({
       value: String(days),
@@ -54,7 +54,7 @@ const WIZARD_STEPS = [
   },
   {
     key: 'sessionMinutes',
-    title: '¿Cuánto tiempo tenés por sesión?',
+    title: '¿Cuánto tiempo tienes por sesión?',
     help: 'De ahí sale cuántos ejercicios entran en el día.',
     type: 'single',
     options: [
@@ -66,7 +66,7 @@ const WIZARD_STEPS = [
   },
   {
     key: 'equipment',
-    title: '¿Dónde entrenás?',
+    title: '¿Dónde entrenas?',
     help: 'Solo vamos a usar lo que tengas a mano.',
     type: 'single',
     options: [
@@ -78,8 +78,8 @@ const WIZARD_STEPS = [
   },
   {
     key: 'priorities',
-    title: '¿Qué zonas querés priorizar?',
-    help: 'Hasta 2. Si no marcás ninguna, la rutina queda equilibrada.',
+    title: '¿Qué zonas quieres priorizar?',
+    help: 'Hasta 2. Si no marcas ninguna, la rutina queda equilibrada.',
     type: 'multi',
     max: 2,
     exclusive: 'balanced',
@@ -97,8 +97,8 @@ const WIZARD_STEPS = [
   },
   {
     key: 'limitations',
-    title: '¿Tenés alguna molestia o lesión a cuidar?',
-    help: 'Si tenés una lesión, consultá con un profesional. Vamos a evitar los ejercicios que más la cargan.',
+    title: '¿Tienes alguna molestia o lesión a cuidar?',
+    help: 'Si tienes una lesión, consulta con un profesional. Vamos a evitar los ejercicios que más la cargan.',
     type: 'multi',
     exclusive: 'none',
     options: [
@@ -112,7 +112,7 @@ const WIZARD_STEPS = [
   },
   {
     key: 'cardio',
-    title: '¿Querés incluir cardio?',
+    title: '¿Quieres incluir cardio?',
     help: 'Se suma al final de algunos días, sin reemplazar la fuerza.',
     type: 'single',
     options: [
@@ -124,7 +124,7 @@ const WIZARD_STEPS = [
   {
     key: 'profile',
     title: 'Datos básicos',
-    help: 'Sirven para los cálculos de cuerpo. Podés saltearlos.',
+    help: 'Sirven para los cálculos de cuerpo. Puedes omitirlos.',
     type: 'profile',
   },
 ];
@@ -155,8 +155,19 @@ function wizardSteps() {
   return WIZARD_STEPS.filter((step) => step.key !== 'profile' || wizard.forceProfile || !wizard.skipProfile);
 }
 
+function wt(key, vars) {
+  if (typeof I18n !== 'undefined' && I18n.t) return I18n.t(key, vars);
+  return key;
+}
+
+function shownStep(step) {
+  if (!step || typeof I18n === 'undefined' || !I18n.localizeStep) return step;
+  return I18n.localizeStep(step);
+}
+
 function wizardStep() {
-  return wizardSteps().find((step) => step.key === wizard.stepKey) || wizardSteps()[0];
+  const step = wizardSteps().find((item) => item.key === wizard.stepKey) || wizardSteps()[0];
+  return shownStep(step);
 }
 
 function emptyProfile() {
@@ -299,7 +310,7 @@ function beginWizard(fromDraft) {
 }
 
 async function closeRoutineWizard() {
-  if (wizard.phase !== 'resume' && !confirm('¿Salir? Se pierden las respuestas')) return;
+  if (wizard.phase !== 'resume' && !confirm(wt('wiz.exit'))) return;
   clearTimeout(wizard.timer);
   if (wizard.phase !== 'resume') await Storage.clearWizardDraft();
   hideWizardShell();
@@ -473,36 +484,36 @@ function renderQuestion(step) {
     const needed = Number(wizard.answers.daysPerWeek) || 0;
     const chips = WIZARD_DAYS.map((day) => {
       const on = selected.includes(day.value);
-      return `<button type="button" class="wizard-option wizard-day${on ? ' selected' : ''}" role="checkbox" aria-checked="${on ? 'true' : 'false'}" onclick="toggleWizardDay('${day.value}')">${day.label}</button>`;
+      return `<button type="button" class="wizard-option wizard-day${on ? ' selected' : ''}" role="checkbox" aria-checked="${on ? 'true' : 'false'}" onclick="toggleWizardDay('${day.value}')">${escapeHtml(wt('dow.' + day.value))}</button>`;
     }).join('');
-    const count = `<p class="wizard-note">Elegí ${needed}. Vas ${selected.length}.</p>`;
-    const warn = daysAreConsecutive(selected) ? '<p class="wizard-note">Hay días seguidos. Si podés, dejá un descanso entre sesiones que carguen el mismo grupo.</p>' : '';
-    return `<div class="wizard-days" role="group" aria-label="Días de la semana">${chips}</div>${count}${warn}`;
+    const count = `<p class="wizard-note">${escapeHtml(wt('wiz.days.count', { needed, count: selected.length }))}</p>`;
+    const warn = daysAreConsecutive(selected) ? `<p class="wizard-note">${escapeHtml(wt('wiz.days.warn'))}</p>` : '';
+    return `<div class="wizard-days" role="group" aria-label="${escapeHtml(wt('wiz.days.label'))}">${chips}</div>${count}${warn}`;
   }
   if (step.type === 'profile') {
     const profile = Object.assign(emptyProfile(), wizard.answers.profile);
     const heightInvalid = profile.heightCm !== '' && profile.heightCm != null && !stepIsValid(step);
     return `
       <form class="wizard-form" onsubmit="event.preventDefault(); wizardNext();">
-        <label for="wizardSex">Sexo</label>
+        <label for="wizardSex">${escapeHtml(wt('wiz.sex'))}</label>
         <select id="wizardSex" onchange="setWizardProfileField('sex', this.value)">
-          <option value=""${profile.sex ? '' : ' selected'}>Sin especificar</option>
-          <option value="M"${profile.sex === 'M' ? ' selected' : ''}>Masculino</option>
-          <option value="F"${profile.sex === 'F' ? ' selected' : ''}>Femenino</option>
+          <option value=""${profile.sex ? '' : ' selected'}>${escapeHtml(wt('wiz.unspecified'))}</option>
+          <option value="M"${profile.sex === 'M' ? ' selected' : ''}>${escapeHtml(wt('wiz.male'))}</option>
+          <option value="F"${profile.sex === 'F' ? ' selected' : ''}>${escapeHtml(wt('wiz.female'))}</option>
         </select>
-        <label for="wizardBirth">Fecha de nacimiento</label>
+        <label for="wizardBirth">${escapeHtml(wt('wiz.birth'))}</label>
         <input id="wizardBirth" type="date" value="${escapeHtml(profile.birthDate || '')}" onchange="setWizardProfileField('birthDate', this.value)">
-        <label for="wizardHeight">Altura (cm)</label>
+        <label for="wizardHeight">${escapeHtml(wt('wiz.height'))}</label>
         <input id="wizardHeight" type="number" inputmode="decimal" min="120" max="230" value="${escapeHtml(profile.heightCm)}" oninput="setWizardProfileField('heightCm', this.value)">
-        <label for="wizardWeight">Peso (kg)</label>
+        <label for="wizardWeight">${escapeHtml(wt('wiz.weight'))}</label>
         <input id="wizardWeight" type="number" inputmode="decimal" min="30" max="250" step="0.1" value="${escapeHtml(profile.weight)}" oninput="setWizardProfileField('weight', this.value)">
-        ${heightInvalid ? '<p class="wizard-note">La altura tiene que estar entre 120 y 230 cm.</p>' : ''}
-        <button type="button" class="btn-secondary wizard-skip" onclick="skipWizardProfile()">Saltear</button>
+        ${heightInvalid ? `<p class="wizard-note">${escapeHtml(wt('wiz.height.bad'))}</p>` : ''}
+        <button type="button" class="btn-secondary wizard-skip" onclick="skipWizardProfile()">${escapeHtml(wt('wiz.skip'))}</button>
       </form>`;
   }
   const current = step.type === 'multi' ? wizardAnswerList(step.key) : [wizard.answers[step.key]];
   const role = step.type === 'single' ? 'radiogroup' : 'group';
-  const extra = step.max && wizardAnswerList(step.key).length >= step.max ? '<p class="wizard-note">Podés elegir hasta 2.</p>' : '';
+  const extra = step.max && wizardAnswerList(step.key).length >= step.max ? `<p class="wizard-note">${escapeHtml(wt('wiz.max'))}</p>` : '';
   return `<div role="${role}" aria-label="${escapeHtml(step.title)}">${step.options.map((option) => optionButton(step, option, current.includes(option.value) || current.includes(Number(option.value)))).join('')}</div>${extra}`;
 }
 
@@ -511,7 +522,7 @@ function setWizardProfileField(field, value) {
   const note = document.querySelector('.wizard-form .wizard-note');
   const invalid = field === 'heightCm' && value !== '' && (Number(value) < 120 || Number(value) > 230);
   if (invalid && !note) {
-    document.querySelector('.wizard-form').insertAdjacentHTML('beforeend', '<p class="wizard-note">La altura tiene que estar entre 120 y 230 cm.</p>');
+    document.querySelector('.wizard-form').insertAdjacentHTML('beforeend', '<p class="wizard-note">' + escapeHtml(wt('wiz.height.bad')) + '</p>');
   }
   if (!invalid && note && field === 'heightCm') note.remove();
   const next = document.getElementById('wizardNext');
@@ -522,38 +533,42 @@ function setWizardProfileField(field, value) {
 function labelFor(step, value) {
   if (step.type === 'days') {
     return wizardAnswerList('preferredDays')
-      .map((day) => (WIZARD_DAYS.find((item) => item.value === day) || {}).label || day)
+      .map((day) => wt('dow.' + day))
       .join(', ');
   }
   if (step.type === 'profile') {
     const profile = wizard.answers.profile || {};
-    const sex = profile.sex === 'M' ? 'Masculino' : profile.sex === 'F' ? 'Femenino' : '';
+    const sex = profile.sex === 'M' ? wt('wiz.male') : profile.sex === 'F' ? wt('wiz.female') : '';
     const bits = [sex, profile.birthDate, profile.heightCm ? profile.heightCm + ' cm' : '', profile.weight ? profile.weight + ' kg' : ''].filter(Boolean);
-    return bits.length ? bits.join(' · ') : 'Salteado';
+    return bits.length ? bits.join(' · ') : wt('wiz.skipped');
   }
-  if (step.type === 'multi') {
-    const selected = wizardAnswerList(step.key);
-    if (!selected.length) return 'Sin prioridad';
-    return selected.map((item) => (step.options.find((option) => option.value === item) || {}).title || item).join(', ');
+  const view = shownStep(step);
+  if (view.type === 'multi') {
+    const selected = wizardAnswerList(view.key);
+    if (!selected.length) return wt('wiz.none');
+    return selected.map((item) => (view.options.find((option) => option.value === item) || {}).title || item).join(', ');
   }
-  const option = (step.options || []).find((item) => item.value === value || item.value === String(value));
-  return option ? option.title : 'Sin responder';
+  const option = (view.options || []).find((item) => item.value === value || item.value === String(value));
+  return option ? option.title : wt('wiz.unanswered');
 }
 
 function summaryValue(step) {
-  if (step.key === 'daysPerWeek') return (wizard.answers.daysPerWeek || '—') + ' días';
-  if (step.key === 'priorities' && (!wizardAnswerList('priorities').length || wizardAnswerList('priorities').includes('balanced'))) return 'Ninguna, equilibrado';
-  if (step.type === 'multi' && step.key === 'limitations' && !wizardAnswerList('limitations').length) return 'Ninguna';
+  if (step.key === 'daysPerWeek') return (wizard.answers.daysPerWeek || '—') + ' ' + wt('wiz.days.suffix');
+  if (step.key === 'priorities' && (!wizardAnswerList('priorities').length || wizardAnswerList('priorities').includes('balanced'))) return wt('wiz.balanced');
+  if (step.type === 'multi' && step.key === 'limitations' && !wizardAnswerList('limitations').length) return wt('wiz.none.limits');
   return labelFor(step, wizard.answers[step.key]);
 }
 
 function renderSummary() {
-  const rows = WIZARD_STEPS.map((step) => `
+  const rows = WIZARD_STEPS.map((raw) => {
+    const step = shownStep(raw);
+    return `
     <div class="wizard-summary-row">
-      <div><strong>${escapeHtml(step.title)}</strong><span>${escapeHtml(summaryValue(step))}</span></div>
-      <button type="button" class="btn-secondary" onclick="editWizardStep('${step.key}')" aria-label="Editar ${escapeHtml(step.title)}">✏️</button>
-    </div>`).join('');
-  return `<h2 class="wizard-title">Revisá tus respuestas</h2><p class="wizard-help">Si algo no cierra, editalo antes de generar.</p>${rows}`;
+      <div><strong>${escapeHtml(step.title)}</strong><span>${escapeHtml(summaryValue(raw))}</span></div>
+      <button type="button" class="btn-secondary" onclick="editWizardStep('${step.key}')" aria-label="${escapeHtml(wt('wiz.edit', { title: step.title }))}">✏️</button>
+    </div>`;
+  }).join('');
+  return `<h2 class="wizard-title">${escapeHtml(wt('wiz.review.title'))}</h2><p class="wizard-help">${escapeHtml(wt('wiz.review.help'))}</p>${rows}`;
 }
 
 function publicAnswers() {
@@ -584,44 +599,44 @@ function renderWizard() {
     bar.style.width = '0%';
     body.innerHTML = `
       <div class="wizard-pane">
-        <h2 id="wizardTitle" class="wizard-title">Retomar donde quedaste</h2>
-        <p class="wizard-help">Hay un cuestionario sin terminar en este dispositivo.</p>
-        <button type="button" class="log-btn" onclick="beginWizard(true)">Retomar donde quedaste</button>
-        <button type="button" class="btn-secondary modal-btn" onclick="beginWizard(false)">Empezar de nuevo</button>
+        <h2 id="wizardTitle" class="wizard-title">${escapeHtml(wt('wiz.resume.title'))}</h2>
+        <p class="wizard-help">${escapeHtml(wt('wiz.resume.help'))}</p>
+        <button type="button" class="log-btn" onclick="beginWizard(true)">${escapeHtml(wt('wiz.resume.title'))}</button>
+        <button type="button" class="btn-secondary modal-btn" onclick="beginWizard(false)">${escapeHtml(wt('wiz.resume.again'))}</button>
       </div>`;
     back.disabled = true;
     next.disabled = true;
-    next.textContent = 'Siguiente';
+    next.textContent = wt('wiz.next');
     return;
   }
   if (wizard.phase === 'summary') {
-    label.textContent = 'Resumen';
+    label.textContent = wt('wiz.summary');
     bar.style.width = '100%';
     body.innerHTML = `<div class="wizard-pane"><div id="wizardTitle">${renderSummary()}</div></div>`;
     back.disabled = false;
     next.disabled = false;
-    next.textContent = 'Generar mi rutina';
+    next.textContent = wt('wiz.generate');
     next.onclick = () => wizardNext();
     return;
   }
   if (wizard.phase === 'preview' || wizard.phase === 'save-choice' || wizard.phase === 'swap') {
-    label.textContent = 'Tu rutina';
+    label.textContent = wt('wiz.yours');
     bar.style.width = '100%';
     body.innerHTML = `<div class="wizard-pane" id="wizardTitle">${renderPreview()}</div>`;
     back.disabled = false;
     next.disabled = wizard.phase !== 'preview';
-    next.textContent = 'Guardar rutina';
+    next.textContent = wt('wiz.save');
     next.onclick = () => wizardNext();
     return;
   }
   const step = wizardStep();
   const index = Math.max(0, steps.findIndex((item) => item.key === step.key));
-  label.textContent = `Paso ${index + 1} de ${steps.length}`;
+  label.textContent = wt('wiz.step', { n: index + 1, total: steps.length });
   bar.style.width = Math.round(((index + 1) / steps.length) * 100) + '%';
   body.innerHTML = `<div class="wizard-pane"><h2 id="wizardTitle" class="wizard-title">${escapeHtml(step.title)}</h2><p class="wizard-help">${escapeHtml(step.help)}</p>${renderQuestion(step)}</div>`;
   back.disabled = index === 0 && !wizard.returnToSummary;
   next.disabled = !stepIsValid(step);
-  next.textContent = wizard.returnToSummary ? 'Listo' : 'Siguiente';
+  next.textContent = wizard.returnToSummary ? wt('wiz.done') : wt('wiz.next');
   next.onclick = () => wizardNext();
 }
 
@@ -689,17 +704,17 @@ function formatSlot(slot) {
 
 function renderPreview() {
   if (wizard.phase === 'save-choice') {
-    return `<h2 class="wizard-title">¿Qué hacemos con la rutina actual?</h2>
-      <p class="wizard-help">El historial de pesos no se borra.</p>
-      <button type="button" class="log-btn" onclick="saveGeneratedRoutine('replace')">Reemplazar la actual</button>
-      <button type="button" class="btn-secondary modal-btn" onclick="saveGeneratedRoutine('new')">Guardar como rutina nueva</button>`;
+    return `<h2 class="wizard-title">${escapeHtml(wt('wiz.replace.title'))}</h2>
+      <p class="wizard-help">${escapeHtml(wt('wiz.replace.help'))}</p>
+      <button type="button" class="log-btn" onclick="saveGeneratedRoutine('replace')">${escapeHtml(wt('wiz.replace'))}</button>
+      <button type="button" class="btn-secondary modal-btn" onclick="saveGeneratedRoutine('new')">${escapeHtml(wt('wiz.save.new'))}</button>`;
   }
   const generated = wizard.generated;
   const routine = generated.routine;
   const day = routine.days[wizard.previewDay] || routine.days[0];
   if (wizard.phase === 'swap' && wizard.swap) {
     const options = wizard.swap.options.map((exercise) => `<button type="button" class="wizard-option" onclick="applyWizardSwap('${exercise.key}')"><strong>${escapeHtml(exercise.name)}</strong><em>${escapeHtml(exercise.muscleGroup)}</em></button>`).join('');
-    return `<h2 class="wizard-title">Cambiar ejercicio</h2><p class="wizard-help">Mismo movimiento, otras opciones para tu equipo.</p>${options || '<p class="wizard-help">No hay otra opción con estos filtros.</p>'}<button type="button" class="btn-secondary" onclick="cancelWizardSwap()">Volver</button>`;
+    return `<h2 class="wizard-title">${escapeHtml(wt('wiz.swap.title'))}</h2><p class="wizard-help">${escapeHtml(wt('wiz.swap.help'))}</p>${options || `<p class="wizard-help">${escapeHtml(wt('wiz.swap.empty'))}</p>`}<button type="button" class="btn-secondary" onclick="cancelWizardSwap()">${escapeHtml(wt('wiz.swap.back'))}</button>`;
   }
   const tabs = routine.days.map((item, index) => `<button type="button" class="wizard-option wizard-day${index === wizard.previewDay ? ' selected' : ''}" onclick="selectPreviewDay(${index})">${escapeHtml(item.short || item.name)}</button>`).join('');
   const blocks = day.sections.map((section, sectionIndex) => {
@@ -727,14 +742,14 @@ function renderPreview() {
     <h3 class="wizard-title" style="font-size:18px;margin-top:16px">${escapeHtml(day.name)}</h3>
     <p class="wizard-help">${escapeHtml(day.focus || '')}</p>
     ${blocks}
-    <h3 class="wizard-title" style="font-size:18px;margin-top:16px">Volumen semanal</h3>
+    <h3 class="wizard-title" style="font-size:18px;margin-top:16px">${escapeHtml(wt('wiz.volume'))}</h3>
     ${bars}
-    <h3 class="wizard-title" style="font-size:18px;margin-top:16px">Por qué esta rutina</h3>
+    <h3 class="wizard-title" style="font-size:18px;margin-top:16px">${escapeHtml(wt('wiz.why'))}</h3>
     <ul class="wizard-reasons">${reasons}</ul>
     ${warnings}
-    <button type="button" class="btn-secondary modal-btn" onclick="buildWizardRoutine(${(wizard.seed + 17) >>> 0})">🎲 Otra variante</button>
-    <button type="button" class="btn-secondary modal-btn" onclick="wizard.phase='summary'; renderWizard()">✏️ Cambiar respuestas</button>
-    <button type="button" class="btn-secondary modal-btn" onclick="askSaveGenerated(true)">Guardar y editar</button>`;
+    <button type="button" class="btn-secondary modal-btn" onclick="buildWizardRoutine(${(wizard.seed + 17) >>> 0})">${escapeHtml(wt('wiz.another'))}</button>
+    <button type="button" class="btn-secondary modal-btn" onclick="wizard.phase='summary'; renderWizard()">${escapeHtml(wt('wiz.change.answers'))}</button>
+    <button type="button" class="btn-secondary modal-btn" onclick="askSaveGenerated(true)">${escapeHtml(wt('wiz.save.edit'))}</button>`;
 }
 
 function selectPreviewDay(index) {

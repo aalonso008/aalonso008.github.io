@@ -36,37 +36,16 @@
     if (installModal) installModal.classList.remove('show');
   }
 
+  function step(key) {
+    return typeof I18n !== 'undefined' ? I18n.t(key) : key;
+  }
+
   function getInstallSteps() {
-    if (isInAppBrowser) {
-      return [
-        'Estás en un navegador interno (Instagram, WhatsApp, etc.).',
-        'Abrí la página en Chrome o Safari.',
-        'Luego instalá desde el menú del navegador.'
-      ];
-    }
-    if (isIOSChrome || isIOSFirefox) {
-      return [
-        'En iPhone usá Safari.',
-        'Compartir (↑) → Agregar a pantalla de inicio.',
-        'Confirmá con Agregar.'
-      ];
-    }
-    if (isIOS) {
-      return [
-        'Safari → Compartir (↑) → Agregar a pantalla de inicio.',
-        'Confirmá con Agregar.'
-      ];
-    }
-    if (isAndroid) {
-      return [
-        'Usá Google Chrome (no incógnito, no Samsung Internet).',
-        'Borrá accesos directos viejos de Tu Rutina.',
-        'Chrome → Configuración → Configuración de sitios → aalonso008.github.io → Borrar y restablecer.',
-        'Volvé a https://aalonso008.github.io/ y esperá 30 segundos.',
-        'Menú (⋮) → Instalar app (debe decir "Instalar app", no solo acceso directo).'
-      ];
-    }
-    return ['Chrome o Edge → Instalar app.'];
+    if (isInAppBrowser) return [step('pwa.inapp.1'), step('pwa.inapp.2'), step('pwa.inapp.3')];
+    if (isIOSChrome || isIOSFirefox) return [step('pwa.iosx.1'), step('pwa.iosx.2'), step('pwa.iosx.3')];
+    if (isIOS) return [step('pwa.ios.1'), step('pwa.ios.2')];
+    if (isAndroid) return [step('pwa.and.1'), step('pwa.and.2'), step('pwa.and.3'), step('pwa.and.4'), step('pwa.and.5')];
+    return [step('pwa.desk')];
   }
 
   function renderInstallSteps() {
@@ -83,9 +62,9 @@
     if (isStandalone) return;
     if (isIOS) {
       if (installBtn) installBtn.style.display = 'none';
-      setHint('Safari → Compartir → Agregar a pantalla de inicio');
+      setHint(typeof I18n !== 'undefined' ? I18n.t('pwa.ios') : 'Safari → Compartir → Agregar a pantalla de inicio');
     } else if (isAndroid) {
-      setHint('Chrome normal → Menú (⋮) → Instalar app');
+      setHint(typeof I18n !== 'undefined' ? I18n.t('pwa.android') : 'Chrome normal → Menú (⋮) → Instalar app');
     }
     showBanner();
   }
@@ -115,13 +94,13 @@
   function checkInstallReady() {
     if (isStandalone || !isAndroid) return;
     if (!('serviceWorker' in navigator)) {
-      setHint('Tu navegador no soporta apps instalables. Usá Chrome.');
+      setHint(typeof I18n !== 'undefined' ? I18n.t('pwa.unsupported') : 'Tu navegador no soporta apps instalables. Usa Chrome.');
       showBanner();
       return;
     }
     navigator.serviceWorker.getRegistration('/').then(function (reg) {
       if (!reg || !reg.active) {
-        setHint('Esperá unos segundos a que cargue la app…');
+        setHint(typeof I18n !== 'undefined' ? I18n.t('pwa.wait') : 'Espera unos segundos a que cargue la app…');
         showBanner();
       }
     });
@@ -145,7 +124,7 @@
       installBtn.style.display = '';
       installBtn.textContent = 'Instalar';
     }
-    setHint('Listo: tocá Instalar para modo app');
+    setHint(typeof I18n !== 'undefined' ? I18n.t('pwa.ready') : 'Listo: toca Instalar para modo app');
     showBanner();
   });
 
