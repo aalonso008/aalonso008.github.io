@@ -20,7 +20,7 @@ create table if not exists profiles (
   goal text,
   target_body_fat numeric,
   settings jsonb default '{}'::jsonb,
-  role text default 'athlete' check (role in ('athlete', 'trainer')),
+  role text default 'athlete' check (role in ('athlete', 'trainer', 'admin')),
   updated_at timestamptz default now()
 );
 
@@ -81,7 +81,7 @@ create index if not exists body_metrics_user_date on body_metrics (user_id, date
 
 alter table profiles add column if not exists role text default 'athlete';
 alter table profiles drop constraint if exists profiles_role_check;
-alter table profiles add constraint profiles_role_check check (role in ('athlete', 'trainer'));
+alter table profiles add constraint profiles_role_check check (role in ('athlete', 'trainer', 'admin'));
 
 create table if not exists students (
   id text primary key,
@@ -299,6 +299,7 @@ begin
   delete from routines where user_id = auth.uid() or student_id in (select id from students where trainer_id = auth.uid());
   delete from routine_templates where trainer_id = auth.uid();
   delete from students where trainer_id = auth.uid() or user_id = auth.uid();
+  delete from subscriptions where user_id = auth.uid();
   delete from profiles where user_id = auth.uid();
   delete from auth.users where id = auth.uid();
 end;
@@ -315,3 +316,141 @@ grant execute on function claim_student() to authenticated;
 grant execute on function is_my_student(text) to authenticated;
 grant execute on function my_student_row() to authenticated;
 grant execute on function can_write_row(uuid, text) to authenticated;
+
+-- Admin, precios y suscripciones. El rol admin no se puede autoasignar.
+
+create or replace function is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from profiles where user_id = auth.uid() and role = 'admin'
+  );
+$$;
+
+create or replace function protect_admin_role()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.role = 'admin' and (tg_op = 'INSERT' or old.role is distinct from 'admin') then
+    if auth.uid() is not null and not is_admin() then
+      raise exception 'Solo un admin puede dar ese rol';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists profiles_protect_admin on profiles;
+create trigger profiles_protect_admin
+  before insert or update on profiles
+  for each row execute function protect_admin_role();
+
+drop policy if exists profiles_select on profiles;
+drop policy if exists profiles_insert on profiles;
+drop policy if exists profiles_update on profiles;
+create policy profiles_select on profiles for select using (auth.uid() = user_id or is_admin());
+create policy profiles_insert on profiles for insert with check (auth.uid() = user_id or is_admin());
+create policy profiles_update on profiles for update
+  using (auth.uid() = user_id or is_admin())
+  with check (auth.uid() = user_id or is_admin());
+
+create table if not exists subscription_plans (
+  id text primary key,
+  name text not null,
+  monthly integer not null,
+  yearly integer not null,
+  active boolean default true,
+  sort int default 0
+);
+
+create table if not exists subscriptions (
+  user_id uuid primary key references auth.users on delete cascade,
+  status text not null check (status in ('trial', 'active', 'expired', 'chosen')),
+  plan_id text references subscription_plans (id),
+  billing text not null default 'month' check (billing in ('month', 'year')),
+  started_at timestamptz,
+  trial_ends_at timestamptz,
+  updated_at timestamptz default now()
+);
+
+insert into subscription_plans (id, name, monthly, yearly, active, sort)
+values
+  ('esencial', 'Esencial', 3900, 39000, true, 1),
+  ('pro', 'Pro', 6900, 69000, true, 2),
+  ('entrenador', 'Entrenador', 14900, 149000, true, 3)
+on conflict (id) do nothing;
+
+alter table subscription_plans enable row level security;
+alter table subscriptions enable row level security;
+
+drop policy if exists subscription_plans_select on subscription_plans;
+drop policy if exists subscription_plans_update on subscription_plans;
+create policy subscription_plans_select on subscription_plans for select using (true);
+create policy subscription_plans_update on subscription_plans for update using (is_admin()) with check (is_admin());
+
+drop policy if exists subscriptions_select on subscriptions;
+drop policy if exists subscriptions_insert on subscriptions;
+drop policy if exists subscriptions_update on subscriptions;
+create policy subscriptions_select on subscriptions for select using (auth.uid() = user_id or is_admin());
+create policy subscriptions_insert on subscriptions for insert with check (auth.uid() = user_id or is_admin());
+create policy subscriptions_update on subscriptions for update
+  using (auth.uid() = user_id or is_admin())
+  with check (auth.uid() = user_id or is_admin());
+
+drop trigger if exists subscriptions_touch on subscriptions;
+create trigger subscriptions_touch before update on subscriptions for each row execute function set_updated_at();
+
+create or replace function admin_users()
+returns table (
+  user_id uuid,
+  email text,
+  created_at timestamptz,
+  role text,
+  sub_status text,
+  plan_id text,
+  billing text,
+  started_at timestamptz,
+  trial_ends_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not is_admin() then
+    raise exception 'No autorizado';
+  end if;
+  return query
+  select
+    u.id,
+    u.email::text,
+    u.created_at,
+    coalesce(p.role, 'athlete'),
+    s.status,
+    s.plan_id,
+    s.billing,
+    s.started_at,
+    s.trial_ends_at
+  from auth.users u
+  left join public.profiles p on p.user_id = u.id
+  left join public.subscriptions s on s.user_id = u.id
+  order by u.created_at desc;
+end;
+$$;
+
+grant select on subscription_plans to anon, authenticated;
+grant update on subscription_plans to authenticated;
+grant select, insert, update on subscriptions to authenticated;
+
+revoke all on function is_admin() from public, anon;
+revoke all on function protect_admin_role() from public, anon;
+revoke all on function admin_users() from public, anon;
+grant execute on function is_admin() to authenticated;
+grant execute on function admin_users() to authenticated;

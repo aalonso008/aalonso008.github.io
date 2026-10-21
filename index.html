@@ -37,6 +37,7 @@
       <button id="headerInstallBtn" class="header-install-btn" type="button" aria-label="Instalar app">Instalar</button>
     </div>
   </header>
+  <div id="trialStrip" class="trial-strip" hidden></div>
 
   <div id="page-rutina" class="active">
     <button type="button" class="wizard-entry" onclick="openRoutineWizard('routine')">✨ Armá tu rutina</button>
@@ -75,6 +76,8 @@
       <input id="loginEmail" name="email" type="email" required placeholder="tu@email.com" autocomplete="email">
       <button type="submit" class="log-btn">Enviar link</button>
       <p id="loginSent" class="login-sent" hidden>Listo. Revisá tu email y abrí el enlace en este dispositivo.</p>
+      <p id="loginTrial" class="login-trial">30 días gratis con todo desbloqueado.</p>
+      <p class="login-extra"><a href="landing.html">Ver funciones y planes</a></p>
     </form>
   </div>
 
@@ -166,6 +169,15 @@
     </div>
   </div>
 
+  <div id="adminPanel" class="trainer-panel" role="dialog" aria-modal="true" aria-labelledby="adminTitle" hidden>
+    <div class="trainer-top">
+      <button type="button" class="wizard-close" onclick="adminBack()" aria-label="Volver">←</button>
+      <h2 id="adminTitle">Administrar</h2>
+      <button type="button" class="wizard-close" onclick="closeAdmin()" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="adminBody" class="trainer-body"></div>
+  </div>
+
   <div id="trainerPanel" class="trainer-panel" role="dialog" aria-modal="true" aria-labelledby="trainerTitle" hidden>
     <div class="trainer-top">
       <button type="button" class="wizard-close" onclick="trainerBack()" aria-label="Volver">←</button>
@@ -193,6 +205,8 @@
   <script src="js/settings.js"></script>
   <script src="js/sync.js"></script>
   <script src="js/trainer.js"></script>
+  <script src="js/subscription.js"></script>
+  <script src="js/admin.js"></script>
   <script src="js/app.js"></script>
   <script src="js/pwa.js"></script>
 </body>

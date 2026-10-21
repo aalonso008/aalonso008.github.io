@@ -8,8 +8,10 @@ const assets = [
   './',
   './index.html',
   './privacy.html',
+  './landing.html',
   './css/main.css',
   './css/extra.css',
+  './css/landing.css',
   './js/config.js',
   './js/model.js',
   './js/body-calc.js',
@@ -27,6 +29,9 @@ const assets = [
   './js/settings.js',
   './js/sync.js',
   './js/trainer.js',
+  './js/subscription.js',
+  './js/admin.js',
+  './js/landing.js',
   './js/app.js',
   './js/pwa.js',
   './content/log.html',
@@ -42,7 +47,7 @@ const assets = [
   'https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js',
 ];
 
-const sw = `const CACHE = 'tu-rutina-v21';
+const sw = `const CACHE = 'tu-rutina-v24';
 const ASSETS = ${JSON.stringify(assets, null, 2)};
 
 self.addEventListener('install', (event) => {
