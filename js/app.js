@@ -109,7 +109,7 @@ function finishRest() {
 }
 
 function setAppLocked(locked) {
-  document.querySelectorAll('header, nav, [id^="page-"], #resumeBanner, #restBar').forEach((el) => {
+  document.querySelectorAll('header, nav, [id^="page-"], #resumeBanner, #restBar, #trialStrip').forEach((el) => {
     if (locked) el.setAttribute('inert', '');
     else el.removeAttribute('inert');
   });
@@ -117,6 +117,7 @@ function setAppLocked(locked) {
 
 function showLoginGate() {
   if (typeof closeTrainer === 'function') closeTrainer();
+  if (typeof closeAdmin === 'function') closeAdmin();
   const gate = document.getElementById('loginGate');
   if (gate) gate.classList.add('show');
   setAppLocked(true);
@@ -130,12 +131,14 @@ function showLoginGate() {
   if (title) title.textContent = 'Tu Rutina';
   const sub = document.getElementById('headerSub');
   if (sub) sub.textContent = 'Entrá para ver tu rutina';
+  if (typeof Subscription !== 'undefined') Subscription.refreshUi();
 }
 
 function hideLoginGate() {
   const gate = document.getElementById('loginGate');
   if (gate) gate.classList.remove('show');
   setAppLocked(false);
+  if (typeof Subscription !== 'undefined') Subscription.refreshUi();
 }
 
 let appBooted = false;

@@ -1,10 +1,12 @@
-const CACHE = 'tu-rutina-v21';
+const CACHE = 'tu-rutina-v24';
 const ASSETS = [
   "./",
   "./index.html",
   "./privacy.html",
+  "./landing.html",
   "./css/main.css",
   "./css/extra.css",
+  "./css/landing.css",
   "./js/config.js",
   "./js/model.js",
   "./js/body-calc.js",
@@ -22,6 +24,9 @@ const ASSETS = [
   "./js/settings.js",
   "./js/sync.js",
   "./js/trainer.js",
+  "./js/subscription.js",
+  "./js/admin.js",
+  "./js/landing.js",
   "./js/app.js",
   "./js/pwa.js",
   "./content/log.html",

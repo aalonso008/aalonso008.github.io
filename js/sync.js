@@ -117,6 +117,9 @@ async function handleSession(session) {
   } catch (err) {
     /* La función aparece cuando se vuelve a correr el SQL. */
   }
+  if (typeof Subscription !== 'undefined' && Subscription.syncSubscription) {
+    try { await Subscription.syncSubscription(); } catch (err) { console.error(err); }
+  }
   const choice = await Storage.getSyncChoice();
   if (choice === syncUser.id) {
     await pushAndPull();
@@ -435,15 +438,20 @@ async function openAccount() {
     const client = await ensureClient();
     const role = await client.from('profiles').select('role').eq('user_id', syncUser.id).maybeSingle();
     if (role.data && role.data.role === 'trainer') trainerLabel = 'Alumnos';
+    const adminBtn = role.data && role.data.role === 'admin'
+      ? '<button type="button" class="log-btn" onclick="openAdmin()">Administrar</button>'
+      : '';
     box.innerHTML = `
       <p>${escapeHtml(syncUser.email || 'Sesión iniciada')}</p>
       <p class="sub">${queue.length ? queue.length + ' cambios pendientes' : 'Al día'}</p>
+      ${adminBtn}
       <button type="button" class="btn-secondary" onclick="openTrainer()">${trainerLabel}</button>
       <button type="button" class="log-btn" onclick="syncNow()">Sincronizar ahora</button>
       <button type="button" class="btn-secondary" onclick="exportEverything()">Exportar todo (JSON)</button>
       <button type="button" class="btn-secondary" onclick="signOutAccount()">Cerrar sesión</button>
       <button type="button" class="btn-danger" onclick="deleteAccount()">Borrar mi cuenta y datos</button>`;
   }
+  if (typeof Subscription !== 'undefined') box.insertAdjacentHTML('afterbegin', Subscription.summaryHtml());
   modal.classList.add('show');
 }
 
