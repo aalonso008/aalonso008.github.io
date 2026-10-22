@@ -633,7 +633,6 @@ function authFormHtml(formId) {
       <p class="login-error" hidden></p>
       <p class="login-sent" hidden></p>
       <div class="login-links">
-        <button type="button" onclick="sendLoginLink(event)" data-i18n="login.link">${escapeHtml(trAuth('login.link'))}</button>
         <button type="button" onclick="sendPasswordReset(event)" data-i18n="login.reset">${escapeHtml(trAuth('login.reset'))}</button>
       </div>
     </form>
