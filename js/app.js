@@ -179,6 +179,7 @@ async function bootApp() {
     return;
   }
   hideLoginGate();
+  if (typeof repairExerciseLibrary === 'function') await repairExerciseLibrary();
   if (!appBooted) {
     appBooted = true;
     const theory = await loadHtml('content/progression.html');
@@ -203,7 +204,6 @@ async function bootApp() {
 
 async function initApp() {
   await Storage.migrate();
-  if (typeof repairExerciseLibrary === 'function') await repairExerciseLibrary();
   currentSettings = await Storage.getSettings();
   await showLoginGate();
   document.getElementById('settingsBtn').addEventListener('click', () => {
