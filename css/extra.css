@@ -8,12 +8,12 @@
   justify-content: center;
   padding: 24px;
 }
-.login-gate.show { display: flex; }
-.login-gate form { width: 100%; max-width: 360px; }
+.login-gate.show { display: flex; overflow: auto; align-items: safe center; }
+.login-gate .login-panel { width: 100%; max-width: 360px; }
 .login-gate h1 { font-size: 28px; margin-bottom: 8px; }
 .login-gate p { color: var(--muted); font-size: 14px; line-height: 1.5; margin-bottom: 16px; }
-.login-gate label { display: block; font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 6px; }
-.login-gate input {
+.login-gate label, #accountBody label, #passwordModal label { display: block; font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 6px; }
+.login-gate input, #passwordModal input {
   width: 100%;
   background: var(--bg2);
   border: 1px solid var(--border);
@@ -23,10 +23,52 @@
   font-size: 16px;
   margin-bottom: 12px;
 }
+.login-google {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  background: #fff;
+  color: #1f1f1f;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.login-google:disabled, .log-btn:disabled { opacity: 0.6; cursor: default; }
+.login-or { text-align: center; margin: 14px 0 !important; font-size: 12px !important; }
+.login-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+.login-modes button {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+.login-modes button.is-on { background: var(--bg3); color: var(--text); border-color: var(--accent); }
+.login-links { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 8px; }
+.login-links button {
+  background: none;
+  border: none;
+  color: var(--accent2);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 0;
+}
 .login-sent { color: var(--accent) !important; }
+.login-gate .login-error, #accountBody .login-error, #passwordModal .login-error { color: #eb5757 !important; margin: 10px 0 0 !important; }
 .login-gate .login-trial { color: var(--accent); font-weight: 600; margin-bottom: 6px; }
 .login-gate .login-extra { margin-bottom: 0; }
 .login-gate .login-extra a { color: var(--accent2); font-weight: 700; font-size: 14px; }
+#passwordModal .modal-card { text-align: left; }
+#passwordModal h2, #passwordModal .modal-card > p { text-align: center; }
 .trial-strip {
   display: flex;
   align-items: center;
