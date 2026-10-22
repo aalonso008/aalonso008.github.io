@@ -156,6 +156,19 @@ async function repairExerciseLibrary() {
   });
   if (changed) await Storage.replaceExercises([...byId.values()]);
   const repaired = [...byId.values()];
+  const loggedSets = typeof Storage.getSets === 'function' ? await Storage.getSets() : [];
+  (routines || []).forEach((routine) => {
+    (routine.days || []).forEach((day) => {
+      (day.sections || []).forEach((section) => {
+        (section.exercises || []).forEach((slot) => {
+          const lib = repaired.find((exercise) => exercise.id === slot.exerciseId);
+          const name = usableExerciseName(slot.name) || usableExerciseName(lib && lib.name);
+          if (name) slot.name = name;
+        });
+      });
+    });
+  });
+  if (relinkSlotsToLoggedExercises(routines, repaired, loggedSets)) changed = true;
   for (const routine of routines || []) {
     let routineChanged = false;
     const slotIds = [];
@@ -186,8 +199,47 @@ async function repairExerciseLibrary() {
       if (!routine.subtitle && template.subtitle) routine.subtitle = template.subtitle;
       routineChanged = true;
     }
+    if (routine._weightsRelinked) routineChanged = true;
+    delete routine._weightsRelinked;
     if (routineChanged) await Storage.saveRoutine(routine);
   }
+}
+
+function relinkSlotsToLoggedExercises(routines, library, sets) {
+  const usableSets = (sets || []).filter((set) => set && !set.deleted && set.exerciseId);
+  const countOf = new Map();
+  usableSets.forEach((set) => countOf.set(set.exerciseId, (countOf.get(set.exerciseId) || 0) + 1));
+  const byName = new Map();
+  (library || []).forEach((exercise) => {
+    const name = usableExerciseName(exercise && exercise.name);
+    if (!name || !countOf.get(exercise.id) || typeof normalizeName !== 'function') return;
+    const key = normalizeName(name);
+    if (!byName.has(key)) byName.set(key, []);
+    byName.get(key).push(exercise.id);
+  });
+  let changed = false;
+  (routines || []).forEach((routine) => {
+    (routine.days || []).forEach((day) => {
+      (day.sections || []).forEach((section) => {
+        (section.exercises || []).forEach((slot) => {
+          if (!slot || countOf.get(slot.exerciseId)) return;
+          const lib = (library || []).find((exercise) => exercise.id === slot.exerciseId);
+          const name = usableExerciseName(slot.name) || usableExerciseName(lib && lib.name);
+          if (!name || typeof normalizeName !== 'function') return;
+          const candidates = (byName.get(normalizeName(name)) || []).filter((id) => id !== slot.exerciseId);
+          if (candidates.length !== 1) return;
+          const targetId = candidates[0];
+          const donor = (library || []).find((exercise) => exercise.id === targetId);
+          if (donor && !usableExerciseName(donor.name)) donor.name = name;
+          slot.exerciseId = targetId;
+          slot.name = name;
+          routine._weightsRelinked = true;
+          changed = true;
+        });
+      });
+    });
+  });
+  return changed;
 }
 
 function collectRoutineExercises(routine, library) {
