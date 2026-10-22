@@ -122,7 +122,7 @@
     deferredPrompt = event;
     if (installBtn) {
       installBtn.style.display = '';
-      installBtn.textContent = 'Instalar';
+      installBtn.textContent = typeof I18n !== 'undefined' ? I18n.t('header.install') : 'Instalar';
     }
     setHint(typeof I18n !== 'undefined' ? I18n.t('pwa.ready') : 'Listo: toca Instalar para modo app');
     showBanner();

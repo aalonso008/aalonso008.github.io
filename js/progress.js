@@ -25,7 +25,7 @@ function renderLineChart(points) {
     return `${x},${y}`;
   });
   return `
-    <svg class="line-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Gráfico de progreso">
+    <svg class="line-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${typeof I18n !== 'undefined' ? I18n.t('progress.chart') : 'Gráfico de progreso'}">
       <polyline fill="none" stroke="#c8ff57" stroke-width="2" points="${coords.join(' ')}"></polyline>
     </svg>
     <div class="chart-caption">${points[0].label} → ${points[points.length - 1].label}</div>`;
@@ -53,25 +53,26 @@ async function renderProgressCharts() {
   }).filter((item) => item.count > 0);
 
   el.innerHTML = `
-    <p class="section-label" style="padding-top:0">Tu progreso</p>
+    <p class="section-label" style="padding-top:0">${typeof I18n !== 'undefined' ? I18n.t('progress.title') : 'Tu progreso'}</p>
     ${cycle ? `<div class="cycle-chip">${escapeHtml(typeof I18n !== 'undefined' ? I18n.t('cycle.progress', { week: cycle.week, phase: I18n.t('phase.' + cycle.phase) }) : 'Semana ' + cycle.week + '/8 · Fase: ' + cycle.phase)}</div>` : '<p class="empty-log">' + (typeof I18n !== 'undefined' ? I18n.t('cycle.empty') : 'Marca el inicio del ciclo de 8 semanas en Ajustes.') + '</p>'}
     <div class="summary-grid">
-      <div class="summary-card"><span>Volumen semanal</span><strong>${volumeNow} kg</strong><small>${volumePrev ? (volumeNow - volumePrev >= 0 ? '+' : '') + (volumeNow - volumePrev) + ' vs sem. anterior' : 'Sin semana anterior'}</small></div>
-      <div class="summary-card"><span>Sesiones del mes</span><strong>${monthSessions(sets)}</strong><small>Racha ${streakDays(sets)} ${streakDays(sets) === 1 ? 'día' : 'días'}</small></div>
+      <div class="summary-card"><span>${typeof I18n !== 'undefined' ? I18n.t('progress.volume') : 'Volumen semanal'}</span><strong>${volumeNow} kg</strong><small>${volumePrev ? (typeof I18n !== 'undefined' ? I18n.t('progress.vs', { n: (volumeNow - volumePrev >= 0 ? '+' : '') + (volumeNow - volumePrev) }) : '') : (typeof I18n !== 'undefined' ? I18n.t('progress.noPrev') : 'Sin semana anterior')}</small></div>
+      <div class="summary-card"><span>${typeof I18n !== 'undefined' ? I18n.t('progress.month') : 'Sesiones del mes'}</span><strong>${monthSessions(sets)}</strong><small>${typeof I18n !== 'undefined' ? I18n.t('progress.streak', { n: streakDays(sets), days: I18n.t(streakDays(sets) === 1 ? 'progress.day' : 'progress.days') }) : ''}</small></div>
     </div>
-    <h3 class="block-title">Series de la semana</h3>
+    <h3 class="block-title">${typeof I18n !== 'undefined' ? I18n.t('progress.weekSets') : 'Series de la semana'}</h3>
     ${
       muscleCounts.length
         ? muscleCounts
             .map((item) => {
               const width = Math.min(100, Math.round((item.count / 20) * 100));
               const tone = item.count < 10 ? 'low' : item.count <= 20 ? 'ok' : 'high';
-              return `<div class="muscle-bar"><div class="muscle-bar-label"><span>${item.group}</span><span>${item.count}</span></div><div class="muscle-track"><div class="muscle-fill ${tone}" style="width:${width}%"></div></div></div>`;
+              const label = typeof I18n !== 'undefined' && I18n.muscle ? I18n.muscle(item.group) : item.group;
+              return `<div class="muscle-bar"><div class="muscle-bar-label"><span>${escapeHtml(label)}</span><span>${item.count}</span></div><div class="muscle-track"><div class="muscle-fill ${tone}" style="width:${width}%"></div></div></div>`;
             })
             .join('')
-        : '<p class="empty-log">Todavía no hay series esta semana.</p>'
+        : '<p class="empty-log">' + (typeof I18n !== 'undefined' ? I18n.t('progress.weekEmpty') : 'Todavía no hay series esta semana.') + '</p>'
     }
-    <p class="hint">Orientativo: 10–20 series por grupo.</p>
+    <p class="hint">${typeof I18n !== 'undefined' ? I18n.t('progress.range') : 'Orientativo: 10–20 series por grupo.'}</p>
     <h3 class="block-title">Días entrenados</h3>
     <p class="hint">${escapeHtml(typeof I18n !== 'undefined' ? I18n.t('progress.shared') : 'La racha y los días entrenados suman todas tus rutinas.')}</p>
     ${renderHeatmap(sets)}
@@ -149,13 +150,13 @@ function renderExerciseProgress(exercises, sets) {
           <div class="prog-ex-body">
             ${suggestion ? `<p class="set-suggestion">${escapeHtml(suggestion.text)}</p>` : ''}
             ${renderLineChart(shownPoints)}
-            ${unreliable ? '<p class="hint">Hay series de más de 10 reps: el 1RM es menos confiable.</p>' : ''}
+            ${unreliable ? '<p class="hint">' + (typeof I18n !== 'undefined' ? I18n.t('progress.unreliable') : 'Hay series de más de 10 reps: el 1RM es menos confiable.') + '</p>' : ''}
           </div>
         </div>`;
     })
     .filter(Boolean);
   if (!cards.length) {
-    return '<p class="empty-day">Todavía no hay registros.<br>Guardá una serie en la rutina para ver el progreso.</p>';
+    return '<p class="empty-day">' + (typeof I18n !== 'undefined' ? I18n.t('progress.empty') : 'Todavía no hay registros. Guarda una serie en la rutina para ver el progreso.') + '</p>';
   }
   return cards.join('');
 }

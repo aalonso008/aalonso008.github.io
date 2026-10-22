@@ -1,3 +1,7 @@
+function logText(key, vars) {
+  return typeof I18n !== 'undefined' ? I18n.t(key, vars) : key;
+}
+
 let selectedExerciseId = '';
 let currentFilter = 'Todos';
 const setDrafts = {};
@@ -58,15 +62,15 @@ function rowsForExercise(exercise, allSets, unit) {
 
 function lastSessionLine(sets, exerciseId, unit) {
   const previous = previousSession(sets, exerciseId) || todaySession(sets, exerciseId);
-  if (!previous) return 'Sin registros todavía';
+  if (!previous) return logText('log.none');
   const loads = previous.some((set) => set.bodyweight)
-    ? previous.map((set) => `${set.bodyweight ? 'PC' : formatWeight(set.weight, unit)} × ${set.reps}`).join(' · ')
+    ? previous.map((set) => `${set.bodyweight ? logText('log.bw') : formatWeight(set.weight, unit)} × ${set.reps}`).join(' · ')
     : `${formatWeight(previous[0].weight, unit)} × ${previous.map((set) => set.reps).join(' · ')}`;
-  return `Última vez (${formatDisplayDate(previous[0].date)}): ${loads}`;
+  return logText('log.last', { date: formatDisplayDate(previous[0].date), loads });
 }
 
 function formatSetLoad(set) {
-  if (set && set.bodyweight) return `PC × ${set.reps || 0}`;
+  if (set && set.bodyweight) return `${logText('log.bw')} × ${set.reps || 0}`;
   return `${set.weight}kg × ${set.reps || 0}`;
 }
 
@@ -84,24 +88,24 @@ function renderSetEditor(exercise, allSets, settings) {
         <div class="set-row" data-set-id="${escapeHtml(row.id)}">
           <span class="set-num">${index + 1}</span>
           <span class="set-cluster">
-            <button type="button" class="bw-toggle${row.bodyweight ? ' is-on' : ''}" aria-pressed="${row.bodyweight ? 'true' : 'false'}" onclick="toggleBodyweight(this)">Corporal</button>
-            <button type="button" class="step-btn" data-weight-step onclick="stepSetInput(this,-1,'weight')" aria-label="Menos peso"${row.bodyweight ? ' disabled' : ''}>−</button>
-            <input class="set-weight" inputmode="decimal" placeholder="${row.bodyweight ? 'PC' : unit}" aria-label="Peso serie ${index + 1}" value="${escapeHtml(row.weight)}"${row.bodyweight ? ' disabled' : ''}>
-            <button type="button" class="step-btn" data-weight-step onclick="stepSetInput(this,1,'weight')" aria-label="Más peso"${row.bodyweight ? ' disabled' : ''}>+</button>
+            <button type="button" class="bw-toggle${row.bodyweight ? ' is-on' : ''}" aria-pressed="${row.bodyweight ? 'true' : 'false'}" onclick="toggleBodyweight(this)">${logText('log.bodyweight')}</button>
+            <button type="button" class="step-btn" data-weight-step onclick="stepSetInput(this,-1,'weight')" aria-label="${logText('log.lessWeight')}"${row.bodyweight ? ' disabled' : ''}>−</button>
+            <input class="set-weight" inputmode="decimal" placeholder="${row.bodyweight ? logText('log.bw') : unit}" aria-label="${logText('log.weightAria', { n: index + 1 })}" value="${escapeHtml(row.weight)}"${row.bodyweight ? ' disabled' : ''}>
+            <button type="button" class="step-btn" data-weight-step onclick="stepSetInput(this,1,'weight')" aria-label="${logText('log.moreWeight')}"${row.bodyweight ? ' disabled' : ''}>+</button>
           </span>
           <span class="set-cluster">
-            <button type="button" class="step-btn" onclick="stepSetInput(this,-1,'reps')" aria-label="Menos reps">−</button>
-            <input class="set-reps" inputmode="numeric" placeholder="reps" aria-label="Reps serie ${index + 1}" value="${escapeHtml(row.reps)}">
-            <button type="button" class="step-btn" onclick="stepSetInput(this,1,'reps')" aria-label="Más reps">+</button>
-            <input class="set-rpe" inputmode="decimal" min="6" max="10" step="0.5" placeholder="RPE" aria-label="RPE serie ${index + 1}" value="${escapeHtml(row.rpe)}">
-            <button type="button" class="set-save" onclick="saveSetRow(this)" aria-label="Guardar serie ${index + 1}">✓</button>
+            <button type="button" class="step-btn" onclick="stepSetInput(this,-1,'reps')" aria-label="${logText('log.lessReps')}">−</button>
+            <input class="set-reps" inputmode="numeric" placeholder="reps" aria-label="${logText('log.repsAria', { n: index + 1 })}" value="${escapeHtml(row.reps)}">
+            <button type="button" class="step-btn" onclick="stepSetInput(this,1,'reps')" aria-label="${logText('log.moreReps')}">+</button>
+            <input class="set-rpe" inputmode="decimal" min="6" max="10" step="0.5" placeholder="RPE" aria-label="${logText('log.rpeAria', { n: index + 1 })}" value="${escapeHtml(row.rpe)}">
+            <button type="button" class="set-save" onclick="saveSetRow(this)" aria-label="${logText('log.saveAria', { n: index + 1 })}">✓</button>
           </span>
         </div>`
         )
         .join('')}
       <div class="set-row-actions">
-        <button type="button" class="btn-secondary-sm" onclick="addDraftRow(this)">+ Serie</button>
-        <button type="button" class="btn-secondary-sm" onclick="removeDraftRow(this)">Quitar serie</button>
+        <button type="button" class="btn-secondary-sm" onclick="addDraftRow(this)">${logText('log.addSet')}</button>
+        <button type="button" class="btn-secondary-sm" onclick="removeDraftRow(this)">${logText('log.removeSet')}</button>
       </div>
     </div>`;
 }
@@ -146,7 +150,7 @@ function toggleBodyweight(btn) {
   btn.classList.toggle('is-on', on);
   const weight = row.querySelector('.set-weight');
   weight.disabled = on;
-  weight.placeholder = on ? 'PC' : (btn.closest('[data-set-editor]').dataset.unit || 'kg');
+  weight.placeholder = on ? logText('log.bw') : (btn.closest('[data-set-editor]').dataset.unit || 'kg');
   if (on) weight.value = '';
   row.querySelectorAll('[data-weight-step]').forEach((step) => {
     step.disabled = on;
@@ -179,13 +183,13 @@ async function saveSetRow(btn) {
   const weight = bodyweight ? 0 : fromDisplayWeight(row.querySelector('.set-weight').value, unit);
   const reps = parseInt(row.querySelector('.set-reps').value, 10);
   const rpeRaw = row.querySelector('.set-rpe').value.trim();
-  if (!bodyweight && !weight) return alert('Ingresá el peso o marcá Corporal.');
-  if (!reps) return alert('Ingresá las reps.');
+  if (!bodyweight && !weight) return alert(logText('log.needWeight'));
+  if (!reps) return alert(logText('log.needReps'));
   let rpe = null;
   if (rpeRaw) {
     rpe = Number(rpeRaw);
     if (!Number.isFinite(rpe) || rpe < 6 || rpe > 10 || Math.round(rpe * 2) !== rpe * 2) {
-      return alert('El RPE va de 6 a 10, de a 0.5.');
+      return alert(logText('log.rpeRange'));
     }
   }
 
@@ -208,7 +212,7 @@ async function saveSetRow(btn) {
   });
   row.dataset.setId = record.id;
   if (isNewPr(before, record)) {
-    showToast('🏆 ¡Nuevo PR!');
+    showToast(logText('log.pr'));
     if (typeof noteWorkoutPr === 'function') noteWorkoutPr(exerciseId);
   }
   const settings = currentSettings || (await Storage.getSettings());
@@ -279,8 +283,10 @@ async function renderLogPage() {
       <div class="muscle-filter">
         ${groups
           .map(
-            (group) =>
-              `<button type="button" class="mf-btn${group === currentFilter ? ' active' : ''}" onclick="filterMuscle('${group}', this)">${group}</button>`
+            (group) => {
+              const label = group === allLabel || !(typeof I18n !== 'undefined' && I18n.muscle) ? group : I18n.muscle(group);
+              return `<button type="button" class="mf-btn${group === currentFilter ? ' active' : ''}" onclick="filterMuscle('${group}', this)">${escapeHtml(label)}</button>`;
+            }
           )
           .join('')}
       </div>
@@ -300,10 +306,10 @@ async function renderLogPage() {
       ${selected ? renderSetEditor(selected, sets, settings) : '<p class="ex-selected">' + (typeof I18n !== 'undefined' ? I18n.t('log.pick') : 'Elige un ejercicio para cargar las series.') + '</p>'}
     </div>
     <div class="log-toolbar">
-      <span>Historial</span>
+      <span>${logText('log.history')}</span>
       <div>
         <button type="button" class="ghost-btn" onclick="exportLogsCsv()">CSV</button>
-        <button type="button" class="ghost-btn" onclick="copyLogs()">Copiar</button>
+        <button type="button" class="ghost-btn" onclick="copyLogs()">${logText('log.copy')}</button>
       </div>
     </div>
     <div class="log-entries" id="logEntries">${renderHistoryHtml(sets, library)}</div>`;
@@ -311,7 +317,7 @@ async function renderLogPage() {
 
 function renderHistoryHtml(sets, library) {
   if (!sets.length) {
-    return '<div class="empty-log">Todavía no hay series.<br>Guardá una con el ✓ de cada fila.</div>';
+    return '<div class="empty-log">' + logText('log.emptyHistory') + '</div>';
   }
   const byDate = new Map();
   sets.forEach((set) => {
@@ -334,9 +340,9 @@ function renderHistoryHtml(sets, library) {
             .map((set) => `${formatSetLoad(set)}${set.rpe != null ? ' @' + set.rpe : ''}`)
             .join(' · ');
           const deletes = list
-            .map((set) => `<button type="button" class="log-delete" onclick="deleteLog('${set.id}')" aria-label="Borrar serie ${set.setNumber}">×</button>`)
+            .map((set) => `<button type="button" class="log-delete" onclick="deleteLog('${set.id}')" aria-label="${logText('log.deleteSet', { n: set.setNumber })}">×</button>`)
             .join('');
-          return `<div class="log-entry"><div class="log-entry-left"><div class="log-entry-name">${escapeHtml((lib && lib.name) || 'Ejercicio')}</div><div class="log-entry-detail">${escapeHtml(detail)}</div></div><div class="log-entry-side"><div class="log-entry-date">${list.length} series</div><div>${deletes}</div></div></div>`;
+          return `<div class="log-entry"><div class="log-entry-left"><div class="log-entry-name">${escapeHtml((lib && lib.name) || logText('log.exerciseFallback'))}</div><div class="log-entry-detail">${escapeHtml(detail)}</div></div><div class="log-entry-side"><div class="log-entry-date">${logText('log.setsCount', { n: list.length })}</div><div>${deletes}</div></div></div>`;
         })
         .join('');
       return `<div class="log-day"><h3>${formatDisplayDate(date)}</h3>${blocks}</div>`;
@@ -362,7 +368,7 @@ async function deleteLog(id) {
 async function copyLogs() {
   const sets = await Storage.getSets();
   const library = await Storage.getExercises();
-  if (!sets.length) return alert('No hay registros todavía.');
+  if (!sets.length) return alert(logText('log.noLogs'));
   const text = renderHistoryHtml(sets, library).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
   const readable = sets
     .slice()
@@ -374,7 +380,7 @@ async function copyLogs() {
     .join('\n');
   try {
     await navigator.clipboard.writeText(readable);
-    showToast('Copiado');
+    showToast(logText('log.copied'));
   } catch {
     alert(readable);
   }
@@ -384,7 +390,7 @@ async function copyLogs() {
 async function exportLogsCsv() {
   const sets = await Storage.getSets();
   const library = await Storage.getExercises();
-  if (!sets.length) return alert('No hay registros todavía.');
+  if (!sets.length) return alert(logText('log.noLogs'));
   const lines = ['fecha,ejercicio,grupo,serie,kg,reps,rpe,nota'];
   sets
     .slice()
@@ -392,7 +398,7 @@ async function exportLogsCsv() {
     .forEach((set) => {
       const lib = library.find((ex) => ex.id === set.exerciseId);
       lines.push(
-        [set.date, (lib && lib.name) || '', (lib && lib.muscleGroup) || '', set.setNumber, set.bodyweight ? 'PC' : set.weight, set.reps, set.rpe ?? '', set.note || '']
+        [set.date, (lib && lib.name) || '', (lib && lib.muscleGroup) || '', set.setNumber, set.bodyweight ? logText('log.bw') : set.weight, set.reps, set.rpe ?? '', set.note || '']
           .map((value) => `"${String(value).replace(/"/g, '""')}"`)
           .join(',')
       );

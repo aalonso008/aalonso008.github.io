@@ -19,9 +19,9 @@ const trainer = {
 
 function trainerMessage(error) {
   const text = (error && (error.message || error.details)) || '';
-  if (error && error.code === '23505') return 'Ese email ya está asociado a un alumno.';
+  if (error && error.code === '23505') return typeof I18n !== 'undefined' ? I18n.t('trainer.emailTaken') : 'Ese email ya está asociado a un alumno.';
   if (/students|routine_templates|student_id|schema cache|claim_student|\brole\b/i.test(text)) {
-    return 'Falta actualizar la base. Volvé a correr supabase/schema.sql en el editor SQL.';
+    return typeof I18n !== 'undefined' ? I18n.t('trainer.schema') : 'Falta actualizar la base. Vuelve a correr supabase/schema.sql en el editor SQL.';
   }
   return text || 'No se pudo completar.';
 }
@@ -74,8 +74,8 @@ function syncTrainerWizardButton() {
   button.hidden = !show;
   if (!show) return;
   button.textContent = trainerRoutineHasExercises(trainer.routine)
-    ? '✨ Cambiar con el asistente'
-    : '✨ Armar con el asistente';
+    ? (typeof I18n !== 'undefined' ? I18n.t('trainer.wizardChange') : '✨ Cambiar con el asistente')
+    : (typeof I18n !== 'undefined' ? I18n.t('trainer.wizard') : '✨ Armar con el asistente');
 }
 
 async function renderTrainer() {
@@ -84,21 +84,21 @@ async function renderTrainer() {
   if (!body) return;
   try {
     if (trainer.view === 'home') {
-      title.textContent = 'Alumnos';
+      title.textContent = typeof I18n !== 'undefined' ? I18n.t('trainer.home') : 'Alumnos';
       await renderTrainerHome(body);
       return;
     }
     if (trainer.view === 'templates') {
-      title.textContent = 'Plantillas';
+      title.textContent = typeof I18n !== 'undefined' ? I18n.t('trainer.templates') : 'Plantillas';
       await renderTemplateList(body);
       return;
     }
     if (trainer.view === 'template') {
-      title.textContent = 'Plantilla';
+      title.textContent = typeof I18n !== 'undefined' ? I18n.t('trainer.template') : 'Plantilla';
       renderTemplateEditor(body);
       return;
     }
-    title.textContent = trainer.student ? trainer.student.name : 'Alumno';
+    title.textContent = trainer.student ? trainer.student.name : (typeof I18n !== 'undefined' ? I18n.t('trainer.student') : 'Alumno');
     renderStudent(body);
   } catch (error) {
     body.innerHTML = `<p class="wizard-note">${escapeHtml(trainerMessage(error))}</p>`;
@@ -146,30 +146,30 @@ async function renderTrainerHome(body) {
         <strong>${escapeHtml(student.name)}</strong>
         <em>${escapeHtml(student.email)}</em>
       </span>
-      <span class="trainer-pill${student.user_id ? ' is-on' : ''}">${student.user_id ? 'Activo' : 'Invitado'}</span>
+      <span class="trainer-pill${student.user_id ? ' is-on' : ''}">${student.user_id ? tt('trainer.active') : tt('trainer.invited')}</span>
     </button>`).join('');
   const addForm = trainer.showAdd ? `
     <form class="wizard-form coach-panel" onsubmit="createTrainerStudent(event)">
-      <h3 class="wizard-title" style="font-size:18px">Nuevo alumno</h3>
-      <p class="wizard-help">Usá el email con el que va a entrar. No le crea una contraseña.</p>
-      <label for="studentName">Nombre</label>
-      <input id="studentName" name="name" required placeholder="Nombre">
-      <label for="studentEmail">Email</label>
+      <h3 class="wizard-title" style="font-size:18px">${tt('trainer.new')}</h3>
+      <p class="wizard-help">${tt('trainer.newHelp')}</p>
+      <label for="studentName">${tt('trainer.name')}</label>
+      <input id="studentName" name="name" required placeholder="${tt('trainer.name')}">
+      <label for="studentEmail">${tt('trainer.email')}</label>
       <input id="studentEmail" name="email" type="email" required placeholder="alumno@email.com">
-      <button type="submit" class="log-btn">Crear alumno</button>
+      <button type="submit" class="log-btn">${tt('trainer.create')}</button>
     </form>` : '';
   body.innerHTML = `
     <div class="summary-grid">
-      <div class="summary-card"><span>Alumnos</span><strong>${trainer.students.length}</strong></div>
-      <div class="summary-card"><span>Ya ingresaron</span><strong>${joined}</strong></div>
+      <div class="summary-card"><span>${tt('trainer.home')}</span><strong>${trainer.students.length}</strong></div>
+      <div class="summary-card"><span>${tt('trainer.joined')}</span><strong>${joined}</strong></div>
     </div>
     <div class="trainer-actions">
-      <button type="button" class="log-btn" onclick="trainer.showAdd=!trainer.showAdd; renderTrainer()">+ Alumno</button>
-      <button type="button" class="btn-secondary" onclick="showTrainerTemplates()">Plantillas · ${trainer.templates.length}</button>
+      <button type="button" class="log-btn" onclick="trainer.showAdd=!trainer.showAdd; renderTrainer()">${tt('trainer.add')}</button>
+      <button type="button" class="btn-secondary" onclick="showTrainerTemplates()">${tt('trainer.templatesBtn', { n: trainer.templates.length })}</button>
     </div>
     ${addForm}
-    <p class="wizard-help">Abrí un alumno para armarle la rutina y ver su registro, progresión y medidas.</p>
-    ${rows || '<p class="coach-empty">Todavía no tenés alumnos.</p>'}`;
+    <p class="wizard-help">${tt('trainer.help')}</p>
+    ${rows || '<p class="coach-empty">' + tt('trainer.empty') + '</p>'}`;
 }
 
 async function createTrainerStudent(event) {
@@ -258,20 +258,19 @@ function showStudentTab(tab) {
 
 function renderStudent(body) {
   const student = trainer.student;
+  const tt = (key) => (typeof I18n !== 'undefined' ? I18n.t(key) : key);
   const tabs = [
-    ['rutina', 'Rutina'],
-    ['registro', 'Registro'],
-    ['progresion', 'Progresión'],
-    ['cuerpo', 'Cuerpo'],
+    ['rutina', tt('trainer.tab.routine')],
+    ['registro', tt('trainer.tab.log')],
+    ['progresion', tt('trainer.tab.progress')],
+    ['cuerpo', tt('trainer.tab.body')],
   ].map(([id, label]) => `<button type="button" class="wizard-option wizard-day${trainer.tab === id ? ' selected' : ''}" onclick="showStudentTab('${id}')">${label}</button>`).join('');
   let content = '';
   if (trainer.tab === 'rutina') content = renderStudentRoutine();
   else if (trainer.tab === 'registro') content = renderStudentLog();
   else if (trainer.tab === 'progresion') content = renderStudentProgress();
   else content = renderStudentBody();
-  const status = student.user_id
-    ? 'Ya ingresó. Ve su rutina en la cuenta.'
-    : 'Invitado. Cuando entre con este email, ve la rutina.';
+  const status = student.user_id ? tt('trainer.joinedStatus') : tt('trainer.invitedStatus');
   body.innerHTML = `
     <div class="coach-idline">
       <span class="coach-avatar" aria-hidden="true">${escapeHtml(coachInitial(student.name))}</span>
@@ -282,19 +281,19 @@ function renderStudent(body) {
     </div>
     <div class="wizard-days trainer-tabs">${tabs}</div>
     ${content}
-    <button type="button" class="coach-danger" onclick="deleteTrainerStudent()">Quitar alumno</button>`;
+    <button type="button" class="coach-danger" onclick="deleteTrainerStudent()">${tt('trainer.remove')}</button>`;
 }
 
 async function deleteTrainerStudent() {
   const student = trainer.student;
   if (!student) return;
-  if (!confirm('¿Quitar a ' + student.name + '? Deja de figurar en tus alumnos. Su cuenta sigue.')) return;
+  if (!confirm((typeof I18n !== 'undefined' ? I18n.t('trainer.removeQ', { name: student.name }) : '¿Quitar a ' + student.name + '?'))) return;
   const client = await ensureClient();
   const { error } = await client.from('students').delete().eq('id', student.id).eq('trainer_id', syncUser.id);
   if (error) return alert(trainerMessage(error));
   trainer.student = null;
   trainer.view = 'home';
-  showToast('Alumno quitado');
+  showToast(typeof I18n !== 'undefined' ? I18n.t('trainer.removed') : 'Alumno quitado');
   await renderTrainer();
 }
 
@@ -313,11 +312,12 @@ function formatTrainerSets(sets) {
 function renderTrainerRoutinePreview(routine) {
   return (routine.days || []).map((day) => {
     const lines = (day.sections || []).flatMap((section) => (section.exercises || []).map((slot) => {
-      const exercise = exerciseById(slot.exerciseId) || { name: slot.name || 'Ejercicio' };
-      return `<li><strong>${escapeHtml(exercise.name || 'Ejercicio')}</strong><span>${escapeHtml(formatTrainerSets(slot.sets))}</span></li>`;
+      const fallback = typeof I18n !== 'undefined' ? I18n.t('log.exerciseFallback') : 'Ejercicio';
+      const exercise = exerciseById(slot.exerciseId) || { name: slot.name || fallback };
+      return `<li><strong>${escapeHtml(exercise.name || fallback)}</strong><span>${escapeHtml(formatTrainerSets(slot.sets))}</span></li>`;
     })).join('');
     return `<article class="trainer-day">
-      <h3>${escapeHtml(day.name || 'Día')}${day.focus ? `<small>${escapeHtml(day.focus)}</small>` : ''}</h3>
+      <h3>${escapeHtml(day.name || (typeof I18n !== 'undefined' ? I18n.t('trainer.dayPh') : 'Día'))}${day.focus ? `<small>${escapeHtml(day.focus)}</small>` : ''}</h3>
       ${lines ? `<ul>${lines}</ul>` : '<p class="wizard-help">Sin ejercicios.</p>'}
     </article>`;
   }).join('');
@@ -429,14 +429,14 @@ function renderStudentRoutine(options) {
       }).join('');
       return `
         <div class="editor-card">
-          <input data-section="${section.id}" value="${escapeHtml(section.label || '')}" placeholder="Sección" aria-label="Sección">
+          <input data-section="${section.id}" value="${escapeHtml(section.label || '')}" placeholder="${typeof I18n !== 'undefined' ? I18n.t('trainer.section') : 'Sección'}" aria-label="${typeof I18n !== 'undefined' ? I18n.t('trainer.section') : 'Sección'}">
           ${exercises || '<p class="wizard-help">Sin ejercicios.</p>'}
           <button type="button" class="btn-secondary" onclick="addTrainerExercise(${dayIndex}, ${sectionIndex})">+ Ejercicio</button>
         </div>`;
     }).join('');
     return `
       <div class="editor-card">
-        <input data-day="${day.id}" data-field="name" value="${escapeHtml(day.name || '')}" placeholder="Día" aria-label="Día">
+        <input data-day="${day.id}" data-field="name" value="${escapeHtml(day.name || '')}" placeholder="${typeof I18n !== 'undefined' ? I18n.t('trainer.dayPh') : 'Día'}" aria-label="${typeof I18n !== 'undefined' ? I18n.t('trainer.dayPh') : 'Día'}">
         <input data-day="${day.id}" data-field="focus" value="${escapeHtml(day.focus || '')}" placeholder="Enfoque" aria-label="Enfoque">
         ${sections}
         <button type="button" class="btn-secondary" onclick="removeTrainerDay(${dayIndex})">Quitar día</button>
@@ -507,7 +507,7 @@ function addTrainerDay() {
 
 function removeTrainerDay(index) {
   captureTrainerRoutine();
-  if (trainer.routine.days.length <= 1) return alert('Tiene que quedar al menos un día.');
+  if (trainer.routine.days.length <= 1) return alert(typeof I18n !== 'undefined' ? I18n.t('trainer.keepDay') : 'Tiene que quedar al menos un día.');
   trainer.routine.days.splice(index, 1);
   renderTrainer();
 }
@@ -544,7 +544,7 @@ async function saveTrainerRoutine(event) {
   captureTrainerRoutine();
   try {
     await persistStudentRoutine(trainer.routine, trainer.exercises);
-    showToast('Rutina guardada');
+    showToast(typeof I18n !== 'undefined' ? I18n.t('trainer.saved') : 'Rutina guardada');
   } catch (error) {
     alert(trainerMessage(error));
   }
@@ -578,11 +578,11 @@ function usedInRoutine(routine, exerciseId) {
 
 function trainerExerciseName(id) {
   const found = trainer.exercises.find((exercise) => exercise.id === id);
-  return (found && found.name) || 'Ejercicio';
+  return (found && found.name) || (typeof I18n !== 'undefined' ? I18n.t('log.exerciseFallback') : 'Ejercicio');
 }
 
 function renderStudentLog() {
-  if (!trainer.sets.length) return '<p class="coach-empty">Todavía no hay series cargadas.</p>';
+  if (!trainer.sets.length) return '<p class="coach-empty">' + (typeof I18n !== 'undefined' ? I18n.t('trainer.noSets') : 'Todavía no hay series cargadas.') + '</p>';
   const groups = new Map();
   trainer.sets.forEach((set) => {
     const list = groups.get(set.date) || [];
@@ -606,7 +606,7 @@ function setTrainerChart(metric) {
 }
 
 function renderStudentProgress() {
-  if (!trainer.sets.length) return '<p class="coach-empty">Cuando el alumno registre series, vas a ver el volumen, la racha y los récords.</p>';
+  if (!trainer.sets.length) return '<p class="coach-empty">' + (typeof I18n !== 'undefined' ? I18n.t('trainer.progressEmpty') : 'Cuando el alumno registre series, vas a ver el volumen, la racha y los récords.') + '</p>';
   const bounds = weekBounds();
   const prev = previousWeekBounds();
   const thisWeek = setsInRange(trainer.sets, bounds.start, bounds.end);
@@ -643,7 +643,7 @@ function renderStudentProgress() {
     const bodyOnly = sessionsOf.every((session) => session.every((set) => set.bodyweight));
     const bestWeight = Math.max(...sessionsOf.flat().map((set) => Number(set.weight) || 0));
     const bestEpley = Math.max(...sessionsOf.map((session) => sessionBestEpley(session).value));
-    const summary = bodyOnly ? 'Peso corporal' : `PR ${trimNum(bestWeight)} kg · 1RM ${trimNum(bestEpley)}`;
+    const summary = bodyOnly ? (typeof I18n !== 'undefined' ? I18n.t('log.bodyweight') : 'Peso corporal') : `PR ${trimNum(bestWeight)} kg · 1RM ${trimNum(bestEpley)}`;
     const chartPoints = bodyOnly
       ? recent.map((session) => ({ value: sessionMetric(session, 'reps'), label: formatDisplayDate(session[0].date) }))
       : points;
@@ -652,12 +652,12 @@ function renderStudentProgress() {
   return `
     <div class="summary-grid">
       <div class="summary-card"><span>Volumen semanal</span><strong>${now} kg</strong><small>${before ? (now - before >= 0 ? '+' : '') + (now - before) + ' vs sem. anterior' : 'Sin semana anterior'}</small></div>
-      <div class="summary-card"><span>Sesiones del mes</span><strong>${sessions}</strong><small>Racha ${streak} ${streak === 1 ? 'día' : 'días'}</small></div>
+      <div class="summary-card"><span>${typeof I18n !== 'undefined' ? I18n.t('progress.month') : 'Sesiones del mes'}</span><strong>${sessions}</strong><small>${typeof I18n !== 'undefined' ? I18n.t('progress.streak', { n: streak, days: I18n.t(streak === 1 ? 'progress.day' : 'progress.days') }) : ''}</small></div>
     </div>
     <h3 class="block-title">Días entrenados</h3>
     ${renderHeatmap(trainer.sets)}
     <h3 class="block-title">Series de esta semana</h3>
-    ${bars || '<p class="coach-empty">Esta semana todavía no hay series.</p>'}
+    ${bars || '<p class="coach-empty">' + (typeof I18n !== 'undefined' ? I18n.t('progress.weekEmpty') : 'Esta semana todavía no hay series.') + '</p>'}
     <div class="metric-switch">${switcher}</div>
     ${cards}`;
 }
@@ -692,10 +692,10 @@ function renderStudentBody() {
     ].filter(Boolean);
     return `<article class="coach-session"><div class="coach-session-top"><strong>${escapeHtml(formatDisplayDate(metric.date))}</strong></div><p>${escapeHtml(bits.join(' · ') || 'Sin medidas')}${metric.note ? ' · ' + escapeHtml(metric.note) : ''}</p></article>`;
   }).join('');
-  if (!latestCards && !profileBits.length && !history) return '<p class="coach-empty">Todavía no hay medidas. Cuando el alumno cargue peso o perímetros, aparecen acá.</p>';
+  if (!latestCards && !profileBits.length && !history) return '<p class="coach-empty">' + (typeof I18n !== 'undefined' ? I18n.t('trainer.noMeasures') : 'Todavía no hay medidas.') + '</p>';
   return `
     ${profileBits.length ? `<p class="wizard-help">${escapeHtml(profileBits.join(' · '))}</p>` : ''}
-    ${latest ? `<p class="hint">Último registro · ${escapeHtml(formatDisplayDate(latest.date))}</p>` : ''}
+    ${latest ? `<p class="hint">${typeof I18n !== 'undefined' ? I18n.t('trainer.last', { date: formatDisplayDate(latest.date) }) : ''}</p>` : ''}
     ${latestCards ? `<div class="summary-grid">${latestCards}</div>` : ''}
     ${history}`;
 }
@@ -713,17 +713,17 @@ async function renderTemplateList(body) {
   trainer.templates = data || [];
   const rows = trainer.templates.map((item) => `
     <div class="trainer-template">
-      <button type="button" class="wizard-option" onclick="editTrainerTemplate('${item.id}')"><strong>${escapeHtml(item.title)}</strong><em>${escapeHtml(item.subtitle || 'Sin descripción')}</em></button>
+      <button type="button" class="wizard-option" onclick="editTrainerTemplate('${item.id}')"><strong>${escapeHtml(item.title)}</strong><em>${escapeHtml(item.subtitle || (typeof I18n !== 'undefined' ? I18n.t('trainer.noDesc') : 'Sin descripción'))}</em></button>
       <div class="trainer-actions">
-        <button type="button" class="btn-secondary" onclick="duplicateTrainerTemplate('${item.id}')">Duplicar</button>
-        <button type="button" class="btn-secondary" onclick="deleteTrainerTemplate('${item.id}')">Borrar</button>
+        <button type="button" class="btn-secondary" onclick="duplicateTrainerTemplate('${item.id}')">${typeof I18n !== 'undefined' ? I18n.t('ed.duplicate') : 'Duplicar'}</button>
+        <button type="button" class="btn-secondary" onclick="deleteTrainerTemplate('${item.id}')">${typeof I18n !== 'undefined' ? I18n.t('ed.delete') : 'Borrar'}</button>
       </div>
     </div>`).join('');
   body.innerHTML = `
     <button type="button" class="btn-secondary" onclick="trainer.view='home'; renderTrainer()">Volver a alumnos</button>
     <h2 class="wizard-title">Plantillas</h2>
     <p class="wizard-help">Armalas una vez y aplicalas a cada alumno.</p>
-    ${rows || '<p class="wizard-help">No hay plantillas todavía.</p>'}
+    ${rows || '<p class="wizard-help">' + (typeof I18n !== 'undefined' ? I18n.t('trainer.noTemplates') : 'No hay plantillas todavía.') + '</p>'}
     <button type="button" class="log-btn" onclick="newTrainerTemplate()">Nueva plantilla</button>`;
 }
 
@@ -810,14 +810,14 @@ async function saveTrainerTemplate(event) {
   });
   if (error) return alert(trainerMessage(error));
   trainer.templateId = id;
-  showToast('Plantilla guardada');
+  showToast(typeof I18n !== 'undefined' ? I18n.t('trainer.templateSaved') : 'Plantilla guardada');
   await showTrainerTemplates();
 }
 
 async function duplicateTrainerTemplate(id) {
   const client = await ensureClient();
   const { data, error } = await client.from('routine_templates').select('*').eq('id', id).maybeSingle();
-  if (error || !data) return alert(trainerMessage(error || { message: 'No está la plantilla' }));
+  if (error || !data) return alert(trainerMessage(error || { message: typeof I18n !== 'undefined' ? I18n.t('trainer.templateMissing') : 'No está la plantilla' }));
   const { error: insertError } = await client.from('routine_templates').insert({
     id: createId('tp'),
     trainer_id: syncUser.id,
@@ -831,7 +831,7 @@ async function duplicateTrainerTemplate(id) {
 }
 
 async function deleteTrainerTemplate(id) {
-  if (!confirm('¿Borrar esta plantilla?')) return;
+  if (!confirm(typeof I18n !== 'undefined' ? I18n.t('trainer.deleteTemplateQ') : '¿Borrar esta plantilla?')) return;
   const client = await ensureClient();
   const { error } = await client.from('routine_templates').update({ deleted: true }).eq('id', id).eq('trainer_id', syncUser.id);
   if (error) return alert(trainerMessage(error));
@@ -860,7 +860,7 @@ async function saveRoutineAsTemplate() {
     deleted: false,
   });
   if (error) return alert(trainerMessage(error));
-  showToast('Plantilla guardada');
+  showToast(typeof I18n !== 'undefined' ? I18n.t('trainer.templateSaved') : 'Plantilla guardada');
   const { data } = await client.from('routine_templates').select('id, title, subtitle').eq('trainer_id', syncUser.id).eq('deleted', false).order('title');
   trainer.templates = data || [];
   await renderTrainer();
@@ -905,11 +905,11 @@ function cloneTemplateData(data) {
 async function applyTrainerTemplate() {
   const select = document.getElementById('applyTemplate');
   const id = select && select.value;
-  if (!id) return alert('Elegí una plantilla.');
-  if (!confirm('Esto reemplaza la rutina activa del alumno.')) return;
+  if (!id) return alert(typeof I18n !== 'undefined' ? I18n.t('trainer.pickTemplate') : 'Elige una plantilla.');
+  if (!confirm(typeof I18n !== 'undefined' ? I18n.t('trainer.replaceQ') : 'Esto reemplaza la rutina activa del alumno.')) return;
   const client = await ensureClient();
   const { data, error } = await client.from('routine_templates').select('*').eq('id', id).maybeSingle();
-  if (error || !data) return alert(trainerMessage(error || { message: 'No está la plantilla' }));
+  if (error || !data) return alert(trainerMessage(error || { message: typeof I18n !== 'undefined' ? I18n.t('trainer.templateMissing') : 'No está la plantilla' }));
   const cloned = cloneTemplateData(data.data);
   cloned.routine.title = data.title;
   cloned.routine.subtitle = data.subtitle || '';
@@ -917,7 +917,7 @@ async function applyTrainerTemplate() {
   trainer.exercises = cloned.exercises;
   try {
     await persistStudentRoutine(cloned.routine, cloned.exercises);
-    showToast('Plantilla aplicada');
+    showToast(typeof I18n !== 'undefined' ? I18n.t('trainer.applied') : 'Plantilla aplicada');
     await renderTrainer();
   } catch (applyError) {
     alert(trainerMessage(applyError));

@@ -78,7 +78,7 @@ async function renderWorkout() {
     (section.exercises || []).forEach((slot) => exercises.push(resolveSlot(slot, library)));
   });
   if (!exercises.length) {
-    root.innerHTML = `<div class="workout-card"><p>Este día no tiene ejercicios.</p><button type="button" class="btn-secondary" onclick="closeWorkout()">Cerrar</button></div>`;
+    root.innerHTML = `<div class="workout-card"><p>${typeof I18n !== 'undefined' ? I18n.t('workout.empty') : 'Este día no tiene ejercicios.'}</p><button type="button" class="btn-secondary" onclick="closeWorkout()">${typeof I18n !== 'undefined' ? I18n.t('workout.close') : 'Cerrar'}</button></div>`;
     return;
   }
   if (state.index >= exercises.length) state.index = exercises.length - 1;
@@ -87,21 +87,21 @@ async function renderWorkout() {
   const exercise = exercises[state.index];
   root.innerHTML = `
     <div class="workout-top">
-      <button type="button" class="ghost-btn" onclick="closeWorkout()">Cerrar</button>
+      <button type="button" class="ghost-btn" onclick="closeWorkout()">${typeof I18n !== 'undefined' ? I18n.t('workout.close') : 'Cerrar'}</button>
       <strong id="workoutClock">00:00</strong>
       <span>${state.index + 1}/${exercises.length}</span>
     </div>
     <div class="workout-card">
       <h2>${escapeHtml(exercise.name)}</h2>
       <p class="sub">${escapeHtml(formatSets(exercise.sets))}</p>
-      ${exercise.tip ? `<details class="workout-tip"><summary>Técnica</summary><p>${escapeHtml(exercise.tip)}</p></details>` : ''}
+      ${exercise.tip ? `<details class="workout-tip"><summary>${typeof I18n !== 'undefined' ? I18n.t('workout.technique') : 'Técnica'}</summary><p>${escapeHtml(exercise.tip)}</p></details>` : ''}
       ${renderSetEditor(exercise, sets, settings)}
       <div class="workout-nav">
-        <button type="button" class="btn-secondary" onclick="shiftWorkout(-1)" ${state.index === 0 ? 'disabled' : ''}>Anterior</button>
+        <button type="button" class="btn-secondary" onclick="shiftWorkout(-1)" ${state.index === 0 ? 'disabled' : ''}>${typeof I18n !== 'undefined' ? I18n.t('workout.prev') : 'Anterior'}</button>
         ${
           state.index === exercises.length - 1
-            ? '<button type="button" class="log-btn" onclick="finishWorkout()">Finalizar</button>'
-            : '<button type="button" class="log-btn" onclick="shiftWorkout(1)">Siguiente</button>'
+            ? `<button type="button" class="log-btn" onclick="finishWorkout()">${typeof I18n !== 'undefined' ? I18n.t('workout.finish') : 'Finalizar'}</button>`
+            : `<button type="button" class="log-btn" onclick="shiftWorkout(1)">${typeof I18n !== 'undefined' ? I18n.t('workout.next') : 'Siguiente'}</button>`
         }
       </div>
     </div>`;
@@ -162,15 +162,15 @@ async function finishWorkout() {
   root.classList.add('show');
   root.innerHTML = `
     <div class="workout-card">
-      <h2>Listo</h2>
-      <p class="sub">${minutes} min · ${done.length} series · ${volume} kg de volumen</p>
-      <p>${state && state.prs.length ? `PRs nuevos: ${state.prs.length}` : 'Sin PRs nuevos en esta sesión.'}</p>
-      <button type="button" class="log-btn" onclick="dismissWorkout()">Cerrar</button>
+      <h2>${typeof I18n !== 'undefined' ? I18n.t('workout.done') : 'Listo'}</h2>
+      <p class="sub">${typeof I18n !== 'undefined' ? I18n.t('workout.summary', { min: minutes, sets: done.length, kg: volume }) : ''}</p>
+      <p>${state && state.prs.length ? (typeof I18n !== 'undefined' ? I18n.t('workout.prs', { n: state.prs.length }) : '') : (typeof I18n !== 'undefined' ? I18n.t('workout.noPrs') : 'Sin PRs nuevos en esta sesión.')}</p>
+      <button type="button" class="log-btn" onclick="dismissWorkout()">${typeof I18n !== 'undefined' ? I18n.t('workout.close') : 'Cerrar'}</button>
     </div>`;
   const names = (state && state.prs) || [];
   if (names.length) {
     const labels = names.map((id) => (library.find((ex) => ex.id === id) || {}).name).filter(Boolean);
-    if (labels.length) root.querySelector('p:last-of-type').textContent = `PRs: ${labels.join(', ')}`;
+    if (labels.length) root.querySelector('p:last-of-type').textContent = (typeof I18n !== 'undefined' ? I18n.t('workout.prNames', { names: labels.join(', ') }) : `PRs: ${labels.join(', ')}`);
   }
   const banner = document.getElementById('resumeBanner');
   if (banner) banner.hidden = true;

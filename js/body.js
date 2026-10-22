@@ -1,5 +1,32 @@
 let bodyRange = 90;
 
+function bodyText(key, vars) {
+  return typeof I18n !== 'undefined' ? I18n.t(key, vars) : key;
+}
+
+function activityLabel(level) {
+  return bodyText('activity.' + level.id);
+}
+
+function bmiLabel(value) {
+  const raw = bmiCategory(value);
+  const keys = { 'bajo peso': 'bmi.under', normal: 'bmi.normal', sobrepeso: 'bmi.over', obesidad: 'bmi.obese' };
+  return keys[raw] ? bodyText(keys[raw]) : raw;
+}
+
+function ffmiLabel(value) {
+  const raw = ffmiCategory(value);
+  const keys = {
+    bajo: 'ffmi.low',
+    promedio: 'ffmi.avg',
+    bueno: 'ffmi.good',
+    'muy bueno': 'ffmi.very',
+    excelente: 'ffmi.excellent',
+    'por encima del techo natural aprox.': 'ffmi.above',
+  };
+  return keys[raw] ? bodyText(keys[raw]) : raw;
+}
+
 async function renderBodyPage() {
   const el = document.getElementById('page-cuerpo');
   if (!el) return;
@@ -14,62 +41,62 @@ async function renderBodyPage() {
   const metrics = await Storage.getBodyMetrics();
   const summary = bodySummary(profile, metrics);
   el.innerHTML = `
-    <h2>Cuerpo</h2>
-    <p class="sub">Estimaciones para seguir el peso. No reemplazan un control médico.</p>
+    <h2>${bodyText('body.h')}</h2>
+    <p class="sub">${bodyText('body.sub')}</p>
     <div class="summary-grid">
       ${summary.cards}
     </div>
     <form class="editor-card" id="profileForm" onsubmit="saveBodyProfile(event)">
-      <h3 class="block-title">Perfil</h3>
+      <h3 class="block-title">${bodyText('body.profile')}</h3>
       <div class="editor-row">
         <div>
-          <label>Sexo</label>
-          <select name="sex"><option value="M"${profile.sex !== 'F' ? ' selected' : ''}>Masculino</option><option value="F"${profile.sex === 'F' ? ' selected' : ''}>Femenino</option></select>
+          <label>${bodyText('body.sex')}</label>
+          <select name="sex"><option value="M"${profile.sex !== 'F' ? ' selected' : ''}>${bodyText('body.male')}</option><option value="F"${profile.sex === 'F' ? ' selected' : ''}>${bodyText('body.female')}</option></select>
         </div>
         <div>
-          <label>Nacimiento</label>
+          <label>${bodyText('body.birth')}</label>
           <input name="birthDate" type="date" value="${escapeHtml(profile.birthDate || '')}">
         </div>
       </div>
       <div class="editor-row">
-        <div><label>Altura (cm)</label><input name="heightCm" type="number" inputmode="decimal" min="120" max="230" value="${escapeHtml(profile.heightCm || '')}"></div>
-        <div><label>Grasa objetivo %</label><input name="targetBodyFat" type="number" inputmode="decimal" min="3" max="40" step="0.5" value="${escapeHtml(profile.targetBodyFat || '')}"></div>
+        <div><label>${bodyText('body.height')}</label><input name="heightCm" type="number" inputmode="decimal" min="120" max="230" value="${escapeHtml(profile.heightCm || '')}"></div>
+        <div><label>${bodyText('body.targetFat')}</label><input name="targetBodyFat" type="number" inputmode="decimal" min="3" max="40" step="0.5" value="${escapeHtml(profile.targetBodyFat || '')}"></div>
       </div>
-      <label>Actividad</label>
+      <label>${bodyText('body.activity')}</label>
       <select name="activityLevel">
-        ${ACTIVITY_LEVELS.map((level) => `<option value="${level.id}"${profile.activityLevel === level.id ? ' selected' : ''}>${level.label}</option>`).join('')}
+        ${ACTIVITY_LEVELS.map((level) => `<option value="${level.id}"${profile.activityLevel === level.id ? ' selected' : ''}>${activityLabel(level)}</option>`).join('')}
       </select>
-      <label>Objetivo</label>
+      <label>${bodyText('body.goal')}</label>
       <select name="goal">
-        <option value="cut"${profile.goal === 'cut' ? ' selected' : ''}>Definición</option>
-        <option value="maintain"${!profile.goal || profile.goal === 'maintain' ? ' selected' : ''}>Mantener</option>
-        <option value="bulk"${profile.goal === 'bulk' ? ' selected' : ''}>Volumen</option>
+        <option value="cut"${profile.goal === 'cut' ? ' selected' : ''}>${bodyText('body.cut')}</option>
+        <option value="maintain"${!profile.goal || profile.goal === 'maintain' ? ' selected' : ''}>${bodyText('body.maintain')}</option>
+        <option value="bulk"${profile.goal === 'bulk' ? ' selected' : ''}>${bodyText('body.bulk')}</option>
       </select>
-      <button type="submit" class="log-btn">Guardar perfil</button>
+      <button type="submit" class="log-btn">${bodyText('body.saveProfile')}</button>
     </form>
     <form class="editor-card" id="metricForm" onsubmit="saveBodyMetric(event)">
-      <h3 class="block-title">Hoy</h3>
-      <label>Peso (kg)</label>
+      <h3 class="block-title">${bodyText('body.today')}</h3>
+      <label>${bodyText('body.weight')}</label>
       <input name="weight" type="number" inputmode="decimal" min="30" max="250" step="0.1" required>
       <details>
-        <summary>+ Medidas</summary>
-        <label>Cintura (cm)</label><input name="waistCm" type="number" inputmode="decimal" step="0.1">
-        <label>Cuello (cm)</label><input name="neckCm" type="number" inputmode="decimal" step="0.1">
-        <label>Cadera (cm)</label><input name="hipCm" type="number" inputmode="decimal" step="0.1">
-        <label>% grasa manual</label><input name="bodyFatManual" type="number" inputmode="decimal" step="0.1">
-        <label>Nota</label><input name="note" type="text">
+        <summary>${bodyText('body.measures')}</summary>
+        <label>${bodyText('body.waist')}</label><input name="waistCm" type="number" inputmode="decimal" step="0.1">
+        <label>${bodyText('body.neck')}</label><input name="neckCm" type="number" inputmode="decimal" step="0.1">
+        <label>${bodyText('body.hip')}</label><input name="hipCm" type="number" inputmode="decimal" step="0.1">
+        <label>${bodyText('body.fatManual')}</label><input name="bodyFatManual" type="number" inputmode="decimal" step="0.1">
+        <label>${bodyText('body.note')}</label><input name="note" type="text">
       </details>
-      <button type="submit" class="log-btn">Guardar peso</button>
+      <button type="submit" class="log-btn">${bodyText('body.saveWeight')}</button>
     </form>
     <div class="metric-switch">
-      ${[30, 90, 0].map((days) => `<button type="button" class="mf-btn${bodyRange === days ? ' active' : ''}" onclick="setBodyRange(${days})">${days === 0 ? 'Todo' : days + ' días'}</button>`).join('')}
+      ${[30, 90, 0].map((days) => `<button type="button" class="mf-btn${bodyRange === days ? ' active' : ''}" onclick="setBodyRange(${days})">${days === 0 ? bodyText('body.all') : bodyText('body.days', { n: days })}</button>`).join('')}
     </div>
-    <h3 class="block-title">Peso</h3>
+    <h3 class="block-title">${bodyText('body.weightTitle')}</h3>
     ${renderWeightChart(metrics)}
-    <h3 class="block-title">Cintura</h3>
+    <h3 class="block-title">${bodyText('body.waistTitle')}</h3>
     ${renderWaistChart(metrics)}
     <div class="calc-list">${summary.details}</div>
-    <h3 class="block-title">Historial</h3>
+    <h3 class="block-title">${bodyText('body.history')}</h3>
     ${renderMetricHistory(metrics)}
     <p class="disclaimer">${typeof I18n !== 'undefined' ? I18n.t('body.disclaimer') : 'Las fórmulas son estimaciones. El IMC no distingue músculo de grasa: si entrenas, mira el % de grasa y el FFMI. Esto no es consejo médico.'}</p>`;
 }
@@ -108,11 +135,11 @@ function bodySummary(profile, metrics) {
   const target = profile.targetBodyFat ? goalWeight(lean, Number(profile.targetBodyFat)) : null;
   const arrival = target != null && weight != null ? projectDate(weight, target, weekly) : null;
   const cards = [
-    card('Peso', weight != null ? `${round1(weight)} kg` : '—'),
-    card('Tendencia', weekly == null ? '—' : `${weekly > 0 ? '+' : ''}${round1(weekly)} kg/sem`),
-    card('% grasa', fat == null ? '—' : `${round1(fat)}%`),
+    card(bodyText('body.weightTitle'), weight != null ? `${round1(weight)} kg` : '—'),
+    card(bodyText('body.trend'), weekly == null ? '—' : `${weekly > 0 ? '+' : ''}${round1(weekly)} ${bodyText('body.week')}`),
+    card(bodyText('body.fat'), fat == null ? '—' : `${round1(fat)}%`),
     card('FFMI', ffmiValue == null ? '—' : String(round1(ffmiValue))),
-    card('Calorías', calories ? String(calories[goalKey]) : '—'),
+    card(bodyText('body.calories'), calories ? String(calories[goalKey]) : '—'),
   ].join('');
 
   const healthy = height ? healthyWeightRange(height) : null;
@@ -126,20 +153,20 @@ function bodySummary(profile, metrics) {
   const details = `
     ${lossWarn}
     ${projection}
-    <p>IMC ${bmiValue == null ? '—' : `${round1(bmiValue)} (${bmiCategory(bmiValue)})`}${healthy ? `. Rango saludable: ${round1(healthy.min)}–${round1(healthy.max)} kg.` : ''}</p>
+    <p>${bmiValue == null ? '—' : bodyText(healthy ? 'body.bmi' : 'body.bmi.short', { value: round1(bmiValue), cat: bmiLabel(bmiValue), min: healthy ? round1(healthy.min) : '', max: healthy ? round1(healthy.max) : '' })}</p>
     ${
       ideals
-        ? `<p>Peso ideal estimado: Devine ${round1(ideals.devine)} · Robinson ${round1(ideals.robinson)} · Miller ${round1(ideals.miller)}. Promedio ${round1(ideals.average)} kg.</p>`
+        ? `<p>${bodyText('body.ideal', { devine: round1(ideals.devine), robinson: round1(ideals.robinson), miller: round1(ideals.miller), avg: round1(ideals.average) })}</p>`
         : ''
     }
-    ${fat == null ? '<p>Agregá cintura y cuello para estimar tu % de grasa.</p>' : `<p>Masa grasa ${round1(fatMass(weight, fat))} kg · masa magra ${round1(lean)} kg. FFMI normalizado: ${ffmiCategory(ffmiValue)}${profile.sex === 'F' ? ' (la escala habitual está pensada para hombres)' : ''}.</p>`}
+    ${fat == null ? '<p>' + bodyText('body.needMeasures') + '</p>' : `<p>${bodyText('body.mass', { fat: round1(fatMass(weight, fat)), lean: round1(lean), cat: ffmiLabel(ffmiValue), note: profile.sex === 'F' ? bodyText('body.ffmiNote') : '' })}</p>`}
     ${
       target != null && weight != null
-        ? `<p>Para llegar a ${profile.targetBodyFat}% de grasa manteniendo la masa magra: ${round1(target)} kg (${weight - target >= 0 ? '−' : '+'}${round1(Math.abs(weight - target))} kg).</p>`
+        ? `<p>${bodyText('body.targetLine', { pct: profile.targetBodyFat, kg: round1(target), delta: (weight - target >= 0 ? '−' : '+') + round1(Math.abs(weight - target)) })}</p>`
         : ''
     }
-    ${calories ? `<p>TMB ${round1(mifflin(weight, height, age, profile.sex))} · TDEE ${round1(maintenance)}. Definición ${calories.cut} · mantener ${calories.maintain} · volumen ${calories.bulk} kcal.</p>` : ''}
-    ${protein ? `<p>Proteína sugerida: ${round1(protein.min)}–${round1(protein.max)} g por día.</p>` : ''}`;
+    ${calories ? `<p>${bodyText('body.energy', { bmr: round1(mifflin(weight, height, age, profile.sex)), tdee: round1(maintenance), cut: calories.cut, maintain: calories.maintain, bulk: calories.bulk })}</p>` : ''}
+    ${protein ? `<p>${bodyText('body.protein', { min: round1(protein.min), max: round1(protein.max) })}</p>` : ''}`;
   return { cards, details };
 }
 
@@ -166,14 +193,14 @@ function pointsInRange(metrics, key) {
 
 function renderWeightChart(metrics) {
   const points = pointsInRange(metrics, 'weight');
-  if (points.length < 2) return '<p class="empty-log">Todavía no registraste tu peso · Agregá el de hoy.</p>';
+  if (points.length < 2) return '<p class="empty-log">' + bodyText('body.weightEmpty') + '</p>';
   const average = movingAverage(points, 7);
   return svgChart(points, average);
 }
 
 function renderWaistChart(metrics) {
   const points = pointsInRange(metrics, 'waistCm');
-  if (points.length < 2) return '<p class="empty-log">Cuando cargues la cintura más de una vez, aparece acá.</p>';
+  if (points.length < 2) return '<p class="empty-log">' + bodyText('body.waistEmpty') + '</p>';
   return svgChart(points, []);
 }
 
@@ -201,20 +228,20 @@ function svgChart(points, average) {
       return `<circle cx="${x}" cy="${y}" r="2.5" fill="#57c8ff"></circle>`;
     })
     .join('');
-  return `<svg class="line-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Gráfico">${dots}<polyline fill="none" stroke="#c8ff57" stroke-width="2" points="${coord(average.length ? average : points)}"></polyline></svg>`;
+  return `<svg class="line-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${bodyText('body.chart')}">${dots}<polyline fill="none" stroke="#c8ff57" stroke-width="2" points="${coord(average.length ? average : points)}"></polyline></svg>`;
 }
 
 function renderMetricHistory(metrics) {
-  if (!metrics.length) return '<p class="empty-log">Todavía no hay medidas.</p>';
+  if (!metrics.length) return '<p class="empty-log">' + bodyText('body.historyEmpty') + '</p>';
   return metrics
     .map(
       (item) => `
       <div class="log-entry">
         <div class="log-entry-left">
           <div class="log-entry-name">${formatDisplayDate(item.date)}</div>
-          <div class="log-entry-detail">${item.weight} kg${item.waistCm ? ' · cintura ' + item.waistCm : ''}${item.note ? ' · ' + escapeHtml(item.note) : ''}</div>
+          <div class="log-entry-detail">${item.weight} kg${item.waistCm ? ' · ' + bodyText('body.waistShort') + ' ' + item.waistCm : ''}${item.note ? ' · ' + escapeHtml(item.note) : ''}</div>
         </div>
-        <button type="button" class="log-delete" onclick="deleteBodyEntry('${item.id}')" aria-label="Borrar medida">×</button>
+        <button type="button" class="log-delete" onclick="deleteBodyEntry('${item.id}')" aria-label="${bodyText('body.delete')}">×</button>
       </div>`
     )
     .join('');
@@ -233,7 +260,7 @@ async function saveBodyProfile(event) {
     goal: form.get('goal'),
     targetBodyFat: form.get('targetBodyFat') === '' ? '' : Number(form.get('targetBodyFat')),
   });
-  showToast('Perfil guardado');
+  showToast(bodyText('body.savedProfile'));
   await renderBodyPage();
 }
 
@@ -243,7 +270,7 @@ async function saveBodyMetric(event) {
   const date = todayIso();
   const metrics = await Storage.getBodyMetrics();
   const existing = metrics.find((item) => item.date === date);
-  if (existing && !confirm('Ya hay un registro de hoy. ¿Reemplazarlo?')) return;
+  if (existing && !confirm(bodyText('body.replace'))) return;
   const num = (key) => {
     const value = form.get(key);
     return value === '' || value == null ? null : Number(value);
@@ -259,7 +286,7 @@ async function saveBodyMetric(event) {
     note: form.get('note') || '',
     ts: Date.now(),
   });
-  showToast('Peso guardado');
+  showToast(bodyText('body.savedWeight'));
   await renderBodyPage();
 }
 

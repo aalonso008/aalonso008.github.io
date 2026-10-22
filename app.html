@@ -62,7 +62,7 @@
     <strong id="restTime">0:00</strong>
     <button type="button" onclick="adjustRest(-15)">−15s</button>
     <button type="button" onclick="adjustRest(15)">+15s</button>
-    <button type="button" onclick="skipRest()">Saltar</button>
+    <button type="button" onclick="skipRest()" data-i18n="rest.skip">Saltar</button>
   </div>
   <div id="updateBanner" class="update-banner" hidden>
     <span data-i18n="update.text">Hay una versión nueva</span>
@@ -128,13 +128,13 @@
       <strong data-i18n="install.title">Instala Tu Rutina</strong>
       <span id="installHint" data-i18n="install.hint">Acceso directo en tu pantalla de inicio, modo app</span>
     </div>
-    <button id="installBtn" class="install-btn" type="button">Instalar</button>
-    <button id="installClose" class="install-close" type="button" aria-label="Cerrar">×</button>
+    <button id="installBtn" class="install-btn" type="button" data-i18n="header.install">Instalar</button>
+    <button id="installClose" class="install-close" type="button" data-i18n-aria="aria.close" aria-label="Cerrar">×</button>
   </div>
 
   <div id="installModal" class="modal">
     <div class="modal-card install-modal-card">
-      <button id="installModalClose" class="install-close modal-close" type="button" aria-label="Cerrar">×</button>
+      <button id="installModalClose" class="install-close modal-close" type="button" data-i18n-aria="aria.close" aria-label="Cerrar">×</button>
       <h2 data-i18n="install.title">Instala Tu Rutina</h2>
       <p data-i18n="install.lead">Sigue estos pasos en tu celular:</p>
       <ol id="installSteps" class="install-steps"></ol>
@@ -197,16 +197,16 @@
   </div>
   <div id="syncChoice" class="modal">
     <div class="modal-card">
-      <h2>Sincronizar</h2>
+      <h2 data-i18n="sync.title">Sincronizar</h2>
       <p id="syncChoiceText"></p>
-      <button id="syncChoiceOk" type="button" class="log-btn">Continuar</button>
-      <button id="syncChoiceCancel" type="button" class="btn-secondary modal-btn">Cancelar</button>
+      <button id="syncChoiceOk" type="button" class="log-btn" data-i18n="sync.continue">Continuar</button>
+      <button id="syncChoiceCancel" type="button" class="btn-secondary modal-btn" data-i18n="sync.cancel">Cancelar</button>
     </div>
   </div>
 
   <div id="routineWizard" class="wizard" role="dialog" aria-modal="true" aria-labelledby="wizardTitle" hidden>
     <div class="wizard-top">
-      <button type="button" class="wizard-close" onclick="closeRoutineWizard()" aria-label="Salir">✕</button>
+      <button type="button" class="wizard-close" onclick="closeRoutineWizard()" data-i18n-aria="aria.exit" aria-label="Salir">✕</button>
       <p id="wizardStepLabel" class="wizard-step-label" aria-live="polite"></p>
       <div class="wizard-progress" aria-hidden="true"><div id="wizardProgressBar" class="wizard-progress-bar"></div></div>
     </div>
@@ -228,9 +228,9 @@
 
   <div id="trainerPanel" class="trainer-panel" role="dialog" aria-modal="true" aria-labelledby="trainerTitle" hidden>
     <div class="trainer-top">
-      <button type="button" class="wizard-close" onclick="trainerBack()" aria-label="Volver">←</button>
-      <h2 id="trainerTitle">Alumnos</h2>
-      <button type="button" class="wizard-close" onclick="closeTrainer()" aria-label="Cerrar">✕</button>
+      <button type="button" class="wizard-close" onclick="trainerBack()" data-i18n-aria="aria.back" aria-label="Volver">←</button>
+      <h2 id="trainerTitle" data-i18n="trainer.home">Alumnos</h2>
+      <button type="button" class="wizard-close" onclick="closeTrainer()" data-i18n-aria="aria.close" aria-label="Cerrar">✕</button>
     </div>
     <button type="button" id="trainerWizard" class="trainer-wizard" hidden onclick="openStudentWizard()">✨ Armar con el asistente</button>
     <div id="trainerBody" class="trainer-body"></div>
