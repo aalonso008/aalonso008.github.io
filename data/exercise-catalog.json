@@ -23,6 +23,7 @@
       "quads"
     ],
     "tip": "Pies al ancho de hombros. Bajá hasta que la cadera pase la rodilla, si tu movilidad lo permite.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -47,6 +48,7 @@
       "quads"
     ],
     "tip": "La mancuerna pegada al pecho. Codos apuntan al piso.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -69,6 +71,7 @@
     ],
     "emphasis": [],
     "tip": "Bajá sin despegar la zona lumbar del respaldo.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -91,6 +94,7 @@
     ],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -111,6 +115,9 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "Talones apoyados. Rodillas siguen la punta de los pies.",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -135,6 +142,7 @@
       "hamstrings"
     ],
     "tip": "Cadera atrás, espalda neutra. Bajá hasta sentir el isquio.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -160,6 +168,7 @@
       "hamstrings"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -183,6 +192,7 @@
     ],
     "emphasis": [],
     "tip": "La barra pegada a las tibias. Empujá el piso.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -205,6 +215,9 @@
       "glutes"
     ],
     "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -229,6 +242,7 @@
       "glutes"
     ],
     "tip": "Mentón metido. Apretá glúteos arriba, sin arquear la lumbar.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -251,6 +265,7 @@
     ],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -276,6 +291,9 @@
     ],
     "emphasis": [],
     "tip": "Paso largo. La rodilla de atrás baja hacia el piso.",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -303,6 +321,7 @@
       "glutes"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -327,6 +346,7 @@
     ],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -347,6 +367,9 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -372,6 +395,9 @@
       "glutes"
     ],
     "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -396,6 +422,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "Escápulas atrás y abajo. Bajá la barra al pecho medio.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -420,6 +447,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -440,6 +468,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -460,6 +489,9 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "Cuerpo en bloque. Pecho casi toca el piso.",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -482,6 +514,7 @@
       "chest"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -509,6 +542,7 @@
       "upper_chest"
     ],
     "tip": "Banco a 30°. Bajá controlado hasta sentir estiramiento.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -534,6 +568,7 @@
       "upper_chest"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -556,6 +591,7 @@
       "upper_chest"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -578,6 +614,9 @@
       "upper_chest"
     ],
     "tip": "Manos en un banco. El cuerpo baja derecho.",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -604,6 +643,7 @@
       "side_delts"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -628,6 +668,7 @@
     ],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -648,6 +689,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -670,6 +712,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "Mancuernas con las palmas enfrentadas. Subí sin arquear la espalda.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -693,6 +736,9 @@
     ],
     "emphasis": [],
     "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -713,6 +759,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "Espalda y brazos contra la pared. Subí sin despegar las costillas.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -737,6 +784,7 @@
       "lats"
     ],
     "tip": "Llevá el codo hacia la cadera, sin girar el torso.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -762,6 +810,7 @@
       "lats"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -785,6 +834,7 @@
       "lats"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -805,6 +855,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -825,6 +876,9 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "Cuerpo derecho debajo de una mesa firme. Llevá el pecho a la barra.",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -848,6 +902,7 @@
       "lats"
     ],
     "tip": "Pecho arriba. Llevá la barra al pecho, sin tirar con los bíceps solos.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -872,6 +927,9 @@
       "lats"
     ],
     "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -894,6 +952,7 @@
       "lats"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -917,6 +976,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -937,6 +997,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "Afirmate del marco y llevá el pecho hacia las manos.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -959,6 +1020,7 @@
       "lats"
     ],
     "tip": "Tronco apenas inclinado. Llevá el codo hacia el bolsillo.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -981,6 +1043,7 @@
       "chest"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1005,6 +1068,7 @@
     ],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1025,6 +1089,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1046,6 +1111,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1066,6 +1132,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1090,6 +1157,7 @@
       "side_delts"
     ],
     "tip": "Codos apenas flexionados. Subí hasta la altura del hombro.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1113,6 +1181,7 @@
       "side_delts"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1135,6 +1204,7 @@
       "side_delts"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1155,6 +1225,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1179,6 +1250,7 @@
       "rear_delts"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1202,6 +1274,7 @@
       "rear_delts"
     ],
     "tip": "Codos altos. Llevá las manos a la cara.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1222,6 +1295,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1242,6 +1316,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1265,6 +1340,7 @@
     ],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1287,6 +1363,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "Muñecas neutras. No balancees el torso.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1308,6 +1385,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1328,6 +1406,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1348,6 +1427,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "Pisá la toalla y tironeá con el codo pegado.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1369,6 +1449,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "Codos quietos al costado. Estirá abajo sin adelantar el hombro.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1393,6 +1474,7 @@
     ],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1414,6 +1496,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1437,6 +1520,7 @@
     ],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1459,6 +1543,9 @@
     ],
     "emphasis": [],
     "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1481,6 +1568,9 @@
     ],
     "emphasis": [],
     "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1501,6 +1591,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1523,6 +1614,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1547,6 +1639,7 @@
       "quads"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1569,6 +1662,7 @@
     ],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1589,6 +1683,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1611,6 +1706,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1632,6 +1728,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1654,6 +1751,7 @@
       "hamstrings"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1676,6 +1774,7 @@
       "hamstrings"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1698,6 +1797,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1719,6 +1819,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1744,6 +1845,9 @@
       "glutes"
     ],
     "tip": "Apretá arriba y bajá sin perder el contacto de la espalda alta.",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1767,6 +1871,7 @@
       "glutes"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1789,6 +1894,7 @@
       "glutes"
     ],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1812,6 +1918,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "Pausa abajo. Subí lo más alto que puedas.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1832,6 +1939,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1852,6 +1960,9 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1875,6 +1986,9 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "Costillas hacia abajo. No dejes caer la cadera.",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1896,6 +2010,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1917,6 +2032,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1939,6 +2055,9 @@
     ],
     "emphasis": [],
     "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1963,6 +2082,7 @@
     ],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -1985,6 +2105,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "Caminá corto, torso alto, sin encoger los hombros.",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -2007,6 +2128,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -2027,6 +2149,9 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -2047,6 +2172,7 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -2071,6 +2197,7 @@
     ],
     "emphasis": [],
     "tip": "",
+    "styles": [],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -2093,6 +2220,9 @@
       "upper_chest"
     ],
     "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -2116,6 +2246,9 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "Caminadora en pendiente o bici, a un ritmo en el que puedas hablar.",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   },
   {
@@ -2136,6 +2269,350 @@
     "avoidIf": [],
     "emphasis": [],
     "tip": "",
+    "styles": [],
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "knee_pushup",
+    "name": "Flexiones de rodillas",
+    "pattern": "horizontal_push",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Rodillas apoyadas. El cuerpo baja en bloque desde las rodillas.",
+    "styles": [
+      "calisthenics"
+    ],
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "archer_pushup",
+    "name": "Flexiones arquero",
+    "pattern": "horizontal_push",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 2,
+    "fatigue": 2,
+    "avoidIf": [
+      "wrist"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "pseudo_planche",
+    "name": "Flexiones pseudo planche",
+    "pattern": "horizontal_push",
+    "muscleGroup": "Pecho",
+    "primary": [
+      "Pecho"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 3,
+    "fatigue": 2,
+    "avoidIf": [
+      "wrist",
+      "shoulder"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "chinup",
+    "name": "Dominadas supinas",
+    "pattern": "vertical_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [
+      "Bíceps"
+    ],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 2,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [
+      "lats"
+    ],
+    "tip": "Palmas hacia ti. Baja hasta los brazos casi rectos.",
+    "styles": [
+      "calisthenics"
+    ],
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "negative_pullup",
+    "name": "Dominadas negativas",
+    "pattern": "vertical_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Sube con ayuda y baja en 3–5 segundos.",
+    "styles": [
+      "calisthenics"
+    ],
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "scapular_pull",
+    "name": "Escapulares en barra",
+    "pattern": "vertical_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Brazos rectos. Solo sube y baja las escápulas.",
+    "styles": [
+      "calisthenics"
+    ],
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "active_hang",
+    "name": "Suspensión activa",
+    "pattern": "vertical_pull",
+    "muscleGroup": "Espalda",
+    "primary": [
+      "Espalda"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "bar_dip",
+    "name": "Fondos en paralelas",
+    "pattern": "triceps",
+    "muscleGroup": "Tríceps",
+    "primary": [
+      "Tríceps"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 2,
+    "fatigue": 2,
+    "avoidIf": [
+      "shoulder"
+    ],
+    "emphasis": [],
+    "tip": "Hombros bajos. Baja hasta que el codo pase el hombro si no molesta.",
+    "styles": [
+      "calisthenics"
+    ],
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "cal_curl",
+    "name": "Curl en barra baja",
+    "pattern": "biceps",
+    "muscleGroup": "Bíceps",
+    "primary": [
+      "Bíceps"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [],
+    "emphasis": [],
+    "tip": "Cuerpo bajo una barra a la altura de la cadera. Lleva la frente hacia la barra.",
+    "styles": [
+      "calisthenics"
+    ],
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "assisted_pistol",
+    "name": "Pistol asistida",
+    "pattern": "squat",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 2,
+    "avoidIf": [
+      "knee"
+    ],
+    "emphasis": [],
+    "tip": "Sujétate de un marco. La pierna libre va al frente.",
+    "styles": [
+      "calisthenics"
+    ],
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "pistol_squat",
+    "name": "Sentadilla pistol",
+    "pattern": "squat",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 3,
+    "fatigue": 2,
+    "avoidIf": [
+      "knee"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "shrimp_squat",
+    "name": "Sentadilla shrimp",
+    "pattern": "lunge",
+    "muscleGroup": "Piernas",
+    "primary": [
+      "Piernas"
+    ],
+    "secondary": [],
+    "type": "compound",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 2,
+    "fatigue": 2,
+    "avoidIf": [
+      "knee"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "hollow_hold",
+    "name": "Hollow hold",
+    "pattern": "core",
+    "muscleGroup": "Core",
+    "primary": [
+      "Core"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 1,
+    "fatigue": 1,
+    "avoidIf": [
+      "lower_back"
+    ],
+    "emphasis": [],
+    "tip": "Lumbar pegada al piso. Brazos y piernas largos.",
+    "styles": [
+      "calisthenics"
+    ],
+    "linkLabel": "▶ Buscar técnica en YouTube"
+  },
+  {
+    "key": "hanging_knee_raise",
+    "name": "Rodillas al pecho colgado",
+    "pattern": "core",
+    "muscleGroup": "Core",
+    "primary": [
+      "Core"
+    ],
+    "secondary": [],
+    "type": "isolation",
+    "equipment": [
+      "bodyweight"
+    ],
+    "difficulty": 2,
+    "fatigue": 1,
+    "avoidIf": [
+      "lower_back"
+    ],
+    "emphasis": [],
+    "tip": "",
+    "styles": [
+      "calisthenics"
+    ],
     "linkLabel": "▶ Buscar técnica en YouTube"
   }
 ]

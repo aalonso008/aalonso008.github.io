@@ -407,6 +407,31 @@ nav button { font-size: 9px; letter-spacing: 0; padding: 10px 2px 14px; }
 }
 .trainer-sets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .trainer-sets input { min-width: 0; }
+.routine-switch {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  margin: 12px 16px 0;
+}
+.routine-switch label {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.routine-switch select {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  font-size: 15px;
+}
+.routine-switch .hint { grid-column: 1 / -1; margin: 0; }
 .lang-switch { display: flex; gap: 6px; justify-content: flex-end; margin: 0 0 12px; }
 .lang-switch button { border: 1px solid var(--border); background: transparent; color: var(--muted); border-radius: 999px; padding: 4px 10px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
 .lang-switch button.is-on { background: var(--accent); color: #111; border-color: var(--accent); }

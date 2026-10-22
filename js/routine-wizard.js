@@ -65,6 +65,16 @@ const WIZARD_STEPS = [
     ],
   },
   {
+    key: 'style',
+    title: '¿Qué tipo de rutina quieres?',
+    help: 'Puedes guardar una de gimnasio y otra de calistenia, y elegir cuál ejecutar.',
+    type: 'single',
+    options: [
+      { value: 'gym', icon: '🏋️', title: 'Gimnasio', desc: 'Máquinas, barras, mancuernas o peso corporal.' },
+      { value: 'calisthenics', icon: '🤸', title: 'Calistenia', desc: 'Dominadas, fondos, flexiones y progresiones.' },
+    ],
+  },
+  {
     key: 'equipment',
     title: '¿Dónde entrenas?',
     help: 'Solo vamos a usar lo que tengas a mano.',
@@ -152,7 +162,11 @@ function defaultPreferredDays(count) {
 }
 
 function wizardSteps() {
-  return WIZARD_STEPS.filter((step) => step.key !== 'profile' || wizard.forceProfile || !wizard.skipProfile);
+  return WIZARD_STEPS.filter((step) => {
+    if (step.key === 'profile' && !(wizard.forceProfile || !wizard.skipProfile)) return false;
+    if (step.key === 'equipment' && wizard.answers.style === 'calisthenics') return false;
+    return true;
+  });
 }
 
 function wt(key, vars) {
@@ -560,7 +574,7 @@ function summaryValue(step) {
 }
 
 function renderSummary() {
-  const rows = WIZARD_STEPS.map((raw) => {
+  const rows = WIZARD_STEPS.filter((step) => step.key !== 'equipment' || wizard.answers.style !== 'calisthenics').map((raw) => {
     const step = shownStep(raw);
     return `
     <div class="wizard-summary-row">
@@ -578,7 +592,8 @@ function publicAnswers() {
     daysPerWeek: wizard.answers.daysPerWeek,
     preferredDays: wizard.answers.preferredDays || [],
     sessionMinutes: wizard.answers.sessionMinutes,
-    equipment: wizard.answers.equipment,
+    style: wizard.answers.style || 'gym',
+    equipment: wizard.answers.style === 'calisthenics' ? 'bodyweight' : wizard.answers.equipment,
     priorities: wizard.answers.priorities || [],
     limitations: wizard.answers.limitations || [],
     cardio: wizard.answers.cardio,

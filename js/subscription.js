@@ -218,6 +218,13 @@ const Subscription = (function () {
     return PLANS[id] ? id : 'pro';
   }
 
+  function allowsCoach(role) {
+    if (role === 'admin' || role === 'trainer') return true;
+    const info = status();
+    if (!info.sub || info.state === 'none' || info.state === 'expired') return false;
+    return planIdOf(info.sub) === 'entrenador';
+  }
+
   function fromRow(row) {
     const planId = PLANS[row.plan_id] ? row.plan_id : 'pro';
     return {
@@ -280,6 +287,8 @@ const Subscription = (function () {
     read,
     choose,
     status,
+    planIdOf,
+    allowsCoach,
     summaryHtml,
     refreshUi,
     refreshPlans,
