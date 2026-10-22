@@ -203,6 +203,7 @@ async function bootApp() {
 
 async function initApp() {
   await Storage.migrate();
+  if (typeof repairExerciseLibrary === 'function') await repairExerciseLibrary();
   currentSettings = await Storage.getSettings();
   await showLoginGate();
   document.getElementById('settingsBtn').addEventListener('click', () => {

@@ -143,14 +143,16 @@ function renderEditorSections(day) {
     .map((section) => {
       const exercises = (section.exercises || [])
         .map((slot) => {
-          const lib = editorLibrary.find((ex) => ex.id === slot.exerciseId) || {
+          const stored = editorLibrary.find((ex) => ex.id === slot.exerciseId);
+          const lib = stored || {
             id: slot.exerciseId,
             name: '',
-            muscleGroup: 'Otro',
-            muscles: [],
-            tip: '',
-            linkUrl: '',
+            muscleGroup: slot.muscleGroup || 'Otro',
+            muscles: slot.muscles || [],
+            tip: slot.tip || '',
+            linkUrl: slot.linkUrl || '',
           };
+          if (!String(lib.name || '').trim() && slot.name) lib.name = slot.name;
           const sets = slot.sets && typeof slot.sets === 'object' ? slot.sets : parseSetsText(slot.sets);
           return `
             <div class="editor-exercise" data-slot-id="${slot.id}" data-lib="${slot.exerciseId}">
@@ -246,7 +248,7 @@ async function persistEditor() {
   document.querySelectorAll('[data-lib].ed-ex-name, [data-lib].ed-muscle, [data-lib].ed-ex-tip, [data-lib].ed-ex-muscles, [data-lib].ed-ex-link').forEach((input) => {
     const lib = library.find((item) => item.id === input.dataset.lib);
     if (!lib) return;
-    if (input.classList.contains('ed-ex-name')) lib.name = input.value.trim();
+    if (input.classList.contains('ed-ex-name') && input.value.trim()) lib.name = input.value.trim();
     if (input.classList.contains('ed-muscle')) lib.muscleGroup = input.value;
     if (input.classList.contains('ed-ex-tip')) lib.tip = input.value.trim();
     if (input.classList.contains('ed-ex-muscles')) lib.muscles = input.value.split(',').map((part) => part.trim()).filter(Boolean);
