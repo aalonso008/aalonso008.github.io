@@ -6,18 +6,28 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+function lastLoggedWeight(exerciseId, logs, unit) {
+  if (typeof previousSession !== 'function') return '';
+  const session = previousSession(logs, exerciseId) || (typeof todaySession === 'function' ? todaySession(logs, exerciseId) : null);
+  if (!session) return '';
+  const weights = session.filter((set) => set && !set.bodyweight && Number(set.weight)).map((set) => Number(set.weight));
+  if (!weights.length) return '';
+  return formatWeight(Math.max(...weights), unit || 'kg');
+}
+
 function renderExerciseCard(exercise, logs, settings) {
   const muscles = (exercise.muscles || []).map((muscle) => `<span class="muscle-tag">${escapeHtml(muscle)}</span>`).join('');
   const link = exercise.linkUrl
     ? `<a class="ex-link" href="${escapeHtml(exercise.linkUrl)}" target="_blank" rel="noopener">${escapeHtml(exercise.linkLabel || 'Ver técnica')}</a>`
     : '';
   const tip = exercise.tip ? `<p class="ex-tip">${escapeHtml(exercise.tip)}</p>` : '';
+  const lastWeight = lastLoggedWeight(exercise.exerciseId, logs, settings && settings.unit);
   return `
     <div class="ex-card" data-exercise-id="${escapeHtml(exercise.exerciseId)}">
       <div class="ex-main" onclick="toggleEx(this)">
         <div class="ex-left">
           <div class="ex-name">${escapeHtml(exercise.name)}</div>
-          <div class="ex-sets">${escapeHtml(formatSets(exercise.sets))}</div>
+          <div class="ex-sets">${escapeHtml(formatSets(exercise.sets))}${lastWeight ? ' · ' + escapeHtml(lastWeight) : ''}</div>
         </div>
         <div class="ex-main-actions">
           <button type="button" class="ex-log-btn" onclick="event.stopPropagation(); openQuickLog(this)" aria-label="Registrar peso">+</button>
