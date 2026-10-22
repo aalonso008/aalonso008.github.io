@@ -322,6 +322,32 @@ function pickActiveRoutine(routines, sets, localRoutine) {
   return ranked[0].routine;
 }
 
+function placeholderExerciseName(value) {
+  const text = String(value || '').trim().toLowerCase();
+  return !text || text === 'ejercicio' || text === 'exercise';
+}
+
+function healMerged(primary, fallback) {
+  if (!primary || !fallback) return primary;
+  const copy = Object.assign({}, primary);
+  let changed = false;
+  if (placeholderExerciseName(copy.name) && !placeholderExerciseName(fallback.name)) {
+    copy.name = fallback.name;
+    if (!copy.muscleGroup && fallback.muscleGroup) copy.muscleGroup = fallback.muscleGroup;
+    if ((!copy.muscles || !copy.muscles.length) && fallback.muscles) copy.muscles = fallback.muscles;
+    if (!copy.tip && fallback.tip) copy.tip = fallback.tip;
+    if (!copy.linkUrl && fallback.linkUrl) copy.linkUrl = fallback.linkUrl;
+    if (!copy.linkLabel && fallback.linkLabel) copy.linkLabel = fallback.linkLabel;
+    changed = true;
+  }
+  if (Array.isArray(copy.days) && !String(copy.title || '').trim() && String(fallback.title || '').trim()) {
+    copy.title = fallback.title;
+    if (!copy.subtitle && fallback.subtitle) copy.subtitle = fallback.subtitle;
+    changed = true;
+  }
+  return changed ? copy : primary;
+}
+
 function mergeRows(local, remote, queued, replace) {
   const map = new Map((replace ? [] : local || []).map((item) => [item.id, item]));
   remote.forEach((item) => {
@@ -332,7 +358,8 @@ function mergeRows(local, remote, queued, replace) {
     }
     if (queued.has(item.id)) return;
     const prev = map.get(item.id);
-    if (!prev || String(item.updatedAt || '') >= String(prev.updatedAt || '')) map.set(item.id, item);
+    const newer = !prev || String(item.updatedAt || '') >= String(prev.updatedAt || '');
+    map.set(item.id, healMerged(newer ? item : prev, newer ? prev : item));
   });
   return [...map.values()];
 }

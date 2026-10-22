@@ -120,8 +120,33 @@ const Storage = (function () {
     snapshot.version = SCHEMA_VERSION;
     if (!snapshot.id) snapshot.id = createId('rt');
     snapshot.updatedAt = new Date().toISOString();
-    delete snapshot.exercises;
     return enqueue(() => {
+      const library = readJson(KEYS.exercises, []);
+      let libraryChanged = false;
+      (snapshot.exercises || []).forEach((exercise) => {
+        if (!exercise || !exercise.id || !exercise.name) return;
+        const index = library.findIndex((item) => item.id === exercise.id);
+        if (index < 0) {
+          library.push(exercise);
+          libraryChanged = true;
+        } else if (!library[index].name) {
+          library[index] = Object.assign({}, library[index], exercise);
+          libraryChanged = true;
+        }
+      });
+      delete snapshot.exercises;
+      (snapshot.days || []).forEach((day) => {
+        (day.sections || []).forEach((section) => {
+          (section.exercises || []).forEach((slot) => {
+            const lib = library.find((item) => item.id === slot.exerciseId);
+            if (lib && lib.name && lib.name !== 'Ejercicio') slot.name = lib.name;
+          });
+        });
+      });
+      if (libraryChanged) {
+        writeJson(KEYS.exercises, library);
+        library.forEach((exercise) => queueUpsert('exercises', exercise));
+      }
       writeActive(snapshot);
       queueUpsert('routines', snapshot);
       emit('routine');
