@@ -167,6 +167,17 @@ async function bootApp() {
   }
   const choice = document.getElementById('syncChoice');
   if (choice && choice.classList.contains('show')) return;
+  const role = typeof loadOwnRole === 'function' ? await loadOwnRole() : null;
+  if (role === 'admin') {
+    if (typeof hideWelcome === 'function') hideWelcome();
+    const panel = document.getElementById('adminPanel');
+    if (!panel || !panel.classList.contains('show')) await openAdmin();
+    else {
+      hideLoginGate();
+      setAppLocked(true);
+    }
+    return;
+  }
   hideLoginGate();
   if (!appBooted) {
     appBooted = true;
@@ -215,6 +226,8 @@ async function initApp() {
       if (sub) sub.textContent = I18n.t('login.sub');
     }
     if (typeof Subscription !== 'undefined') Subscription.refreshUi();
+    const adminEl = document.getElementById('adminPanel');
+    if (adminEl && adminEl.classList.contains('show') && typeof renderAdmin === 'function') renderAdmin();
     const wizardEl = document.getElementById('routineWizard');
     if (wizardEl && !wizardEl.hidden && typeof renderWizard === 'function') renderWizard();
     if (!appBooted) return;

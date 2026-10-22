@@ -429,6 +429,44 @@ nav button { font-size: 9px; letter-spacing: 0; padding: 10px 2px 14px; }
   overflow: auto;
   padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 0px));
 }
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.admin-stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+.admin-stat strong { display: block; font-size: 22px; line-height: 1.1; }
+.admin-stat span { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+.admin-plan-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.admin-plan-row strong { color: var(--text); }
+.admin-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.admin-filters button {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+.admin-filters button.is-on { background: var(--bg3); color: var(--text); border-color: var(--accent); }
+@media (min-width: 700px) {
+  .admin-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 .trainer-actions { display: flex; gap: 8px; margin-bottom: 12px; }
 .trainer-actions .btn-secondary { flex: 1; margin: 0; }
 .trainer-template { margin-bottom: 14px; }
