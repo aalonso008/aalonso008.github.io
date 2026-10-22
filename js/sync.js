@@ -253,12 +253,13 @@ async function pullAll(replace) {
   const nextExercises = mergeRows(local.exercises, withoutPupilRows(exercises.data, pupils).map(exerciseFromRow), queued, replace);
   const nextSets = mergeRows(local.sets, withoutPupilRows(sets.data, pupils).map(setFromRow), queued, replace);
   const nextMetrics = mergeRows(local.bodyMetrics, withoutPupilRows(metrics.data, pupils).map(metricFromRow), queued, replace);
-  const nextRoutines = mergeRows(
-    local.routines || [],
-    withoutPupilRows(routines.data, pupils).map((row) => Object.assign({}, row.data, { id: row.id, updatedAt: row.updated_at, deleted: !!row.deleted })),
-    queued,
-    replace
-  );
+  const remoteRoutines = withoutPupilRows(routines.data, pupils).map((row) => Object.assign({}, row.data, { id: row.id, updatedAt: row.updated_at, deleted: !!row.deleted }));
+  let nextRoutines = mergeRows(local.routines || [], remoteRoutines, queued, replace);
+  if (!nextRoutines.some((routine) => routine && Array.isArray(routine.days) && routine.days.length)) {
+    const kept = (local.routines || []).filter((routine) => routine && Array.isArray(routine.days) && routine.days.length);
+    if (kept.length) nextRoutines = kept.concat(nextRoutines.filter((routine) => !kept.some((item) => item.id === routine.id)));
+    else if (local.routine && Array.isArray(local.routine.days) && local.routine.days.length) nextRoutines = [local.routine];
+  }
   let nextProfile = local.profile;
   let nextSettings = local.settings;
   if (profile.data && profile.data[0]) {

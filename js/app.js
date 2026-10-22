@@ -115,9 +115,21 @@ function setAppLocked(locked) {
   });
 }
 
-function showLoginGate() {
+async function showLoginGate() {
   if (typeof closeTrainer === 'function') closeTrainer();
   if (typeof closeAdmin === 'function') closeAdmin();
+  const routine = typeof Storage !== 'undefined' ? await Storage.getRoutine() : null;
+  if (routine && Array.isArray(routine.days) && routine.days.length) {
+    const gate = document.getElementById('loginGate');
+    if (gate) gate.classList.remove('show');
+    setAppLocked(false);
+    if (typeof hideWelcome === 'function') hideWelcome();
+    currentRoutine = routine;
+    if (typeof renderRoutineView === 'function') await renderRoutineView(routine);
+    if (typeof renderLogPage === 'function') await renderLogPage();
+    if (typeof Subscription !== 'undefined') Subscription.refreshUi();
+    return;
+  }
   const gate = document.getElementById('loginGate');
   if (gate) gate.classList.add('show');
   setAppLocked(true);
@@ -127,6 +139,11 @@ function showLoginGate() {
   const tabs = document.getElementById('dayTabs');
   if (days) days.innerHTML = '';
   if (tabs) tabs.innerHTML = '';
+  const picker = document.getElementById('routinePicker');
+  if (picker) {
+    picker.hidden = true;
+    picker.innerHTML = '';
+  }
   const title = document.getElementById('headerTitle');
   if (title) title.textContent = 'Tu Rutina';
   const sub = document.getElementById('headerSub');
@@ -174,15 +191,14 @@ async function bootApp() {
 }
 
 async function initApp() {
-  showLoginGate();
   await Storage.migrate();
   currentSettings = await Storage.getSettings();
+  await showLoginGate();
   document.getElementById('settingsBtn').addEventListener('click', () => {
-    if (!syncUser) return showLoginGate();
+    if (!syncUser && !currentRoutine) return showLoginGate();
     openSettings();
   });
   document.getElementById('accountBtn').addEventListener('click', () => {
-    if (!syncUser) return showLoginGate();
     openAccount();
   });
   document.getElementById('settingsForm').addEventListener('submit', saveSettingsForm);

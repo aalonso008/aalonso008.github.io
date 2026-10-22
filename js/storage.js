@@ -92,8 +92,23 @@ const Storage = (function () {
     writeJson(KEYS.routines, list);
   }
 
+  function routineHasDays(routine) {
+    return !!(routine && Array.isArray(routine.days) && routine.days.length);
+  }
+
+  function readSavedRoutine() {
+    const current = readJson(KEYS.routine, null);
+    if (routineHasDays(current)) return current;
+    const backup = readJson(KEYS.backupRoutine, null);
+    if (!routineHasDays(backup)) return current;
+    if (!backup.id) backup.id = createId('rt');
+    backup.version = SCHEMA_VERSION;
+    writeActive(backup);
+    return readJson(KEYS.routine, backup);
+  }
+
   function getRoutine() {
-    return enqueue(() => readJson(KEYS.routine, null));
+    return enqueue(() => readSavedRoutine());
   }
 
   function getRoutines() {
