@@ -43,9 +43,17 @@ function hideWelcome() {
   if (modal) modal.classList.remove('show');
 }
 
-function showWelcome() {
+function showWelcome(mode) {
   const modal = document.getElementById('welcomeModal');
-  if (modal) modal.classList.add('show');
+  const account = document.getElementById('welcomeAccount');
+  const fresh = document.getElementById('welcomeNew');
+  const accountMode = mode === 'account';
+  if (account) account.hidden = !accountMode;
+  if (fresh) fresh.hidden = accountMode;
+  if (modal) {
+    modal.classList.add('show');
+    if (typeof I18n !== 'undefined') I18n.apply(modal);
+  }
 }
 
 async function renderEditor() {

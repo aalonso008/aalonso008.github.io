@@ -88,12 +88,20 @@
 
   <div id="welcomeModal" class="modal">
     <div class="modal-card">
-      <h2 data-i18n="welcome.title">Bienvenido a Tu Rutina</h2>
-      <p data-i18n="welcome.lead">Elige cómo quieres armar tu rutina.</p>
-      <button type="button" class="log-btn" onclick="openRoutineWizard('welcome')" data-i18n="welcome.wizard">✨ Arma tu rutina</button>
-      <p class="welcome-hint" data-i18n="welcome.hint">Responde unas preguntas y te armamos una rutina a medida.</p>
-      <button type="button" class="btn-secondary modal-btn" onclick="startBlankRoutine()" data-i18n="welcome.blank">✏️ Crear desde cero</button>
-      <button type="button" class="btn-secondary modal-btn" onclick="startTemplateRoutine()" data-i18n="welcome.template">📋 Usar rutina de ejemplo</button>
+      <div id="welcomeAccount" hidden>
+        <h2 data-i18n="welcome.account.title">Tu rutina está en el celular</h2>
+        <p data-i18n="welcome.account">Esta computadora entró a tu cuenta y todavía no tiene la rutina ni las series. Abrí la app en el celular con internet y después tocá el botón. No armes una nueva si querés seguir la que ya tenés.</p>
+        <button id="welcomeBring" type="button" class="log-btn" onclick="bringAccountRoutine()" data-i18n="welcome.bring">Traer la del celular</button>
+        <button type="button" class="btn-secondary modal-btn" onclick="showWelcome('new')" data-i18n="welcome.new">Armar una nueva</button>
+      </div>
+      <div id="welcomeNew">
+        <h2 data-i18n="welcome.title">Bienvenido a Tu Rutina</h2>
+        <p data-i18n="welcome.lead">Elige cómo quieres armar tu rutina.</p>
+        <button type="button" class="log-btn" onclick="openRoutineWizard('welcome')" data-i18n="welcome.wizard">✨ Arma tu rutina</button>
+        <p class="welcome-hint" data-i18n="welcome.hint">Responde unas preguntas y te armamos una rutina a medida.</p>
+        <button type="button" class="btn-secondary modal-btn" onclick="startBlankRoutine()" data-i18n="welcome.blank">✏️ Crear desde cero</button>
+        <button type="button" class="btn-secondary modal-btn" onclick="startTemplateRoutine()" data-i18n="welcome.template">📋 Usar rutina de ejemplo</button>
+      </div>
     </div>
   </div>
 
