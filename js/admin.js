@@ -1,11 +1,16 @@
-/* Panel de admin: precios, usuarios y suscripción. No borra cuentas. */
+/* Módulo de admin: altas, planes y precios. No muestra rutinas ni borra cuentas. */
 const adminState = {
   view: 'home',
   plans: [],
   users: [],
   query: '',
+  filter: 'all',
   userId: null,
 };
+
+function adminT(key, vars) {
+  return typeof I18n !== 'undefined' ? I18n.t(key, vars) : key;
+}
 
 function adminMessage(error) {
   const text = (error && (error.message || error.details)) || '';
@@ -34,22 +39,36 @@ function adminDateIso(value) {
 }
 
 function adminRoleLabel(role) {
-  if (role === 'admin') return 'Admin';
-  if (role === 'trainer') return 'Entrenador';
-  return 'Atleta';
+  if (role === 'admin') return adminT('admin.role.admin');
+  if (role === 'trainer') return adminT('admin.role.trainer');
+  return adminT('admin.role.athlete');
 }
 
 function adminStatusLabel(status) {
-  if (status === 'trial') return 'Prueba';
-  if (status === 'active') return 'Activo';
-  if (status === 'chosen') return 'Elegido';
-  if (status === 'expired') return 'Vencido';
-  return 'Sin plan';
+  if (status === 'trial') return adminT('admin.status.trial');
+  if (status === 'active') return adminT('admin.status.active');
+  if (status === 'chosen') return adminT('admin.status.chosen');
+  if (status === 'expired') return adminT('admin.status.expired');
+  return adminT('admin.noplan');
+}
+
+async function loadOwnRole() {
+  if (!syncUser || typeof ensureClient !== 'function') return null;
+  try {
+    const client = await ensureClient();
+    const { data, error } = await client.from('profiles').select('role').eq('user_id', syncUser.id).maybeSingle();
+    if (error) return null;
+    return data && data.role;
+  } catch (err) {
+    return null;
+  }
 }
 
 async function openAdmin() {
   if (!syncUser) return showLoginGate();
-  closeAccount();
+  if (typeof closeAccount === 'function') closeAccount();
+  if (typeof hideLoginGate === 'function') hideLoginGate();
+  if (typeof setAppLocked === 'function') setAppLocked(true);
   const panel = document.getElementById('adminPanel');
   panel.hidden = false;
   panel.classList.add('show');
@@ -63,16 +82,19 @@ function closeAdmin() {
   if (!panel) return;
   panel.classList.remove('show');
   panel.hidden = true;
+  if (typeof setAppLocked === 'function') setAppLocked(false);
 }
 
 function adminBack() {
-  if (adminState.view === 'user') {
-    adminState.view = 'home';
-    adminState.userId = null;
-    renderAdmin();
-    return;
-  }
-  closeAdmin();
+  if (adminState.view !== 'user') return;
+  adminState.view = 'home';
+  adminState.userId = null;
+  renderAdmin();
+}
+
+function syncAdminChrome() {
+  const back = document.getElementById('adminBack');
+  if (back) back.hidden = adminState.view !== 'user';
 }
 
 async function renderAdmin() {
@@ -80,7 +102,7 @@ async function renderAdmin() {
   const title = document.getElementById('adminTitle');
   if (!body) return;
   if (!syncConfigured()) {
-    if (title) title.textContent = 'Administrar';
+    if (title) title.textContent = adminT('admin.title');
     body.innerHTML = '<p class="wizard-help">Para administrar precios y usuarios hace falta Supabase. Completá <code>js/config.js</code> y corré <code>supabase/schema.sql</code>.</p>';
     return;
   }
@@ -90,6 +112,7 @@ async function renderAdmin() {
   } catch (err) {
     body.innerHTML = '<p class="wizard-help">' + escapeHtml(adminMessage(err)) + '</p>';
   }
+  syncAdminChrome();
 }
 
 async function loadAdminPlans() {
@@ -110,65 +133,141 @@ async function loadAdminUsers() {
 }
 
 function adminPlanName(id) {
-  if (!id) return 'Sin plan';
+  if (!id) return adminT('admin.noplan');
   if (typeof Subscription !== 'undefined' && Subscription.PLANS[id]) return Subscription.PLANS[id].name;
-  return id;
+  const plan = adminState.plans.find((item) => item.id === id);
+  return (plan && plan.name) || id;
+}
+
+function adminCreatedMs(user) {
+  const time = new Date(user.created_at).getTime();
+  return Number.isNaN(time) ? 0 : time;
+}
+
+function adminStats(users) {
+  const now = Date.now();
+  const week = now - 7 * 86400000;
+  const month = now - 30 * 86400000;
+  const count = (pred) => users.filter(pred).length;
+  return {
+    total: users.length,
+    week: count((user) => adminCreatedMs(user) >= week),
+    month: count((user) => adminCreatedMs(user) >= month),
+    trial: count((user) => user.sub_status === 'trial'),
+    active: count((user) => user.sub_status === 'active'),
+    expired: count((user) => user.sub_status === 'expired'),
+  };
+}
+
+function adminStatCard(value, key) {
+  return `<div class="admin-stat"><strong>${value}</strong><span>${escapeHtml(adminT(key))}</span></div>`;
+}
+
+function adminPlanBreakdown(users) {
+  const counts = {};
+  users.forEach((user) => {
+    const id = user.plan_id || '';
+    counts[id] = (counts[id] || 0) + 1;
+  });
+  return Object.keys(counts).map((id) => `<span>${escapeHtml(adminPlanName(id))}: <strong>${counts[id]}</strong></span>`).join('');
 }
 
 function adminUserLine(user) {
   const plan = adminPlanName(user.plan_id);
   const days = user.sub_status === 'trial' ? adminDays(user.trial_ends_at) : null;
-  const extra = days == null ? '' : ' · ' + days + (days === 1 ? ' día' : ' días');
+  const extra = days == null ? '' : ' · ' + days + ' ' + adminT(days === 1 ? 'day.one' : 'day.many');
   return adminRoleLabel(user.role) + ' · ' + plan + ' · ' + adminStatusLabel(user.sub_status) + extra;
 }
 
-function adminUserButtons() {
+function adminVisibleUsers() {
   const query = adminState.query.trim().toLowerCase();
-  const visible = adminState.users.filter((user) => !query || String(user.email || '').toLowerCase().includes(query));
-  if (!visible.length) return '<p class="wizard-help">No hay usuarios con ese email.</p>';
+  const week = Date.now() - 7 * 86400000;
+  return adminState.users.filter((user) => {
+    if (query && !String(user.email || '').toLowerCase().includes(query)) return false;
+    if (adminState.filter === 'week') return adminCreatedMs(user) >= week;
+    if (adminState.filter === 'trial' || adminState.filter === 'active' || adminState.filter === 'expired') {
+      return user.sub_status === adminState.filter;
+    }
+    return true;
+  });
+}
+
+function adminUserButtons() {
+  const visible = adminVisibleUsers();
+  if (!visible.length) return '<p class="wizard-help">' + escapeHtml(adminT('admin.empty')) + '</p>';
   return visible.map((user) => `
     <button type="button" class="wizard-option" onclick="openAdminUser('${escapeHtml(user.user_id)}')">
-      <strong>${escapeHtml(user.email || 'Sin email')}</strong>
-      <em>${escapeHtml(adminUserLine(user))}</em>
+      <strong>${escapeHtml(user.email || adminT('admin.nomail'))}</strong>
+      <em>${escapeHtml(adminDateInput(user.created_at) || '—')} · ${escapeHtml(adminUserLine(user))}</em>
     </button>`).join('');
 }
 
+function adminFilterButtons() {
+  const filters = ['all', 'week', 'trial', 'active', 'expired'];
+  return filters.map((name) => {
+    const on = adminState.filter === name ? ' is-on' : '';
+    return `<button type="button" class="${on.trim()}" data-admin-filter="${name}" onclick="setAdminFilter('${name}')">${escapeHtml(adminT('admin.filter.' + name))}</button>`;
+  }).join('');
+}
+
 async function renderAdminHome(body, title) {
-  if (title) title.textContent = 'Administrar';
+  if (title) title.textContent = adminT('admin.title');
   const plans = await loadAdminPlans();
   const users = await loadAdminUsers();
-  if (!plans.length) {
-    body.innerHTML = '<p class="wizard-help">' + (typeof I18n !== 'undefined' ? I18n.t('admin.noplans') : 'No hay planes. Ejecuta supabase/schema.sql en el editor SQL.') + '</p>';
-    return;
-  }
+  const stats = adminStats(users);
   const priceFields = plans.map((plan) => `
     <fieldset class="editor-card">
       <legend>${escapeHtml(plan.name)}</legend>
-      <label for="plan-${escapeHtml(plan.id)}-name">Nombre</label>
+      <label for="plan-${escapeHtml(plan.id)}-name">${escapeHtml(adminT('admin.field.name'))}</label>
       <input id="plan-${escapeHtml(plan.id)}-name" name="${escapeHtml(plan.id)}-name" value="${escapeHtml(plan.name)}" required>
-      <label for="plan-${escapeHtml(plan.id)}-monthly">Mensual</label>
+      <label for="plan-${escapeHtml(plan.id)}-monthly">${escapeHtml(adminT('admin.monthBill'))}</label>
       <input id="plan-${escapeHtml(plan.id)}-monthly" name="${escapeHtml(plan.id)}-monthly" type="number" min="0" step="1" value="${Number(plan.monthly)}" required>
-      <label for="plan-${escapeHtml(plan.id)}-yearly">Anual</label>
+      <label for="plan-${escapeHtml(plan.id)}-yearly">${escapeHtml(adminT('admin.yearBill'))}</label>
       <input id="plan-${escapeHtml(plan.id)}-yearly" name="${escapeHtml(plan.id)}-yearly" type="number" min="0" step="1" value="${Number(plan.yearly)}" required>
     </fieldset>`).join('');
+  const prices = plans.length
+    ? `<form class="wizard-form" onsubmit="saveAdminPlans(event)">${priceFields}
+      <button type="submit" class="log-btn">${escapeHtml(adminT('admin.save.prices'))}</button>
+    </form>`
+    : '<p class="wizard-help">' + escapeHtml(adminT('admin.noplans')) + '</p>';
+  const list = users.length
+    ? adminUserButtons()
+    : '<p class="wizard-help">' + escapeHtml(adminT('admin.nousers')) + '</p>';
   body.innerHTML = `
-    <h2 class="wizard-title">Precios</h2>
-    <p class="wizard-help">Estos números son los que ve la landing. No se cobra la tarjeta desde acá.</p>
-    <form class="wizard-form" onsubmit="saveAdminPlans(event)">${priceFields}
-      <button type="submit" class="log-btn">Guardar precios</button>
-    </form>
-    <h2 class="wizard-title" style="margin-top:22px">Usuarios</h2>
+    <div class="admin-stats">
+      ${adminStatCard(stats.total, 'admin.total')}
+      ${adminStatCard(stats.week, 'admin.week')}
+      ${adminStatCard(stats.month, 'admin.month')}
+      ${adminStatCard(stats.trial, 'admin.trial')}
+      ${adminStatCard(stats.active, 'admin.active')}
+      ${adminStatCard(stats.expired, 'admin.expired')}
+    </div>
+    <h2 class="wizard-title">${escapeHtml(adminT('admin.byplan'))}</h2>
+    <div class="admin-plan-row">${adminPlanBreakdown(users) || '<span>' + escapeHtml(adminT('admin.nousers')) + '</span>'}</div>
+    <h2 class="wizard-title">${escapeHtml(adminT('admin.signups'))}</h2>
+    <div class="admin-filters">${adminFilterButtons()}</div>
     <form class="wizard-form" onsubmit="return false">
-      <label for="adminSearch">Buscar por email</label>
+      <label for="adminSearch">${escapeHtml(adminT('admin.search'))}</label>
       <input id="adminSearch" value="${escapeHtml(adminState.query)}" placeholder="email" oninput="filterAdminUsers(this.value)">
     </form>
-    <div id="adminUserList">${users.length ? adminUserButtons() : '<p class="wizard-help">' + (typeof I18n !== 'undefined' ? I18n.t('admin.nousers') : 'Todavía no hay cuentas.') + '</p>'}</div>`;
+    <div id="adminUserList">${list}</div>
+    <h2 class="wizard-title" style="margin-top:22px">${escapeHtml(adminT('admin.prices.title'))}</h2>
+    <p class="wizard-help">${escapeHtml(adminT('admin.prices.help'))}</p>
+    ${prices}`;
 }
 
 function filterAdminUsers(value) {
   adminState.query = value || '';
   const list = document.getElementById('adminUserList');
-  if (list) list.innerHTML = adminUserButtons();
+  if (list) list.innerHTML = adminState.users.length ? adminUserButtons() : '<p class="wizard-help">' + escapeHtml(adminT('admin.nousers')) + '</p>';
+}
+
+function setAdminFilter(name) {
+  adminState.filter = name || 'all';
+  document.querySelectorAll('[data-admin-filter]').forEach((btn) => {
+    btn.classList.toggle('is-on', btn.getAttribute('data-admin-filter') === adminState.filter);
+  });
+  filterAdminUsers(adminState.query);
 }
 
 async function openAdminUser(userId) {
@@ -186,7 +285,7 @@ async function renderAdminUser(body, title) {
     await renderAdminHome(body, title);
     return;
   }
-  if (title) title.textContent = user.email || 'Usuario';
+  if (title) title.textContent = user.email || adminT('admin.nomail');
   const roles = ['athlete', 'trainer', 'admin'].map((role) =>
     `<option value="${role}"${user.role === role ? ' selected' : ''}>${adminRoleLabel(role)}</option>`
   ).join('');
@@ -201,23 +300,23 @@ async function renderAdminUser(body, title) {
   ).join('');
   const billing = user.billing === 'year' ? 'year' : 'month';
   body.innerHTML = `
-    <h2 class="wizard-title">${escapeHtml(user.email || 'Sin email')}</h2>
-    <p class="wizard-help">Alta ${escapeHtml(adminDateInput(user.created_at) || '—')}. ${escapeHtml(adminUserLine(user))}.</p>
+    <h2 class="wizard-title">${escapeHtml(user.email || adminT('admin.nomail'))}</h2>
+    <p class="wizard-help">${escapeHtml(adminT('admin.joined', { date: adminDateInput(user.created_at) || '—' }))} ${escapeHtml(adminUserLine(user))}.</p>
     <form class="wizard-form" onsubmit="saveAdminUser(event)">
-      <label for="adminRole">Rol</label>
+      <label for="adminRole">${escapeHtml(adminT('admin.role'))}</label>
       <select id="adminRole" name="role">${roles}</select>
-      <label for="adminPlan">Plan</label>
+      <label for="adminPlan">${escapeHtml(adminT('admin.plan'))}</label>
       <select id="adminPlan" name="plan">${plans}</select>
-      <label for="adminBilling">Ciclo</label>
+      <label for="adminBilling">${escapeHtml(adminT('admin.billing'))}</label>
       <select id="adminBilling" name="billing">
-        <option value="month"${billing === 'month' ? ' selected' : ''}>Mensual</option>
-        <option value="year"${billing === 'year' ? ' selected' : ''}>Anual</option>
+        <option value="month"${billing === 'month' ? ' selected' : ''}>${escapeHtml(adminT('admin.monthBill'))}</option>
+        <option value="year"${billing === 'year' ? ' selected' : ''}>${escapeHtml(adminT('admin.yearBill'))}</option>
       </select>
-      <label for="adminStatus">Estado</label>
+      <label for="adminStatus">${escapeHtml(adminT('admin.status'))}</label>
       <select id="adminStatus" name="status">${statusOptions}</select>
-      <label for="adminTrialEnd">Fin de la prueba</label>
+      <label for="adminTrialEnd">${escapeHtml(adminT('admin.trialEnd'))}</label>
       <input id="adminTrialEnd" name="trialEnd" type="date" value="${escapeHtml(adminDateInput(user.trial_ends_at))}">
-      <button type="submit" class="log-btn">Guardar usuario</button>
+      <button type="submit" class="log-btn">${escapeHtml(adminT('admin.save.user'))}</button>
     </form>`;
 }
 
@@ -245,7 +344,7 @@ async function saveAdminPlans(event) {
       if (!data || !data.length) throw new Error('subscription_plans');
     }
     if (typeof Subscription !== 'undefined') await Subscription.refreshPlans();
-    if (typeof showToast === 'function') showToast('Precios guardados');
+    if (typeof showToast === 'function') showToast(adminT('admin.saved.prices'));
     await renderAdmin();
   } catch (err) {
     button.disabled = false;
@@ -284,7 +383,7 @@ async function saveAdminUser(event) {
       updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id' });
     if (sub.error) throw sub.error;
-    if (typeof showToast === 'function') showToast('Usuario guardado');
+    if (typeof showToast === 'function') showToast(adminT('admin.saved.user'));
     adminState.users = [];
     await renderAdmin();
   } catch (err) {

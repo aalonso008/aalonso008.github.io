@@ -217,9 +217,9 @@
 
   <div id="adminPanel" class="trainer-panel" role="dialog" aria-modal="true" aria-labelledby="adminTitle" hidden>
     <div class="trainer-top">
-      <button type="button" class="wizard-close" onclick="adminBack()" aria-label="Volver">←</button>
-      <h2 id="adminTitle">Administrar</h2>
-      <button type="button" class="wizard-close" onclick="closeAdmin()" aria-label="Cerrar">✕</button>
+      <button type="button" id="adminBack" class="wizard-close" onclick="adminBack()" data-i18n-aria="admin.back" aria-label="Volver" hidden>←</button>
+      <h2 id="adminTitle" data-i18n="admin.title">Administrar</h2>
+      <button type="button" class="btn-secondary-sm" onclick="signOutAccount()" data-i18n="admin.signout">Cerrar sesión</button>
     </div>
     <div id="adminBody" class="trainer-body"></div>
   </div>
