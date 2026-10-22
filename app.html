@@ -18,7 +18,9 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/sw.js').catch(function () {});
+        navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then(function (reg) {
+          return reg.update();
+        }).catch(function () {});
       });
     }
   </script>
@@ -230,6 +232,7 @@
       <h2 id="trainerTitle">Alumnos</h2>
       <button type="button" class="wizard-close" onclick="closeTrainer()" aria-label="Cerrar">✕</button>
     </div>
+    <button type="button" id="trainerWizard" class="trainer-wizard" hidden onclick="openStudentWizard()">✨ Armar con el asistente</button>
     <div id="trainerBody" class="trainer-body"></div>
   </div>
 

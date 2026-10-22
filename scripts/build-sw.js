@@ -49,7 +49,7 @@ const assets = [
   'https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js',
 ];
 
-const sw = `const CACHE = 'tu-rutina-v35';
+const sw = `const CACHE = 'tu-rutina-v36';
 const ASSETS = ${JSON.stringify(assets, null, 2)};
 
 self.addEventListener('install', (event) => {
@@ -76,6 +76,19 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.hostname.endsWith('supabase.co') || url.hostname === 'cdn.jsdelivr.net' && url.pathname.includes('supabase')) {
     event.respondWith(fetch(event.request));
+    return;
+  }
+  const fresh = url.origin === self.location.origin && /\\.(js|css|html)$/.test(url.pathname);
+  if (fresh) {
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(event.request, copy)).catch(() => {});
+        }
+        return response;
+      }).catch(() => caches.match(event.request))
+    );
     return;
   }
   event.respondWith(

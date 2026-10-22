@@ -62,6 +62,18 @@ function closeTrainer() {
   if (!panel) return;
   panel.classList.remove('show');
   panel.hidden = true;
+  syncTrainerWizardButton();
+}
+
+function syncTrainerWizardButton() {
+  const button = document.getElementById('trainerWizard');
+  if (!button) return;
+  const show = trainer.view === 'student' && !!trainer.student;
+  button.hidden = !show;
+  if (!show) return;
+  button.textContent = trainerRoutineHasExercises(trainer.routine)
+    ? '✨ Cambiar con el asistente'
+    : '✨ Armar con el asistente';
 }
 
 async function renderTrainer() {
@@ -88,6 +100,8 @@ async function renderTrainer() {
     renderStudent(body);
   } catch (error) {
     body.innerHTML = `<p class="wizard-note">${escapeHtml(trainerMessage(error))}</p>`;
+  } finally {
+    syncTrainerWizardButton();
   }
 }
 
