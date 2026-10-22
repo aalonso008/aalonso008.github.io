@@ -118,18 +118,6 @@ function setAppLocked(locked) {
 async function showLoginGate() {
   if (typeof closeTrainer === 'function') closeTrainer();
   if (typeof closeAdmin === 'function') closeAdmin();
-  const routine = typeof Storage !== 'undefined' ? await Storage.getRoutine() : null;
-  if (routine && Array.isArray(routine.days) && routine.days.length) {
-    const gate = document.getElementById('loginGate');
-    if (gate) gate.classList.remove('show');
-    setAppLocked(false);
-    if (typeof hideWelcome === 'function') hideWelcome();
-    currentRoutine = routine;
-    if (typeof renderRoutineView === 'function') await renderRoutineView(routine);
-    if (typeof renderLogPage === 'function') await renderLogPage();
-    if (typeof Subscription !== 'undefined') Subscription.refreshUi();
-    return;
-  }
   const gate = document.getElementById('loginGate');
   if (gate) gate.classList.add('show');
   setAppLocked(true);
