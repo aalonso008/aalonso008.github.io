@@ -184,8 +184,8 @@ async function bootApp() {
     await renderLogPage();
     if (document.getElementById('progressCharts')) await renderProgressCharts();
   } else {
-    showWelcome();
-    document.getElementById('routineDays').innerHTML = '<p class="empty-day">' + (typeof I18n !== 'undefined' ? I18n.t('empty.routine') : 'Crea tu rutina para empezar.') + '</p>';
+    showWelcome(syncUser ? 'account' : 'new');
+    document.getElementById('routineDays').innerHTML = '<p class="empty-day">' + (typeof I18n !== 'undefined' ? I18n.t(syncUser ? 'welcome.account' : 'empty.routine') : 'Crea tu rutina para empezar.') + '</p>';
     await renderLogPage();
   }
 }

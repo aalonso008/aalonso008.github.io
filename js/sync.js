@@ -534,6 +534,33 @@ async function sendMagicLink(event) {
   }
 }
 
+async function bringAccountRoutine() {
+  const button = document.getElementById('welcomeBring');
+  if (!syncUser) {
+    openAccount();
+    return;
+  }
+  if (button) button.disabled = true;
+  try {
+    await syncAccount();
+    const routine = await Storage.getRoutine();
+    if (routine && Array.isArray(routine.days) && routine.days.length) {
+      if (typeof hideWelcome === 'function') hideWelcome();
+      currentRoutine = routine;
+      await renderRoutineView(routine);
+      if (typeof renderLogPage === 'function') await renderLogPage();
+      if (document.getElementById('progressCharts') && typeof renderProgressCharts === 'function') await renderProgressCharts();
+      return;
+    }
+    showToast(typeof I18n !== 'undefined' ? I18n.t('welcome.still') : 'Sigue sin haber una rutina en la cuenta. Abrí la app en el celular con internet.');
+  } catch (err) {
+    console.error(err);
+    showToast(typeof I18n !== 'undefined' ? I18n.t('welcome.still') : 'Sigue sin haber una rutina en la cuenta. Abrí la app en el celular con internet.');
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
 async function syncNow() {
   await pushAndPull();
   showToast('Sincronizado');
