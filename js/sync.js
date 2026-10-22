@@ -484,7 +484,7 @@ async function openAccount() {
     const client = await ensureClient();
     const role = await client.from('profiles').select('role').eq('user_id', syncUser.id).maybeSingle();
     const roleName = role.data && role.data.role;
-    const coach = typeof Subscription !== 'undefined' && Subscription.allowsCoach(roleName);
+    const coach = typeof Subscription !== 'undefined' && Subscription.allowsCoach();
     const studentsLabel = typeof I18n !== 'undefined' ? I18n.t('trainer.students') : 'Alumnos';
     const adminBtn = roleName === 'admin'
       ? '<button type="button" class="log-btn" onclick="openAdmin()">Administrar</button>'
