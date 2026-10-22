@@ -948,7 +948,7 @@ async function signOutAccount() {
     await Storage.importAll({ routine: null, routines: [], sets: [], exercises: [], bodyMetrics: [], profile: null, settings: DEFAULT_SETTINGS });
     currentRoutine = null;
   }
-  showLoginGate();
+  await showLoginGate();
   closeAccount();
   updateSyncDot();
   await refreshVisible();
