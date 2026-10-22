@@ -1,60 +1,12 @@
-const CACHE = 'tu-rutina-v40';
-const ASSETS = [
-  "./",
-  "./index.html",
-  "./app.html",
-  "./privacy.html",
-  "./landing.html",
-  "./css/main.css",
-  "./css/extra.css",
-  "./css/landing.css",
-  "./js/i18n.js",
-  "./js/config.js",
-  "./js/model.js",
-  "./js/body-calc.js",
-  "./js/progression-calc.js",
-  "./js/storage.js",
-  "./js/routine-store.js",
-  "./js/routine-render.js",
-  "./js/routine-editor.js",
-  "./js/routine-generator.js",
-  "./js/routine-wizard.js",
-  "./js/log.js",
-  "./js/workout.js",
-  "./js/progress.js",
-  "./js/body.js",
-  "./js/settings.js",
-  "./js/sync.js",
-  "./js/trainer.js",
-  "./js/subscription.js",
-  "./js/admin.js",
-  "./js/landing.js",
-  "./js/app.js",
-  "./js/pwa.js",
-  "./content/log.html",
-  "./content/progression.html",
-  "./data/default-routine.json",
-  "./data/exercise-catalog.json",
-  "./manifest.webmanifest",
-  "./manifest.json",
-  "./assets/icons/icon-192.png",
-  "./assets/icons/icon-512.png",
-  "./assets/icons/icon-maskable-512.png",
-  "./assets/apple-touch-icon.png",
-  "https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"
-];
-
+/* tu-rutina-v41: la información vive en la base, no en la caché. */
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE).then((cache) =>
-      Promise.all(ASSETS.map((url) => cache.add(url).catch(() => {})))
-    ).then(() => self.skipWaiting())
-  );
+  event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
+    caches.keys()
+      .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
@@ -65,34 +17,6 @@ self.addEventListener('message', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  const url = new URL(event.request.url);
-  if (url.hostname.endsWith('supabase.co') || url.hostname === 'cdn.jsdelivr.net' && url.pathname.includes('supabase')) {
-    event.respondWith(fetch(event.request));
-    return;
-  }
-  const fresh = url.origin === self.location.origin && /\.(js|css|html)$/.test(url.pathname);
-  if (fresh) {
-    event.respondWith(
-      fetch(event.request).then((response) => {
-        if (response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(event.request, copy)).catch(() => {});
-        }
-        return response;
-      }).catch(() => caches.match(event.request))
-    );
-    return;
-  }
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        if (url.origin === self.location.origin && response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(event.request, copy)).catch(() => {});
-        }
-        return response;
-      });
-    })
-  );
+  if (!event.request.url.startsWith('http')) return;
+  event.respondWith(fetch(event.request));
 });

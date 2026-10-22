@@ -136,24 +136,29 @@ async function handleSession(session) {
   }
 }
 
+function savedResult(result) {
+  if (result && result.error) throw result.error;
+  return result;
+}
+
 async function syncAccount() {
   if (!syncUser || !navigator.onLine) {
     updateSyncDot();
     return;
   }
+  const queue = await Storage.getSyncQueue();
   const remoteSets = await countOwnRemote('workout_sets');
   const remoteRoutines = await countOwnRemote('routines');
+  const remoteExercises = await countOwnRemote('exercises');
   const local = await Storage.exportAll();
-  const localSets = (local.sets || []).length;
-  if ((remoteSets || remoteRoutines) && !localSets) {
-    await pullAll(false);
-  } else {
-    try {
-      await uploadAll();
-    } catch (err) {
-      console.error(err);
-    }
-    await pullAll(false);
+  const remoteHasData = remoteSets || remoteRoutines || remoteExercises;
+  const localHasData = (local.sets || []).length || (local.routines || []).length || (local.exercises || []).length;
+  try {
+    if (queue.length) await pushAndPull();
+    else if (!remoteHasData && localHasData) await uploadAll();
+    else await pullAll(true);
+  } catch (err) {
+    console.error(err);
   }
   updateSyncDot();
 }
@@ -184,20 +189,52 @@ async function uploadAll() {
   if (!client || !syncUser) return;
   const data = await Storage.exportAll();
   const userId = syncUser.id;
-  if (data.profile || data.settings) await client.from('profiles').upsert(profileRow(data.profile || { id: 'profile' }, data.settings, userId));
+  if (data.profile || data.settings) {
+    savedResult(await client.from('profiles').upsert(profileRow(data.profile || { id: 'profile' }, data.settings, userId)));
+  }
   if (data.exercises) {
-    for (const exercise of data.exercises) await client.from('exercises').upsert(exerciseRow(exercise, userId));
+    for (const exercise of data.exercises) savedResult(await client.from('exercises').upsert(exerciseRow(exercise, userId)));
   }
   if (data.routines) {
-    for (const routine of data.routines) await client.from('routines').upsert(routineRow(routine, userId, data.routine && routine.id === data.routine.id));
+    for (const routine of data.routines) {
+      savedResult(await client.from('routines').upsert(routineRow(routine, userId, data.routine && routine.id === data.routine.id)));
+    }
   } else if (data.routine) {
-    await client.from('routines').upsert(routineRow(data.routine, userId, true));
+    savedResult(await client.from('routines').upsert(routineRow(data.routine, userId, true)));
   }
-  for (const set of data.sets || []) await client.from('workout_sets').upsert(setRow(set, userId));
-  for (const metric of data.bodyMetrics || []) await client.from('body_metrics').upsert(metricRow(metric, userId));
+  for (const set of data.sets || []) savedResult(await client.from('workout_sets').upsert(setRow(set, userId)));
+  for (const metric of data.bodyMetrics || []) savedResult(await client.from('body_metrics').upsert(metricRow(metric, userId)));
   await Storage.clearSyncQueue();
   await Storage.saveSyncMeta({ lastPulledAt: new Date().toISOString() });
   updateSyncDot();
+}
+
+async function pushQueueItem(client, item) {
+  if (item.op === 'delete') {
+    savedResult(await client.from(item.table).update({ deleted: true, updated_at: new Date().toISOString() }).eq('id', item.id).eq('user_id', syncUser.id));
+    return;
+  }
+  if (item.table === 'profiles') {
+    const data = await Storage.exportAll();
+    savedResult(await client.from('profiles').upsert(profileRow(item.record, data.settings, syncUser.id)));
+    return;
+  }
+  if (item.table === 'routines') {
+    const active = await Storage.getRoutine();
+    savedResult(await client.from('routines').upsert(routineRow(item.record, syncUser.id, active && active.id === item.record.id)));
+    return;
+  }
+  if (item.table === 'exercises') {
+    savedResult(await client.from('exercises').upsert(exerciseRow(item.record, syncUser.id)));
+    return;
+  }
+  if (item.table === 'workout_sets') {
+    savedResult(await client.from('workout_sets').upsert(setRow(item.record, syncUser.id)));
+    return;
+  }
+  if (item.table === 'body_metrics') {
+    savedResult(await client.from('body_metrics').upsert(metricRow(item.record, syncUser.id)));
+  }
 }
 
 async function pushAndPull() {
@@ -206,26 +243,19 @@ async function pushAndPull() {
     return;
   }
   const client = await ensureClient();
+  if (!client) return;
   const queue = await Storage.getSyncQueue();
+  const done = [];
   for (const item of queue) {
-    if (item.op === 'delete') {
-      await client.from(item.table).update({ deleted: true, updated_at: new Date().toISOString() }).eq('id', item.id).eq('user_id', syncUser.id);
-    } else if (item.table === 'profiles') {
-      const data = await Storage.exportAll();
-      await client.from('profiles').upsert(profileRow(item.record, data.settings, syncUser.id));
-    } else if (item.table === 'routines') {
-      const active = await Storage.getRoutine();
-      await client.from('routines').upsert(routineRow(item.record, syncUser.id, active && active.id === item.record.id));
-    } else if (item.table === 'exercises') {
-      await client.from('exercises').upsert(exerciseRow(item.record, syncUser.id));
-    } else if (item.table === 'workout_sets') {
-      await client.from('workout_sets').upsert(setRow(item.record, syncUser.id));
-    } else if (item.table === 'body_metrics') {
-      await client.from('body_metrics').upsert(metricRow(item.record, syncUser.id));
+    try {
+      await pushQueueItem(client, item);
+      done.push(item);
+    } catch (error) {
+      console.error(error);
     }
   }
-  await Storage.clearSyncQueue();
-  await pullAll(false);
+  if (done.length) await Storage.ackSyncQueue(done);
+  await pullAll(true);
   updateSyncDot();
 }
 
@@ -246,18 +276,29 @@ async function countOwnRemote(table) {
   const client = await ensureClient();
   const pupils = await trainerPupilIds();
   const owned = await client.from(table).select('id, student_id').eq('user_id', syncUser.id);
-  if (owned.error) {
-    const fallback = await client.from(table).select('id', { count: 'exact', head: true });
-    return fallback.count || 0;
-  }
+  if (owned.error) throw owned.error;
   return withoutPupilRows(owned.data, pupils).length;
+}
+
+async function insertMissing(client, table, localRows, remoteRows, toRow) {
+  const ids = new Set((remoteRows || []).map((row) => row && row.id).filter(Boolean));
+  const added = [];
+  for (const record of localRows || []) {
+    if (!record || !record.id || ids.has(record.id) || record.deleted) continue;
+    const result = savedResult(await client.from(table).upsert(toRow(record)).select().single());
+    if (result.data) {
+      added.push(result.data);
+      ids.add(record.id);
+    }
+  }
+  return (remoteRows || []).concat(added);
 }
 
 async function pullAll(replace) {
   const client = await ensureClient();
   const queued = new Set((await Storage.getSyncQueue()).map((item) => item.id));
   const pupils = await trainerPupilIds();
-  const [exerciseRows, setRows, metricRows, routineRows, profile] = await Promise.all([
+  let [exerciseRows, setRows, metricRows, routineRows, profile] = await Promise.all([
     fetchOwn('exercises'),
     fetchOwn('workout_sets'),
     fetchOwn('body_metrics'),
@@ -265,6 +306,17 @@ async function pullAll(replace) {
     client.from('profiles').select('*').eq('user_id', syncUser.id).maybeSingle(),
   ]);
   const local = await Storage.exportAll();
+  if (replace) {
+    const userId = syncUser.id;
+    exerciseRows = await insertMissing(client, 'exercises', local.exercises, exerciseRows, (row) => exerciseRow(row, userId));
+    setRows = await insertMissing(client, 'workout_sets', local.sets, setRows, (row) => setRow(row, userId));
+    metricRows = await insertMissing(client, 'body_metrics', local.bodyMetrics, metricRows, (row) => metricRow(row, userId));
+    routineRows = await insertMissing(client, 'routines', local.routines, routineRows, (row) => routineRow(row, userId, local.routine && row.id === local.routine.id));
+    if (!profile.data && (local.profile || local.settings)) {
+      const result = savedResult(await client.from('profiles').upsert(profileRow(local.profile || { id: 'profile' }, local.settings, userId)).select().maybeSingle());
+      profile = { data: result.data };
+    }
+  }
   const nextExercises = mergeRows(local.exercises, withoutPupilRows(exerciseRows, pupils).map(exerciseFromRow), queued, replace);
   const nextSets = mergeRows(local.sets, withoutPupilRows(setRows, pupils).map(setFromRow), queued, replace);
   const nextMetrics = mergeRows(local.bodyMetrics, withoutPupilRows(metricRows, pupils).map(metricFromRow), queued, replace);
@@ -349,17 +401,25 @@ function healMerged(primary, fallback) {
 }
 
 function mergeRows(local, remote, queued, replace) {
-  const map = new Map((replace ? [] : local || []).map((item) => [item.id, item]));
+  const localById = new Map();
+  const map = new Map();
+  (local || []).forEach((item) => {
+    if (!item || !item.id) return;
+    localById.set(item.id, item);
+    if (!replace || (queued && queued.has(item.id))) map.set(item.id, item);
+  });
   remote.forEach((item) => {
     if (!item || !item.id) return;
     if (item.deleted) {
-      map.delete(item.id);
+      if (!(queued && queued.has(item.id))) map.delete(item.id);
       return;
     }
-    if (queued.has(item.id)) return;
+    if (queued && queued.has(item.id)) return;
     const prev = map.get(item.id);
     const newer = !prev || String(item.updatedAt || '') >= String(prev.updatedAt || '');
-    map.set(item.id, healMerged(newer ? item : prev, newer ? prev : item));
+    const winner = newer ? item : prev;
+    const other = newer ? (prev || localById.get(item.id)) : item;
+    map.set(item.id, healMerged(winner, other));
   });
   return [...map.values()];
 }

@@ -1,5 +1,5 @@
-/* Capa única de datos. localStorage es la fuente inmediata; la cola sync_queue
-   la vacía js/sync.js cuando hay sesión de Supabase. */
+/* Copia local para mostrar la app al instante. Con sesión, la base de Supabase
+   reemplaza esta copia al abrir; la cola sync_queue conserva solo lo que todavía no se subió. */
 const Storage = (function () {
   const KEYS = {
     routine: 'tu_rutina_data',
@@ -369,6 +369,15 @@ const Storage = (function () {
     });
   }
 
+  function ackSyncQueue(done) {
+    const finished = new Set((done || []).map((item) => [item.table, item.id, item.op, item.queuedAt].join('\0')));
+    return enqueue(() => {
+      const queue = readJson(KEYS.queue, []).filter((item) => !finished.has([item.table, item.id, item.op, item.queuedAt].join('\0')));
+      writeJson(KEYS.queue, queue);
+      return queue;
+    });
+  }
+
   function getSyncMeta() {
     return enqueue(() => readJson(KEYS.syncMeta, { lastPulledAt: null }));
   }
@@ -501,6 +510,7 @@ const Storage = (function () {
     saveSettings,
     getSyncQueue,
     clearSyncQueue,
+    ackSyncQueue,
     getSyncMeta,
     saveSyncMeta,
     getSyncChoice,
