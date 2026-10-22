@@ -141,6 +141,8 @@ const WIZARD_STEPS = [
 
 const wizard = {
   from: 'editor',
+  audience: null,
+  studentName: '',
   phase: 'questions',
   stepKey: 'goal',
   answers: {},
@@ -231,7 +233,13 @@ function stepIsValid(step) {
   return true;
 }
 
+function wizardAudienceNote() {
+  if (wizard.audience !== 'student') return '';
+  return `<p class="wizard-note">${escapeHtml(wt('wiz.for.student', { name: wizard.studentName || '' }))}</p>`;
+}
+
 async function persistWizard() {
+  if (wizard.audience === 'student') return;
   await Storage.saveWizardDraft({
     phase: wizard.phase,
     stepKey: wizard.stepKey,
@@ -264,6 +272,8 @@ function hideWizardShell() {
 }
 
 async function openRoutineWizard(from) {
+  wizard.audience = null;
+  wizard.studentName = '';
   if (typeof syncUser !== 'undefined' && !syncUser) {
     if (typeof showLoginGate === 'function') showLoginGate();
     return;
@@ -304,7 +314,7 @@ async function openRoutineWizard(from) {
 function beginWizard(fromDraft) {
   wizard.forceProfile = false;
   wizard.returnToSummary = false;
-  if (!fromDraft) wizard.skipProfile = knownBodyProfile(wizard.storedProfile);
+  if (!fromDraft) wizard.skipProfile = wizard.audience === 'student' ? true : knownBodyProfile(wizard.storedProfile);
   if (fromDraft && wizard.pendingDraft) {
     const draft = wizard.pendingDraft;
     wizard.answers = draft.answers || {};
@@ -324,11 +334,14 @@ function beginWizard(fromDraft) {
 }
 
 async function closeRoutineWizard() {
+  const forStudent = wizard.audience === 'student';
   if (wizard.phase !== 'resume' && !confirm(wt('wiz.exit'))) return;
   clearTimeout(wizard.timer);
-  if (wizard.phase !== 'resume') await Storage.clearWizardDraft();
+  if (!forStudent && wizard.phase !== 'resume') await Storage.clearWizardDraft();
+  wizard.audience = null;
+  wizard.studentName = '';
   hideWizardShell();
-  if (wizard.from === 'welcome' && typeof showWelcome === 'function' && !currentRoutine) showWelcome();
+  if (!forStudent && wizard.from === 'welcome' && typeof showWelcome === 'function' && !currentRoutine) showWelcome();
 }
 
 function wizardBack() {
@@ -389,6 +402,7 @@ async function wizardNext() {
 }
 
 async function commitWizardProfile() {
+  if (wizard.audience === 'student') return;
   const profile = wizard.answers.profile || emptyProfile();
   const current = (await Storage.getProfile()) || {};
   const next = Object.assign({}, current);
@@ -627,20 +641,20 @@ function renderWizard() {
   if (wizard.phase === 'summary') {
     label.textContent = wt('wiz.summary');
     bar.style.width = '100%';
-    body.innerHTML = `<div class="wizard-pane"><div id="wizardTitle">${renderSummary()}</div></div>`;
+    body.innerHTML = `<div class="wizard-pane">${wizardAudienceNote()}<div id="wizardTitle">${renderSummary()}</div></div>`;
     back.disabled = false;
     next.disabled = false;
-    next.textContent = wt('wiz.generate');
+    next.textContent = wizard.audience === 'student' ? 'Generar la rutina' : wt('wiz.generate');
     next.onclick = () => wizardNext();
     return;
   }
   if (wizard.phase === 'preview' || wizard.phase === 'save-choice' || wizard.phase === 'swap') {
     label.textContent = wt('wiz.yours');
     bar.style.width = '100%';
-    body.innerHTML = `<div class="wizard-pane" id="wizardTitle">${renderPreview()}</div>`;
+    body.innerHTML = `<div class="wizard-pane" id="wizardTitle">${wizardAudienceNote()}${renderPreview()}</div>`;
     back.disabled = false;
     next.disabled = wizard.phase !== 'preview';
-    next.textContent = wt('wiz.save');
+    next.textContent = wizard.audience === 'student' ? wt('wiz.save.student') : wt('wiz.save');
     next.onclick = () => wizardNext();
     return;
   }
@@ -648,7 +662,7 @@ function renderWizard() {
   const index = Math.max(0, steps.findIndex((item) => item.key === step.key));
   label.textContent = wt('wiz.step', { n: index + 1, total: steps.length });
   bar.style.width = Math.round(((index + 1) / steps.length) * 100) + '%';
-  body.innerHTML = `<div class="wizard-pane"><h2 id="wizardTitle" class="wizard-title">${escapeHtml(step.title)}</h2><p class="wizard-help">${escapeHtml(step.help)}</p>${renderQuestion(step)}</div>`;
+  body.innerHTML = `<div class="wizard-pane">${wizardAudienceNote()}<h2 id="wizardTitle" class="wizard-title">${escapeHtml(step.title)}</h2><p class="wizard-help">${escapeHtml(step.help)}</p>${renderQuestion(step)}</div>`;
   back.disabled = index === 0 && !wizard.returnToSummary;
   next.disabled = !stepIsValid(step);
   next.textContent = wizard.returnToSummary ? wt('wiz.done') : wt('wiz.next');
@@ -719,6 +733,12 @@ function formatSlot(slot) {
 
 function renderPreview() {
   if (wizard.phase === 'save-choice') {
+    if (wizard.audience === 'student') {
+      return `<h2 class="wizard-title">${escapeHtml(wt('wiz.replace.student.title'))}</h2>
+        <p class="wizard-help">${escapeHtml(wt('wiz.replace.student.help'))}</p>
+        <button type="button" class="log-btn" onclick="saveGeneratedRoutine('replace')">${escapeHtml(wt('wiz.replace.student'))}</button>
+        <button type="button" class="btn-secondary modal-btn" onclick="saveGeneratedRoutine('new')">${escapeHtml(wt('wiz.save.student.new'))}</button>`;
+    }
     return `<h2 class="wizard-title">${escapeHtml(wt('wiz.replace.title'))}</h2>
       <p class="wizard-help">${escapeHtml(wt('wiz.replace.help'))}</p>
       <button type="button" class="log-btn" onclick="saveGeneratedRoutine('replace')">${escapeHtml(wt('wiz.replace'))}</button>
@@ -820,6 +840,16 @@ function removeWizardExercise(dayIndex, sectionIndex, slotIndex) {
 
 async function askSaveGenerated(openEditor) {
   wizard.openEditorAfter = !!openEditor;
+  if (wizard.audience === 'student') {
+    const existing = typeof trainer !== 'undefined' ? trainer.routine : null;
+    if (typeof trainerRoutineHasExercises === 'function' && trainerRoutineHasExercises(existing)) {
+      wizard.phase = 'save-choice';
+      renderWizard();
+      return;
+    }
+    await saveGeneratedRoutine('replace');
+    return;
+  }
   const existing = typeof getCurrentRoutine === 'function' ? getCurrentRoutine() : null;
   if (existing && existing.days && existing.days.some((day) => (day.sections || []).some((section) => (section.exercises || []).length))) {
     wizard.phase = 'save-choice';
@@ -829,7 +859,64 @@ async function askSaveGenerated(openEditor) {
   await saveGeneratedRoutine('replace');
 }
 
+function materializeStudentExercises(routine) {
+  const library = [];
+  const byKey = new Map();
+  routine.days.forEach((day) => {
+    day.sections.forEach((section) => {
+      section.exercises.forEach((slot) => {
+        const cat = catalogExercise(slot.catalogKey || slot.exerciseId);
+        if (!cat) return;
+        let stored = byKey.get(cat.key);
+        if (!stored) {
+          stored = {
+            id: createId('ex'),
+            catalogKey: cat.key,
+            name: cat.name,
+            muscleGroup: cat.muscleGroup,
+            muscles: cat.primary || [],
+            tip: cat.tip || '',
+            linkUrl: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(cat.name + ' técnica'),
+            linkLabel: cat.linkLabel || '▶ Buscar técnica en YouTube',
+            archived: false,
+          };
+          library.push(stored);
+          byKey.set(cat.key, stored);
+        }
+        slot.exerciseId = stored.id;
+        delete slot.catalogKey;
+        delete slot.muscleGroup;
+        delete slot.type;
+        delete slot.pattern;
+      });
+    });
+  });
+  return library;
+}
+
+async function saveGeneratedForStudent(mode) {
+  const routine = JSON.parse(JSON.stringify(wizard.generated.routine));
+  const exercises = materializeStudentExercises(routine);
+  if (mode === 'new' || !trainer.routine) routine.id = createId('rt');
+  else routine.id = trainer.routine.id;
+  if (routine.generatedFrom) routine.generatedFrom.createdAt = new Date().toISOString();
+  try {
+    await saveGeneratedStudentRoutine(routine, exercises);
+  } catch (error) {
+    alert(typeof trainerMessage === 'function' ? trainerMessage(error) : (error.message || 'No se pudo guardar'));
+    return;
+  }
+  wizard.audience = null;
+  wizard.studentName = '';
+  hideWizardShell();
+  if (typeof showToast === 'function') showToast('Rutina guardada para ' + ((trainer.student && trainer.student.name) || 'el alumno'));
+}
+
 async function saveGeneratedRoutine(mode) {
+  if (wizard.audience === 'student') {
+    await saveGeneratedForStudent(mode);
+    return;
+  }
   const routine = JSON.parse(JSON.stringify(wizard.generated.routine));
   const library = await Storage.getExercises();
   const byKey = new Map(library.filter((exercise) => exercise.catalogKey).map((exercise) => [exercise.catalogKey, exercise]));
