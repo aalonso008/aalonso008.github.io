@@ -496,6 +496,19 @@ async function deleteCurrentRoutine() {
   await renderRoutineView(currentRoutine);
 }
 
+async function switchActiveRoutine(id) {
+  if (!id || (currentRoutine && currentRoutine.id === id)) return;
+  const editorOpen = document.getElementById('page-editor') && document.getElementById('page-editor').classList.contains('active') && document.getElementById('edTitle');
+  if (editorOpen) {
+    await switchRoutine(id);
+    return;
+  }
+  currentRoutine = await Storage.setActiveRoutine(id);
+  editorDayIndex = 0;
+  await renderRoutineView(currentRoutine);
+  if (typeof refreshLogExercises === 'function') await refreshLogExercises();
+}
+
 async function switchRoutine(id) {
   await persistEditor();
   currentRoutine = await Storage.setActiveRoutine(id);

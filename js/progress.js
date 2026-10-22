@@ -73,6 +73,7 @@ async function renderProgressCharts() {
     }
     <p class="hint">Orientativo: 10–20 series por grupo.</p>
     <h3 class="block-title">Días entrenados</h3>
+    <p class="hint">${escapeHtml(typeof I18n !== 'undefined' ? I18n.t('progress.shared') : 'La racha y los días entrenados suman todas tus rutinas.')}</p>
     ${renderHeatmap(sets)}
     <div class="metric-switch">
       ${['peso', '1rm', 'volumen', 'reps']

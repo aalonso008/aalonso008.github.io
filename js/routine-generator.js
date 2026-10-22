@@ -25,6 +25,11 @@
     push: ['horizontal_push', 'incline_push', 'vertical_push', 'chest_fly', 'lateral_raise', 'triceps'],
     pull: ['vertical_pull', 'horizontal_pull', 'horizontal_pull', 'rear_delt', 'biceps', 'biceps'],
     legs: ['squat', 'hinge', 'lunge', 'quad_iso', 'hamstring_iso', 'calves'],
+    calFullA: ['vertical_pull', 'horizontal_push', 'squat', 'core'],
+    calFullB: ['horizontal_pull', 'vertical_push', 'lunge', 'hinge', 'core'],
+    calPush: ['horizontal_push', 'vertical_push', 'triceps', 'core'],
+    calPull: ['vertical_pull', 'horizontal_pull', 'biceps', 'core'],
+    calLegs: ['squat', 'hinge', 'lunge', 'calves', 'core'],
   };
   const FOCUS = {
     fullA: 'Cuerpo completo A',
@@ -37,6 +42,11 @@
     push: 'Empuje',
     pull: 'Tracción',
     legs: 'Piernas',
+    calFullA: 'Calistenia A',
+    calFullB: 'Calistenia B',
+    calPush: 'Empuje',
+    calPull: 'Tracción',
+    calLegs: 'Piernas',
   };
   const ALTERNATES = {
     squat: ['lunge', 'quad_iso'],
@@ -125,7 +135,22 @@
     return muscles;
   }
 
+  function chooseCalisthenicsSplit(answers) {
+    const days = Number(answers.daysPerWeek) || 3;
+    const level = answers.level || 'beginner';
+    if (days <= 2) return { name: 'Calistenia full body', keys: ['calFullA', 'calFullB'], warn: null };
+    if (days === 3) return { name: 'Calistenia empuje/tirón/piernas', keys: ['calPush', 'calPull', 'calLegs'], warn: null };
+    if (days === 4) return { name: 'Calistenia upper/lower', keys: ['calPush', 'calLegs', 'calPull', 'calFullA'], warn: null };
+    if (days === 5) return { name: 'Calistenia', keys: ['calPush', 'calPull', 'calLegs', 'calPush', 'calPull'], warn: null };
+    return {
+      name: 'Calistenia',
+      keys: ['calPush', 'calPull', 'calLegs', 'calPush', 'calPull', 'calLegs'],
+      warn: level === 'beginner' ? 'Seis días es mucho si estás empezando. Cada día queda un poco más corto.' : null,
+    };
+  }
+
   function chooseSplit(answers) {
+    if (answers && answers.style === 'calisthenics') return chooseCalisthenicsSplit(answers);
     const days = Number(answers.daysPerWeek) || 3;
     const level = answers.level || 'beginner';
     const strength = answers.goal === 'strength';
@@ -179,10 +204,13 @@
     return { count, repMin, repMax, restSec, note: '' };
   }
 
-  function candidates(catalog, pattern, answers, used, allowHard, allowRepeat) {
+  function candidates(catalog, pattern, answers, used, allowHard, allowRepeat, allowUntagged) {
+    const calisthenics = answers && answers.style === 'calisthenics';
+    const gear = calisthenics ? 'bodyweight' : answers.equipment;
     return catalog.filter((exercise) => {
       if (exercise.pattern !== pattern) return false;
-      if (!exercise.equipment.includes(answers.equipment)) return false;
+      if (!exercise.equipment.includes(gear)) return false;
+      if (calisthenics && !allowUntagged && !(exercise.styles || []).includes('calisthenics')) return false;
       if ((exercise.avoidIf || []).some((item) => (answers.limitations || []).includes(item))) return false;
       if (!allowHard && answers.level === 'beginner' && exercise.difficulty >= 3) return false;
       if (!allowRepeat && used.has(exercise.key)) return false;
@@ -215,9 +243,10 @@
       { hard: false, repeat: true },
       { hard: true, repeat: true },
     ];
+    if (answers && answers.style === 'calisthenics') passes.push({ hard: true, repeat: true, untagged: true });
     for (let pass = 0; pass < passes.length; pass += 1) {
       for (let i = 0; i < queue.length; i += 1) {
-        const pool = candidates(catalog, queue[i], answers, used, passes[pass].hard, passes[pass].repeat);
+        const pool = candidates(catalog, queue[i], answers, used, passes[pass].hard, passes[pass].repeat, passes[pass].untagged);
         if (!pool.length) continue;
         const ranked = pool.map((exercise) => ({ exercise, score: scoreExercise(exercise, answers, dayFatigue, slotIndex, rng) }));
         ranked.sort((a, b) => b.score - a.score);
@@ -439,11 +468,12 @@
     if (answers.cardio === 'regular' && (answers.goal === 'fat_loss' || answers.goal === 'recomp')) {
       reasons.push(tr('reason.cardio'));
     }
+    if (answers.style === 'calisthenics') reasons.push(tr('reason.calisthenics'));
 
     const routine = {
       version: 2,
       id: makeId(rng, 'rt'),
-      title: (goalNames[answers.goal] || 'Rutina') + ' · ' + (answers.daysPerWeek || days.length) + ' días',
+      title: (answers.style === 'calisthenics' ? '🤸 Calistenia' : (goalNames[answers.goal] || 'Rutina')) + ' · ' + (answers.daysPerWeek || days.length) + ' días',
       subtitle: split.name + (priorityText ? ' · Prioridad: ' + priorityText : ''),
       days,
       generatedFrom: {

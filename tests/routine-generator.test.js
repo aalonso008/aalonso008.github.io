@@ -140,3 +140,30 @@ test('catálogo: claves únicas y cobertura por patrón', () => {
   });
   assert.ok(priorityMuscles.chest);
 });
+
+test('la calistenia usa progresiones de peso corporal', () => {
+  [2, 3, 4, 5, 6].forEach((days) => {
+    const result = generateRoutine(answersFor('hypertrophy', 'beginner', days, 'full_gym', { style: 'calisthenics', limitations: [] }), catalog, { seed: 11 });
+    assert.equal(result.routine.days.length, days);
+    assert.match(result.routine.title, /Calistenia/);
+    assert.equal(result.routine.generatedFrom.answers.style, 'calisthenics');
+    slots(result.routine).forEach((slot) => {
+      const exercise = byKey(slot.exerciseId);
+      assert.ok(exercise, slot.exerciseId);
+      assert.ok(exercise.equipment.includes('bodyweight'), slot.exerciseId);
+      assert.ok((exercise.styles || []).includes('calisthenics'), slot.exerciseId);
+    });
+    result.routine.days.forEach((day) => {
+      const count = day.sections.reduce((sum, section) => sum + section.exercises.length, 0);
+      assert.ok(count >= 3, day.name + ' ' + count);
+    });
+  });
+  const limited = generateRoutine(answersFor('strength', 'beginner', 3, 'bodyweight', {
+    style: 'calisthenics',
+    limitations: ['shoulder', 'knee', 'wrist'],
+  }), catalog, { seed: 4 });
+  limited.routine.days.forEach((day) => {
+    const count = day.sections.reduce((sum, section) => sum + section.exercises.length, 0);
+    assert.ok(count >= 3, day.name);
+  });
+});

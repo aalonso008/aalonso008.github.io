@@ -72,18 +72,42 @@ function renderDayPanel(day, index, active, library, logs, settings) {
     </div>`;
 }
 
+async function renderRoutinePicker(routine) {
+  const box = document.getElementById('routinePicker');
+  if (!box || typeof Storage === 'undefined' || typeof Storage.getRoutines !== 'function') return;
+  const routines = await Storage.getRoutines();
+  if (!routines.length) {
+    box.hidden = true;
+    box.innerHTML = '';
+    return;
+  }
+  const label = typeof I18n !== 'undefined' ? I18n.t('routine.pick') : 'Rutina para hoy';
+  const fresh = typeof I18n !== 'undefined' ? I18n.t('routine.new') : 'Nueva';
+  const shared = typeof I18n !== 'undefined' ? I18n.t('routine.shared') : 'El contador de días es el mismo para todas.';
+  const options = routines
+    .map((item) => `<option value="${escapeHtml(item.id)}"${item.id === routine.id ? ' selected' : ''}>${escapeHtml(item.title || 'Rutina')}</option>`)
+    .join('');
+  box.hidden = false;
+  box.innerHTML = `
+    <label for="activeRoutine">${escapeHtml(label)}</label>
+    <select id="activeRoutine" onchange="switchActiveRoutine(this.value)">${options}</select>
+    <button type="button" class="btn-secondary-sm" onclick="openRoutineWizard('routine')">${escapeHtml(fresh)}</button>
+    <p class="hint">${escapeHtml(shared)}</p>`;
+}
+
 async function renderRoutineView(routine) {
   if (typeof captureSetDrafts === 'function') captureSetDrafts();
   const headerTitle = document.getElementById('headerTitle');
   const headerSub = document.getElementById('headerSub');
   if (headerTitle) headerTitle.textContent = routine.title || 'Mi Rutina';
   if (headerSub) headerSub.textContent = routine.subtitle || '';
+  await renderRoutinePicker(routine);
 
   const tabsEl = document.getElementById('dayTabs');
   const daysEl = document.getElementById('routineDays');
   if (!routine.days.length) {
     tabsEl.innerHTML = '';
-    daysEl.innerHTML = '<p class="empty-day">No hay días en tu rutina. Andá a <strong>Editar</strong> para crear uno.</p>';
+    daysEl.innerHTML = '<p class="empty-day">' + (typeof I18n !== 'undefined' ? I18n.t('routine.nodays') : 'No hay días en tu rutina. Ve a Editar para crear uno.') + '</p>';
     return;
   }
 

@@ -123,7 +123,8 @@
     document.querySelectorAll('.lp-table tbody tr').forEach((row) => {
       const allowed = (row.dataset.plans || '').split(/\s+/);
       [...row.children].slice(1).forEach((cell, index) => {
-        const on = trial || allowed.includes(order[index]);
+        const coachOnly = (row.dataset.plans || '').trim() === 'entrenador';
+        const on = (!coachOnly && trial) || allowed.includes(order[index]);
         cell.textContent = on ? I18n.t('yes') : I18n.t('no');
         cell.classList.toggle('is-yes', on);
         cell.classList.toggle('is-no', !on);

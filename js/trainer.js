@@ -93,16 +93,22 @@ async function loadTrainerRole() {
   const client = await ensureClient();
   const { data, error } = await client.from('profiles').select('role').eq('user_id', syncUser.id).maybeSingle();
   if (error) throw error;
-  trainer.role = data && data.role === 'trainer' ? 'trainer' : 'athlete';
+  const role = data && data.role;
+  trainer.role = role === 'trainer' || role === 'admin' ? role : 'athlete';
+}
+
+function trainerCanCoach() {
+  return typeof Subscription !== 'undefined' && Subscription.allowsCoach(trainer.role);
 }
 
 async function renderTrainerHome(body) {
   await loadTrainerRole();
-  if (trainer.role !== 'trainer') {
+  const tt = (key) => (typeof I18n !== 'undefined' ? I18n.t(key) : key);
+  if (!trainerCanCoach()) {
     body.innerHTML = `
-      <h2 class="wizard-title">${typeof I18n !== 'undefined' ? I18n.t('trainer.gate.title') : 'Modo entrenador'}</h2>
-      <p class="wizard-help">${typeof I18n !== 'undefined' ? I18n.t('trainer.gate') : 'Crea alumnos, guarda plantillas y ármales la rutina. Tu rutina personal no se mezcla.'}</p>
-      <button type="button" class="log-btn" onclick="becomeTrainer()">${typeof I18n !== 'undefined' ? I18n.t('trainer.become') : 'Soy entrenador'}</button>`;
+      <h2 class="wizard-title">${tt('trainer.locked.title')}</h2>
+      <p class="wizard-help">${tt('trainer.locked')}</p>
+      <a class="log-btn" href="index.html#planes">${tt('trainer.plans')}</a>`;
     return;
   }
   const client = await ensureClient();
@@ -117,14 +123,15 @@ async function renderTrainerHome(body) {
   const rows = trainer.students.map((student) => `
     <button type="button" class="wizard-option" onclick="openTrainerStudent('${student.id}')">
       <strong>${escapeHtml(student.name)}</strong>
-      <em>${escapeHtml(student.email)}${student.user_id ? '' : ' · Todavía no entró'}</em>
+      <em>${escapeHtml(student.email)}${student.user_id ? '' : ' · Todavía no ingresó'}</em>
     </button>`).join('');
   body.innerHTML = `
     <div class="trainer-actions">
       <button type="button" class="btn-secondary" onclick="showTrainerTemplates()">Plantillas (${trainer.templates.length})</button>
     </div>
+    <p class="wizard-help">${tt('trainer.own')}</p>
     <h2 class="wizard-title">Tus alumnos</h2>
-    ${rows || '<p class="wizard-help">Todavía no cargaste alumnos.</p>'}
+    ${rows || '<p class="wizard-help">Todavía no tienes alumnos.</p>'}
     <form class="wizard-form" onsubmit="createTrainerStudent(event)">
       <h3 class="wizard-title" style="font-size:18px">Nuevo alumno</h3>
       <label for="studentName">Nombre</label>
@@ -135,20 +142,9 @@ async function renderTrainerHome(body) {
     </form>`;
 }
 
-async function becomeTrainer() {
-  const client = await ensureClient();
-  const { error } = await client.from('profiles').upsert({
-    user_id: syncUser.id,
-    role: 'trainer',
-    updated_at: new Date().toISOString(),
-  });
-  if (error) return alert(trainerMessage(error));
-  trainer.role = 'trainer';
-  await renderTrainer();
-}
-
 async function createTrainerStudent(event) {
   event.preventDefault();
+  if (!trainerCanCoach()) return alert(typeof I18n !== 'undefined' ? I18n.t('trainer.locked') : 'Crear alumnos es parte del plan Entrenador.');
   const form = new FormData(event.target);
   const name = String(form.get('name') || '').trim();
   const email = String(form.get('email') || '').trim().toLowerCase();

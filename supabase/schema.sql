@@ -343,6 +343,21 @@ begin
       raise exception 'Solo un admin puede dar ese rol';
     end if;
   end if;
+  if new.role = 'trainer' and (tg_op = 'INSERT' or old.role is distinct from 'trainer') then
+    if auth.uid() is null or is_admin() then
+      return new;
+    end if;
+    if exists (
+      select 1 from subscriptions
+      where user_id = auth.uid()
+        and plan_id = 'entrenador'
+        and status in ('trial', 'active', 'chosen')
+        and (status <> 'trial' or trial_ends_at is null or trial_ends_at > now())
+    ) then
+      return new;
+    end if;
+    raise exception 'Solo el plan Entrenador puede tener alumnos';
+  end if;
   return new;
 end;
 $$;
@@ -407,6 +422,41 @@ create policy subscriptions_update on subscriptions for update
 drop trigger if exists subscriptions_touch on subscriptions;
 create trigger subscriptions_touch before update on subscriptions for each row execute function set_updated_at();
 
+create or replace function is_coach()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    exists (
+      select 1 from profiles
+      where user_id = auth.uid() and role in ('trainer', 'admin')
+    )
+    or exists (
+      select 1 from subscriptions
+      where user_id = auth.uid()
+        and plan_id = 'entrenador'
+        and status in ('trial', 'active', 'chosen')
+        and (status <> 'trial' or trial_ends_at is null or trial_ends_at > now())
+    );
+$$;
+
+drop policy if exists students_insert on students;
+drop policy if exists students_update on students;
+drop policy if exists students_delete on students;
+create policy students_insert on students for insert with check (trainer_id = auth.uid() and is_coach());
+create policy students_update on students for update using (trainer_id = auth.uid() and is_coach()) with check (trainer_id = auth.uid() and is_coach());
+create policy students_delete on students for delete using (trainer_id = auth.uid() and is_coach());
+
+drop policy if exists routine_templates_insert on routine_templates;
+drop policy if exists routine_templates_update on routine_templates;
+drop policy if exists routine_templates_delete on routine_templates;
+create policy routine_templates_insert on routine_templates for insert with check (trainer_id = auth.uid() and is_coach());
+create policy routine_templates_update on routine_templates for update using (trainer_id = auth.uid() and is_coach()) with check (trainer_id = auth.uid() and is_coach());
+create policy routine_templates_delete on routine_templates for delete using (trainer_id = auth.uid() and is_coach());
+
 create or replace function admin_users()
 returns table (
   user_id uuid,
@@ -452,5 +502,7 @@ grant select, insert, update on subscriptions to authenticated;
 revoke all on function is_admin() from public, anon;
 revoke all on function protect_admin_role() from public, anon;
 revoke all on function admin_users() from public, anon;
+revoke all on function is_coach() from public, anon;
 grant execute on function is_admin() to authenticated;
 grant execute on function admin_users() to authenticated;
+grant execute on function is_coach() to authenticated;

@@ -446,18 +446,22 @@ async function openAccount() {
       </form>`;
   } else {
     const queue = await Storage.getSyncQueue();
-    let trainerLabel = 'Soy entrenador';
     const client = await ensureClient();
     const role = await client.from('profiles').select('role').eq('user_id', syncUser.id).maybeSingle();
-    if (role.data && role.data.role === 'trainer') trainerLabel = 'Alumnos';
-    const adminBtn = role.data && role.data.role === 'admin'
+    const roleName = role.data && role.data.role;
+    const coach = typeof Subscription !== 'undefined' && Subscription.allowsCoach(roleName);
+    const studentsLabel = typeof I18n !== 'undefined' ? I18n.t('trainer.students') : 'Alumnos';
+    const adminBtn = roleName === 'admin'
       ? '<button type="button" class="log-btn" onclick="openAdmin()">Administrar</button>'
+      : '';
+    const coachBtn = coach
+      ? `<button type="button" class="btn-secondary" onclick="openTrainer()">${studentsLabel}</button>`
       : '';
     box.innerHTML = `
       <p>${escapeHtml(syncUser.email || 'Sesión iniciada')}</p>
       <p class="sub">${queue.length ? queue.length + ' cambios pendientes' : 'Al día'}</p>
       ${adminBtn}
-      <button type="button" class="btn-secondary" onclick="openTrainer()">${trainerLabel}</button>
+      ${coachBtn}
       <button type="button" class="log-btn" onclick="syncNow()">Sincronizar ahora</button>
       <button type="button" class="btn-secondary" onclick="exportEverything()">Exportar todo (JSON)</button>
       <button type="button" class="btn-secondary" onclick="signOutAccount()">Cerrar sesión</button>

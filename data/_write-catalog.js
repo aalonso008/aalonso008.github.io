@@ -17,6 +17,7 @@ function ex(key, name, pattern, muscleGroup, type, equipment, extra) {
     avoidIf: more.avoidIf || [],
     emphasis: more.emphasis || [],
     tip: more.tip || '',
+    styles: more.styles || [],
     linkLabel: '▶ Buscar técnica en YouTube',
   };
 }
@@ -126,7 +127,33 @@ const list = [
   ex('decline_pushup', 'Flexiones declinadas', 'horizontal_push', 'Pecho', 'compound', W, { difficulty: 2, fatigue: 1, emphasis: ['upper_chest'] }),
   ex('cardio_walk', 'Cardio suave', 'cardio', 'Otro', 'isolation', F, { difficulty: 1, fatigue: 1, tip: 'Caminadora en pendiente o bici, a un ritmo en el que puedas hablar.' }),
   ex('cardio_row', 'Remo ergómetro suave', 'cardio', 'Otro', 'isolation', G, { difficulty: 1, fatigue: 1 }),
+  ex('knee_pushup', 'Flexiones de rodillas', 'horizontal_push', 'Pecho', 'compound', W, { difficulty: 1, styles: ['calisthenics'], tip: 'Rodillas apoyadas. El cuerpo baja en bloque desde las rodillas.' }),
+  ex('archer_pushup', 'Flexiones arquero', 'horizontal_push', 'Pecho', 'compound', W, { difficulty: 2, styles: ['calisthenics'], avoidIf: ['wrist'] }),
+  ex('pseudo_planche', 'Flexiones pseudo planche', 'horizontal_push', 'Pecho', 'compound', W, { difficulty: 3, styles: ['calisthenics'], avoidIf: ['wrist', 'shoulder'] }),
+  ex('chinup', 'Dominadas supinas', 'vertical_pull', 'Espalda', 'compound', W, { difficulty: 2, styles: ['calisthenics'], emphasis: ['lats'], secondary: ['Bíceps'], tip: 'Palmas hacia ti. Baja hasta los brazos casi rectos.' }),
+  ex('negative_pullup', 'Dominadas negativas', 'vertical_pull', 'Espalda', 'compound', W, { difficulty: 1, styles: ['calisthenics'], tip: 'Sube con ayuda y baja en 3–5 segundos.' }),
+  ex('scapular_pull', 'Escapulares en barra', 'vertical_pull', 'Espalda', 'isolation', W, { difficulty: 1, styles: ['calisthenics'], tip: 'Brazos rectos. Solo sube y baja las escápulas.' }),
+  ex('active_hang', 'Suspensión activa', 'vertical_pull', 'Espalda', 'isolation', W, { difficulty: 1, styles: ['calisthenics'] }),
+  ex('bar_dip', 'Fondos en paralelas', 'triceps', 'Tríceps', 'compound', W, { difficulty: 2, styles: ['calisthenics'], avoidIf: ['shoulder'], tip: 'Hombros bajos. Baja hasta que el codo pase el hombro si no molesta.' }),
+  ex('cal_curl', 'Curl en barra baja', 'biceps', 'Bíceps', 'isolation', W, { difficulty: 1, styles: ['calisthenics'], tip: 'Cuerpo bajo una barra a la altura de la cadera. Lleva la frente hacia la barra.' }),
+  ex('assisted_pistol', 'Pistol asistida', 'squat', 'Piernas', 'compound', W, { difficulty: 1, styles: ['calisthenics'], avoidIf: ['knee'], tip: 'Sujétate de un marco. La pierna libre va al frente.' }),
+  ex('pistol_squat', 'Sentadilla pistol', 'squat', 'Piernas', 'compound', W, { difficulty: 3, styles: ['calisthenics'], avoidIf: ['knee'] }),
+  ex('shrimp_squat', 'Sentadilla shrimp', 'lunge', 'Piernas', 'compound', W, { difficulty: 2, styles: ['calisthenics'], avoidIf: ['knee'] }),
+  ex('hollow_hold', 'Hollow hold', 'core', 'Core', 'isolation', W, { difficulty: 1, styles: ['calisthenics'], avoidIf: ['lower_back'], tip: 'Lumbar pegada al piso. Brazos y piernas largos.' }),
+  ex('hanging_knee_raise', 'Rodillas al pecho colgado', 'core', 'Core', 'isolation', W, { difficulty: 2, styles: ['calisthenics'], avoidIf: ['lower_back'] }),
 ];
+
+const CALISTHENICS = new Set([
+  'air_squat', 'hip_hinge', 'walking_lunge', 'reverse_lunge', 'split_squat',
+  'pushup', 'incline_pushup', 'decline_pushup', 'pike_pushup', 'inverted_row', 'pullup',
+  'diamond_pushup', 'bench_dip', 'glute_bridge', 'single_calf', 'plank', 'leg_raise',
+  'bear_crawl', 'cardio_walk',
+]);
+list.forEach((item) => {
+  const styles = new Set(item.styles || []);
+  if (CALISTHENICS.has(item.key)) styles.add('calisthenics');
+  item.styles = [...styles];
+});
 
 const required = ['key', 'name', 'pattern', 'muscleGroup', 'primary', 'secondary', 'type', 'equipment', 'difficulty', 'fatigue', 'avoidIf', 'emphasis', 'tip', 'linkLabel'];
 const keys = new Set();
