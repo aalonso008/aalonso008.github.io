@@ -65,6 +65,14 @@
       };
     }
     if (!last.length) return null;
+    if (last.every((set) => set.bodyweight)) {
+      const enoughSets = last.length >= (prescription.count || 1);
+      const allHitMax = enoughSets && last.every((set) => (Number(set.reps) || 0) >= prescription.repMax);
+      if (allHitMax) {
+        return { kind: 'hold', text: phrase('tip.bw.max', null, 'Llegaste al tope de reps. Sumá una serie o pasá a una variante más difícil.') };
+      }
+      return { kind: 'hold', text: phrase('tip.bw.hold', null, 'Peso corporal: mantené el ejercicio y buscá una rep más.') };
+    }
     const weight = Math.max(...last.map((set) => Number(set.weight) || 0));
     const enoughSets = last.length >= (prescription.count || 1);
     const allHitMax = enoughSets && last.every((set) => (Number(set.reps) || 0) >= prescription.repMax);

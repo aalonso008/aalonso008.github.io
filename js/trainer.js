@@ -593,7 +593,7 @@ function renderStudentLog() {
     const lines = sets
       .slice()
       .sort((a, b) => (a.setNumber || 0) - (b.setNumber || 0))
-      .map((set) => `<li><strong>${escapeHtml(trainerExerciseName(set.exerciseId))}</strong><span>serie ${set.setNumber || '–'} · ${set.weight || 0} kg × ${set.reps || 0}</span></li>`)
+      .map((set) => `<li><strong>${escapeHtml(trainerExerciseName(set.exerciseId))}</strong><span>serie ${set.setNumber || '–'} · ${set.bodyweight ? 'PC' : (set.weight || 0) + ' kg'} × ${set.reps || 0}</span></li>`)
       .join('');
     return `<article class="coach-session"><div class="coach-session-top"><strong>${escapeHtml(formatDisplayDate(date))}</strong><span>${sets.length} ${sets.length === 1 ? 'serie' : 'series'}</span></div><ul>${lines}</ul></article>`;
   }).join('');
@@ -640,9 +640,14 @@ function renderStudentProgress() {
       value: sessionMetric(session, trainer.chart),
       label: formatDisplayDate(session[0].date),
     }));
+    const bodyOnly = sessionsOf.every((session) => session.every((set) => set.bodyweight));
     const bestWeight = Math.max(...sessionsOf.flat().map((set) => Number(set.weight) || 0));
     const bestEpley = Math.max(...sessionsOf.map((session) => sessionBestEpley(session).value));
-    return `<article class="coach-session"><div class="coach-session-top"><strong>${escapeHtml(trainerExerciseName(id))}</strong><span>PR ${trimNum(bestWeight)} kg · 1RM ${trimNum(bestEpley)}</span></div>${renderLineChart(points)}</article>`;
+    const summary = bodyOnly ? 'Peso corporal' : `PR ${trimNum(bestWeight)} kg · 1RM ${trimNum(bestEpley)}`;
+    const chartPoints = bodyOnly
+      ? recent.map((session) => ({ value: sessionMetric(session, 'reps'), label: formatDisplayDate(session[0].date) }))
+      : points;
+    return `<article class="coach-session"><div class="coach-session-top"><strong>${escapeHtml(trainerExerciseName(id))}</strong><span>${escapeHtml(summary)}</span></div>${renderLineChart(chartPoints)}</article>`;
   }).filter(Boolean).join('');
   return `
     <div class="summary-grid">
