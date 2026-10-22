@@ -11,6 +11,8 @@ const trainer = {
   sets: [],
   metrics: [],
   templateId: null,
+  manual: false,
+  showAdd: false,
 };
 
 function trainerMessage(error) {
@@ -121,25 +123,36 @@ async function renderTrainerHome(body) {
   trainer.students = students.data || [];
   trainer.templates = templates.data || [];
   const rows = trainer.students.map((student) => `
-    <button type="button" class="wizard-option" onclick="openTrainerStudent('${student.id}')">
-      <strong>${escapeHtml(student.name)}</strong>
-      <em>${escapeHtml(student.email)}${student.user_id ? '' : ' · Todavía no ingresó'}</em>
+    <button type="button" class="trainer-card" onclick="openTrainerStudent('${student.id}')">
+      <span>
+        <strong>${escapeHtml(student.name)}</strong>
+        <em>${escapeHtml(student.email)}</em>
+      </span>
+      <span class="trainer-pill${student.user_id ? ' is-on' : ''}">${student.user_id ? 'Ya ingresó' : 'Sin ingresar'}</span>
     </button>`).join('');
-  body.innerHTML = `
-    <div class="trainer-actions">
-      <button type="button" class="btn-secondary" onclick="showTrainerTemplates()">Plantillas (${trainer.templates.length})</button>
-    </div>
-    <p class="wizard-help">${tt('trainer.own')}</p>
-    <h2 class="wizard-title">Tus alumnos</h2>
-    ${rows || '<p class="wizard-help">Todavía no tienes alumnos.</p>'}
-    <form class="wizard-form" onsubmit="createTrainerStudent(event)">
+  const addForm = trainer.showAdd ? `
+    <form class="wizard-form trainer-block" onsubmit="createTrainerStudent(event)">
       <h3 class="wizard-title" style="font-size:18px">Nuevo alumno</h3>
+      <p class="wizard-help">No le crea una contraseña. Después entra con este email, con Google o con una cuenta.</p>
       <label for="studentName">Nombre</label>
       <input id="studentName" name="name" required placeholder="Nombre">
       <label for="studentEmail">Email</label>
       <input id="studentEmail" name="email" type="email" required placeholder="alumno@email.com">
       <button type="submit" class="log-btn">Crear alumno</button>
-    </form>`;
+    </form>` : '';
+  body.innerHTML = `
+    <ol class="trainer-steps">
+      <li><strong>Agregá al alumno</strong><span>Usá el email con el que va a entrar.</span></li>
+      <li><strong>Armale la rutina</strong><span>Con el asistente, a mano o desde una plantilla.</span></li>
+      <li><strong>Cuando entre, la ve</strong><span>Si ya tenía una rutina, esta se suma en el desplegable.</span></li>
+    </ol>
+    <div class="trainer-actions">
+      <button type="button" class="log-btn" onclick="trainer.showAdd=!trainer.showAdd; renderTrainer()">+ Alumno</button>
+      <button type="button" class="btn-secondary" onclick="showTrainerTemplates()">Plantillas (${trainer.templates.length})</button>
+    </div>
+    ${addForm}
+    <h2 class="wizard-title">Tus alumnos</h2>
+    ${rows || '<p class="wizard-help">Todavía no tenés alumnos. Agregá el primero con el botón de arriba.</p>'}`;
 }
 
 async function createTrainerStudent(event) {
@@ -156,6 +169,7 @@ async function createTrainerStudent(event) {
     email,
   });
   if (error) return alert(trainerMessage(error));
+  trainer.showAdd = false;
   await renderTrainer();
 }
 
@@ -165,6 +179,7 @@ async function openTrainerStudent(id) {
   if (error) return alert(trainerMessage(error));
   trainer.student = data;
   trainer.tab = 'rutina';
+  trainer.manual = false;
   trainer.view = 'student';
   await loadStudentBundle();
   await renderTrainer();
@@ -209,10 +224,95 @@ function renderStudent(body) {
   else if (trainer.tab === 'registro') content = renderStudentLog();
   else if (trainer.tab === 'progresion') content = renderStudentProgress();
   else content = renderStudentBody();
+  const status = student.user_id
+    ? 'Ya ingresó. Esta rutina le aparece en su cuenta.'
+    : 'Todavía no ingresó. Cuando entre con este email, ve la rutina.';
   body.innerHTML = `
-    <p class="wizard-help">${escapeHtml(student.email)}${student.user_id ? '' : ' · Cuando entre con este email, ve esta rutina.'}</p>
+    <p class="trainer-status">${escapeHtml(student.email)}</p>
+    <p class="wizard-help">${status}</p>
     <div class="wizard-days trainer-tabs">${tabs}</div>
     ${content}`;
+}
+
+function trainerRoutineHasExercises(routine) {
+  return !!(routine && (routine.days || []).some((day) => (day.sections || []).some((section) => (section.exercises || []).length)));
+}
+
+function formatTrainerSets(sets) {
+  const data = sets || { count: 3, repMin: 8, repMax: 12, restSec: 90 };
+  if (data.note && Number(data.count) === 1 && Number(data.repMin) === 1) return data.note;
+  const reps = data.repMin === data.repMax ? String(data.repMin) : data.repMin + '–' + data.repMax;
+  const rest = data.restSec ? ' · ' + data.restSec + ' s' : '';
+  return (data.count || 0) + ' × ' + reps + rest;
+}
+
+function renderTrainerRoutinePreview(routine) {
+  return (routine.days || []).map((day) => {
+    const lines = (day.sections || []).flatMap((section) => (section.exercises || []).map((slot) => {
+      const exercise = exerciseById(slot.exerciseId) || { name: slot.name || 'Ejercicio' };
+      return `<li><strong>${escapeHtml(exercise.name || 'Ejercicio')}</strong><span>${escapeHtml(formatTrainerSets(slot.sets))}</span></li>`;
+    })).join('');
+    return `<article class="trainer-day">
+      <h3>${escapeHtml(day.name || 'Día')}${day.focus ? `<small>${escapeHtml(day.focus)}</small>` : ''}</h3>
+      ${lines ? `<ul>${lines}</ul>` : '<p class="wizard-help">Sin ejercicios.</p>'}
+    </article>`;
+  }).join('');
+}
+
+function renderTrainerTemplateTools() {
+  if (!trainer.templates.length) {
+    return `<div class="trainer-block">
+      <h3 class="wizard-title" style="font-size:16px">Plantillas</h3>
+      <p class="wizard-help">Si vas a repetir la misma rutina, armala una vez y aplicala a cada alumno.</p>
+      <button type="button" class="btn-secondary" onclick="showTrainerTemplates()">Ver plantillas</button>
+    </div>`;
+  }
+  const templateOptions = trainer.templates.map((item) => `<option value="${item.id}">${escapeHtml(item.title)}</option>`).join('');
+  return `<div class="trainer-block">
+    <h3 class="wizard-title" style="font-size:16px">Usar una plantilla</h3>
+    <p class="wizard-help">Reemplaza la rutina que estás viendo de este alumno.</p>
+    <div class="wizard-form">
+      <label for="applyTemplate">Plantilla</label>
+      <select id="applyTemplate">${templateOptions}</select>
+      <button type="button" class="btn-secondary" onclick="applyTrainerTemplate()">Aplicar al alumno</button>
+    </div>
+  </div>`;
+}
+
+function showTrainerManual() {
+  captureTrainerRoutine();
+  trainer.manual = true;
+  trainer.tab = 'rutina';
+  renderTrainer();
+}
+
+function showTrainerSummary() {
+  captureTrainerRoutine();
+  trainer.manual = false;
+  renderTrainer();
+}
+
+function openStudentWizard() {
+  if (!trainer.student) return;
+  captureTrainerRoutine();
+  wizard.audience = 'student';
+  wizard.studentName = trainer.student.name;
+  wizard.from = 'student';
+  wizard.storedProfile = null;
+  wizard.prefill = typeof emptyProfile === 'function' ? emptyProfile() : {};
+  wizard.skipProfile = true;
+  wizard.pendingDraft = null;
+  showWizardShell();
+  beginWizard(false);
+}
+
+async function saveGeneratedStudentRoutine(routine, exercises) {
+  trainer.routine = routine;
+  trainer.exercises = exercises;
+  trainer.manual = false;
+  trainer.tab = 'rutina';
+  await persistStudentRoutine(routine, exercises);
+  await renderTrainer();
 }
 
 function exerciseById(id) {
@@ -222,21 +322,43 @@ function exerciseById(id) {
 function renderStudentRoutine(options) {
   const templateMode = options && options.mode === 'template';
   const routine = trainer.routine;
+  if (!templateMode && !trainer.manual) {
+    if (!trainerRoutineHasExercises(routine)) {
+      return `
+        <div class="trainer-hero">
+          <h3 class="wizard-title" style="font-size:20px">Todavía no tiene rutina</h3>
+          <p class="wizard-help">El asistente pregunta objetivo, días y equipo, y arma los ejercicios. Después podés cambiarlos.</p>
+          <button type="button" class="log-btn" onclick="openStudentWizard()">Armar con el asistente</button>
+          <button type="button" class="btn-secondary" onclick="showTrainerManual()">Armar a mano</button>
+        </div>
+        ${renderTrainerTemplateTools()}`;
+    }
+    return `
+      <div class="trainer-hero">
+        <h3 class="wizard-title" style="font-size:20px">${escapeHtml(routine.title || 'Rutina')}</h3>
+        <p class="wizard-help">${escapeHtml(routine.subtitle || 'Esta es la rutina que ve el alumno.')}</p>
+        <button type="button" class="log-btn" onclick="openStudentWizard()">Cambiar con el asistente</button>
+        <button type="button" class="btn-secondary" onclick="showTrainerManual()">Editar a mano</button>
+      </div>
+      ${renderTrainerRoutinePreview(routine)}
+      ${renderTrainerTemplateTools()}
+      <button type="button" class="btn-secondary" onclick="saveRoutineAsTemplate()">Guardar como plantilla</button>`;
+  }
   const days = (routine.days || []).map((day, dayIndex) => {
     const sections = (day.sections || []).map((section, sectionIndex) => {
       const exercises = (section.exercises || []).map((slot, slotIndex) => {
         const exercise = exerciseById(slot.exerciseId) || { name: '', muscleGroup: 'Otro' };
         const sets = slot.sets || { count: 3, repMin: 8, repMax: 12, restSec: 90 };
-        const options = (typeof MUSCLE_GROUPS !== 'undefined' ? MUSCLE_GROUPS : ['Otro']).map((group) => `<option value="${escapeHtml(group)}"${exercise.muscleGroup === group ? ' selected' : ''}>${escapeHtml(group)}</option>`).join('');
+        const groups = (typeof MUSCLE_GROUPS !== 'undefined' ? MUSCLE_GROUPS : ['Otro']).map((group) => `<option value="${escapeHtml(group)}"${exercise.muscleGroup === group ? ' selected' : ''}>${escapeHtml(group)}</option>`).join('');
         return `
           <div class="trainer-ex">
             <input data-ex="${slot.exerciseId}" data-field="name" value="${escapeHtml(exercise.name)}" placeholder="Ejercicio">
-            <select data-ex="${slot.exerciseId}" data-field="muscle">${options}</select>
+            <select data-ex="${slot.exerciseId}" data-field="muscle">${groups}</select>
             <div class="trainer-sets">
-              <input data-slot="${slot.id}" data-field="count" type="number" min="1" max="10" value="${sets.count}" aria-label="Series">
-              <input data-slot="${slot.id}" data-field="repMin" type="number" min="1" max="50" value="${sets.repMin}" aria-label="Reps mín">
-              <input data-slot="${slot.id}" data-field="repMax" type="number" min="1" max="50" value="${sets.repMax}" aria-label="Reps máx">
-              <input data-slot="${slot.id}" data-field="restSec" type="number" min="0" max="600" value="${sets.restSec}" aria-label="Descanso">
+              <label>Series<input data-slot="${slot.id}" data-field="count" type="number" min="1" max="10" value="${sets.count}"></label>
+              <label>Reps mín<input data-slot="${slot.id}" data-field="repMin" type="number" min="1" max="50" value="${sets.repMin}"></label>
+              <label>Reps máx<input data-slot="${slot.id}" data-field="repMax" type="number" min="1" max="50" value="${sets.repMax}"></label>
+              <label>Descanso<input data-slot="${slot.id}" data-field="restSec" type="number" min="0" max="600" value="${sets.restSec}"></label>
             </div>
             <button type="button" class="btn-secondary" onclick="removeTrainerExercise(${dayIndex}, ${sectionIndex}, ${slotIndex})">Quitar</button>
           </div>`;
@@ -256,16 +378,9 @@ function renderStudentRoutine(options) {
         <button type="button" class="btn-secondary" onclick="removeTrainerDay(${dayIndex})">Quitar día</button>
       </div>`;
   }).join('');
-  const templateOptions = trainer.templates.map((item) => `<option value="${item.id}">${escapeHtml(item.title)}</option>`).join('');
-  const tools = templateMode
-    ? ''
-    : `<div class="wizard-form">
-      <label for="applyTemplate">Aplicar plantilla</label>
-      <select id="applyTemplate">${templateOptions || '<option value="">No hay plantillas</option>'}</select>
-      <button type="button" class="btn-secondary" onclick="applyTrainerTemplate()">Aplicar al alumno</button>
-      <button type="button" class="btn-secondary" onclick="saveRoutineAsTemplate()">Guardar esta rutina como plantilla</button>
-    </div>`;
+  const back = templateMode ? '' : '<button type="button" class="btn-secondary" onclick="showTrainerSummary()">Ver resumen</button>';
   return `
+    ${back}
     <form class="wizard-form" onsubmit="${templateMode ? 'saveTrainerTemplate(event)' : 'saveTrainerRoutine(event)'}">
       <label for="studentRoutineTitle">Nombre</label>
       <input id="studentRoutineTitle" data-bind="title" value="${escapeHtml(routine.title || '')}">
@@ -274,8 +389,7 @@ function renderStudentRoutine(options) {
       ${days}
       <button type="button" class="btn-secondary" onclick="addTrainerDay()">+ Día</button>
       <button type="submit" class="log-btn">${templateMode ? 'Guardar plantilla' : 'Guardar rutina'}</button>
-    </form>
-    ${tools}`;
+    </form>`;
 }
 
 function captureTrainerRoutine() {
