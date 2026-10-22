@@ -125,23 +125,30 @@ function renderExerciseProgress(exercises, sets) {
         value: sessionMetric(session, chartMetric),
         label: formatDisplayDate(session[0].date),
       }));
+      const bodyOnly = sessions.every((session) => session.every((set) => set.bodyweight));
       const bestWeight = Math.max(...sessions.flat().map((set) => Number(set.weight) || 0));
       const bestEpley = Math.max(...sessions.map((session) => sessionBestEpley(session).value));
       const bestVolume = Math.max(...sessions.map((session) => sessionVolume(session)));
       const suggestion = suggestionFor(exercise, sets, currentSettings || DEFAULT_SETTINGS);
-      const unreliable = chartMetric === '1rm' && recent.some((session) => !sessionBestEpley(session).reliable);
+      const unreliable = !bodyOnly && chartMetric === '1rm' && recent.some((session) => !sessionBestEpley(session).reliable);
+      const shownPoints = bodyOnly
+        ? recent.map((session) => ({ value: sessionMetric(session, 'reps'), label: formatDisplayDate(session[0].date) }))
+        : points;
+      const meta = bodyOnly
+        ? 'Peso corporal · mejor serie ' + Math.max(...sessions.flat().map((set) => Number(set.reps) || 0)) + ' reps'
+        : `PR ${trimNum(bestWeight)}kg · 1RM ${trimNum(bestEpley)} · vol ${Math.round(bestVolume)}`;
       return `
         <div class="prog-ex-card">
           <div class="prog-ex-header" onclick="toggleProgEx(this)">
             <div class="prog-ex-left">
               <div class="prog-ex-name">${escapeHtml(exercise.name)}</div>
-              <div class="prog-ex-meta">PR ${trimNum(bestWeight)}kg · 1RM ${trimNum(bestEpley)} · vol ${Math.round(bestVolume)}</div>
+              <div class="prog-ex-meta">${escapeHtml(meta)}</div>
             </div>
             <div class="ex-chevron">⌄</div>
           </div>
           <div class="prog-ex-body">
             ${suggestion ? `<p class="set-suggestion">${escapeHtml(suggestion.text)}</p>` : ''}
-            ${renderLineChart(points)}
+            ${renderLineChart(shownPoints)}
             ${unreliable ? '<p class="hint">Hay series de más de 10 reps: el 1RM es menos confiable.</p>' : ''}
           </div>
         </div>`;

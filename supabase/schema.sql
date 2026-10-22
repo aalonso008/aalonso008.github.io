@@ -62,6 +62,7 @@ create table if not exists workout_sets (
   updated_at timestamptz default now(),
   deleted boolean default false
 );
+alter table workout_sets add column if not exists bodyweight boolean default false;
 create index if not exists workout_sets_user_exercise_date on workout_sets (user_id, exercise_id, date);
 
 create table if not exists body_metrics (

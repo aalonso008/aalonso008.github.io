@@ -18,6 +18,7 @@ function captureSetDrafts() {
       weight: row.querySelector('.set-weight').value,
       reps: row.querySelector('.set-reps').value,
       rpe: row.querySelector('.set-rpe').value,
+      bodyweight: row.querySelector('.bw-toggle').getAttribute('aria-pressed') === 'true',
     }));
   });
   skipDraftCapture = null;
@@ -46,7 +47,8 @@ function rowsForExercise(exercise, allSets, unit) {
     const set = source[i];
     rows.push({
       id: today && set ? set.id : '',
-      weight: set ? String(toDisplayWeight(set.weight, unit)) : '',
+      bodyweight: !!(set && set.bodyweight),
+      weight: set && !set.bodyweight ? String(toDisplayWeight(set.weight, unit)) : '',
       reps: set ? String(set.reps || '') : '',
       rpe: set && set.rpe != null ? String(set.rpe) : '',
     });
@@ -57,8 +59,15 @@ function rowsForExercise(exercise, allSets, unit) {
 function lastSessionLine(sets, exerciseId, unit) {
   const previous = previousSession(sets, exerciseId) || todaySession(sets, exerciseId);
   if (!previous) return 'Sin registros todavía';
-  const reps = previous.map((set) => set.reps).join(' · ');
-  return `Última vez (${formatDisplayDate(previous[0].date)}): ${formatWeight(previous[0].weight, unit)} × ${reps}`;
+  const loads = previous.some((set) => set.bodyweight)
+    ? previous.map((set) => `${set.bodyweight ? 'PC' : formatWeight(set.weight, unit)} × ${set.reps}`).join(' · ')
+    : `${formatWeight(previous[0].weight, unit)} × ${previous.map((set) => set.reps).join(' · ')}`;
+  return `Última vez (${formatDisplayDate(previous[0].date)}): ${loads}`;
+}
+
+function formatSetLoad(set) {
+  if (set && set.bodyweight) return `PC × ${set.reps || 0}`;
+  return `${set.weight}kg × ${set.reps || 0}`;
 }
 
 function renderSetEditor(exercise, allSets, settings) {
@@ -74,14 +83,19 @@ function renderSetEditor(exercise, allSets, settings) {
           (row, index) => `
         <div class="set-row" data-set-id="${escapeHtml(row.id)}">
           <span class="set-num">${index + 1}</span>
-          <button type="button" class="step-btn" onclick="stepSetInput(this,-1,'weight')" aria-label="Menos peso">−</button>
-          <input class="set-weight" inputmode="decimal" placeholder="${unit}" aria-label="Peso serie ${index + 1}" value="${escapeHtml(row.weight)}">
-          <button type="button" class="step-btn" onclick="stepSetInput(this,1,'weight')" aria-label="Más peso">+</button>
-          <button type="button" class="step-btn" onclick="stepSetInput(this,-1,'reps')" aria-label="Menos reps">−</button>
-          <input class="set-reps" inputmode="numeric" placeholder="reps" aria-label="Reps serie ${index + 1}" value="${escapeHtml(row.reps)}">
-          <button type="button" class="step-btn" onclick="stepSetInput(this,1,'reps')" aria-label="Más reps">+</button>
-          <input class="set-rpe" inputmode="decimal" min="6" max="10" step="0.5" placeholder="RPE" aria-label="RPE serie ${index + 1}" value="${escapeHtml(row.rpe)}">
-          <button type="button" class="set-save" onclick="saveSetRow(this)" aria-label="Guardar serie ${index + 1}">✓</button>
+          <span class="set-cluster">
+            <button type="button" class="bw-toggle${row.bodyweight ? ' is-on' : ''}" aria-pressed="${row.bodyweight ? 'true' : 'false'}" onclick="toggleBodyweight(this)">Corporal</button>
+            <button type="button" class="step-btn" data-weight-step onclick="stepSetInput(this,-1,'weight')" aria-label="Menos peso"${row.bodyweight ? ' disabled' : ''}>−</button>
+            <input class="set-weight" inputmode="decimal" placeholder="${row.bodyweight ? 'PC' : unit}" aria-label="Peso serie ${index + 1}" value="${escapeHtml(row.weight)}"${row.bodyweight ? ' disabled' : ''}>
+            <button type="button" class="step-btn" data-weight-step onclick="stepSetInput(this,1,'weight')" aria-label="Más peso"${row.bodyweight ? ' disabled' : ''}>+</button>
+          </span>
+          <span class="set-cluster">
+            <button type="button" class="step-btn" onclick="stepSetInput(this,-1,'reps')" aria-label="Menos reps">−</button>
+            <input class="set-reps" inputmode="numeric" placeholder="reps" aria-label="Reps serie ${index + 1}" value="${escapeHtml(row.reps)}">
+            <button type="button" class="step-btn" onclick="stepSetInput(this,1,'reps')" aria-label="Más reps">+</button>
+            <input class="set-rpe" inputmode="decimal" min="6" max="10" step="0.5" placeholder="RPE" aria-label="RPE serie ${index + 1}" value="${escapeHtml(row.rpe)}">
+            <button type="button" class="set-save" onclick="saveSetRow(this)" aria-label="Guardar serie ${index + 1}">✓</button>
+          </span>
         </div>`
         )
         .join('')}
@@ -120,8 +134,23 @@ function personalBests(sets) {
 }
 
 function isNewPr(before, set) {
+  if (set.bodyweight) return false;
   const weight = Number(set.weight) || 0;
   return weight > before.maxWeight + 0.001 || epley(set.weight, set.reps) > before.maxEpley + 0.05;
+}
+
+function toggleBodyweight(btn) {
+  const row = btn.closest('.set-row');
+  const on = btn.getAttribute('aria-pressed') !== 'true';
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  btn.classList.toggle('is-on', on);
+  const weight = row.querySelector('.set-weight');
+  weight.disabled = on;
+  weight.placeholder = on ? 'PC' : (btn.closest('[data-set-editor]').dataset.unit || 'kg');
+  if (on) weight.value = '';
+  row.querySelectorAll('[data-weight-step]').forEach((step) => {
+    step.disabled = on;
+  });
 }
 
 function stepSetInput(btn, dir, field) {
@@ -146,10 +175,11 @@ async function saveSetRow(btn) {
   const editor = btn.closest('[data-set-editor]');
   const exerciseId = editor.dataset.exerciseId;
   const unit = editor.dataset.unit || 'kg';
-  const weight = fromDisplayWeight(row.querySelector('.set-weight').value, unit);
+  const bodyweight = row.querySelector('.bw-toggle').getAttribute('aria-pressed') === 'true';
+  const weight = bodyweight ? 0 : fromDisplayWeight(row.querySelector('.set-weight').value, unit);
   const reps = parseInt(row.querySelector('.set-reps').value, 10);
   const rpeRaw = row.querySelector('.set-rpe').value.trim();
-  if (!weight) return alert('Ingresá el peso.');
+  if (!bodyweight && !weight) return alert('Ingresá el peso o marcá Corporal.');
   if (!reps) return alert('Ingresá las reps.');
   let rpe = null;
   if (rpeRaw) {
@@ -170,6 +200,7 @@ async function saveSetRow(btn) {
     date,
     setNumber,
     weight,
+    bodyweight,
     reps,
     rpe,
     note: '',
@@ -192,8 +223,8 @@ async function addDraftRow(btn) {
   const editor = btn.closest('[data-set-editor]');
   const id = editor.dataset.exerciseId;
   const rows = setDrafts[id] ? setDrafts[id].slice() : [];
-  const last = rows[rows.length - 1] || { weight: '', reps: '', rpe: '' };
-  rows.push({ id: '', weight: last.weight, reps: '', rpe: '' });
+  const last = rows[rows.length - 1] || { weight: '', reps: '', rpe: '', bodyweight: false };
+  rows.push({ id: '', weight: last.bodyweight ? '' : last.weight, reps: '', rpe: '', bodyweight: !!last.bodyweight });
   setDrafts[id] = rows;
   skipDraftCapture = id;
   await refreshAfterSetChange();
@@ -300,7 +331,7 @@ function renderHistoryHtml(sets, library) {
         .map(([exerciseId, list]) => {
           const lib = library.find((ex) => ex.id === exerciseId);
           const detail = list
-            .map((set) => `${set.weight}kg × ${set.reps}${set.rpe != null ? ' @' + set.rpe : ''}`)
+            .map((set) => `${formatSetLoad(set)}${set.rpe != null ? ' @' + set.rpe : ''}`)
             .join(' · ');
           const deletes = list
             .map((set) => `<button type="button" class="log-delete" onclick="deleteLog('${set.id}')" aria-label="Borrar serie ${set.setNumber}">×</button>`)
@@ -338,7 +369,7 @@ async function copyLogs() {
     .sort((a, b) => (b.ts || 0) - (a.ts || 0))
     .map((set) => {
       const lib = library.find((ex) => ex.id === set.exerciseId);
-      return `${formatDisplayDate(set.date)} — ${(lib && lib.name) || 'Ejercicio'} · serie ${set.setNumber}: ${set.weight}kg × ${set.reps}${set.rpe != null ? ' RPE ' + set.rpe : ''}`;
+      return `${formatDisplayDate(set.date)} — ${(lib && lib.name) || 'Ejercicio'} · serie ${set.setNumber}: ${formatSetLoad(set)}${set.rpe != null ? ' RPE ' + set.rpe : ''}`;
     })
     .join('\n');
   try {
@@ -361,7 +392,7 @@ async function exportLogsCsv() {
     .forEach((set) => {
       const lib = library.find((ex) => ex.id === set.exerciseId);
       lines.push(
-        [set.date, (lib && lib.name) || '', (lib && lib.muscleGroup) || '', set.setNumber, set.weight, set.reps, set.rpe ?? '', set.note || '']
+        [set.date, (lib && lib.name) || '', (lib && lib.muscleGroup) || '', set.setNumber, set.bodyweight ? 'PC' : set.weight, set.reps, set.rpe ?? '', set.note || '']
           .map((value) => `"${String(value).replace(/"/g, '""')}"`)
           .join(',')
       );
