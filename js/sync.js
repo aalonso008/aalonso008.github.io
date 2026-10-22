@@ -576,7 +576,7 @@ async function openAccount() {
     const coach = typeof Subscription !== 'undefined' && Subscription.allowsCoach();
     const studentsLabel = typeof I18n !== 'undefined' ? I18n.t('trainer.students') : 'Alumnos';
     const adminBtn = roleName === 'admin'
-      ? '<button type="button" class="log-btn" onclick="openAdmin()">Administrar</button>'
+      ? `<button type="button" class="log-btn" onclick="openAdmin()">${escapeHtml(trAuth('admin.title'))}</button>`
       : '';
     const coachBtn = coach
       ? `<button type="button" class="btn-secondary" onclick="openTrainer()">${studentsLabel}</button>`
@@ -584,16 +584,17 @@ async function openAccount() {
     const googleBtn = userHasProvider(syncUser, 'google')
       ? ''
       : `<button type="button" class="btn-secondary" onclick="linkGoogle()" data-i18n="login.linkgoogle">${escapeHtml(trAuth('login.linkgoogle'))}</button>`;
+    const status = queue.length ? trAuth('account.pending').replace('{n}', String(queue.length)) : trAuth('account.synced');
     box.innerHTML = `
-      <p>${escapeHtml(syncUser.email || 'Sesión iniciada')}</p>
-      <p class="sub">${queue.length ? queue.length + ' cambios pendientes' : 'Al día'}</p>
+      <p>${escapeHtml(syncUser.email || trAuth('account.session'))}</p>
+      <p class="sub">${escapeHtml(status)}</p>
       ${adminBtn}
       ${coachBtn}
       ${googleBtn}
-      <button type="button" class="log-btn" onclick="syncNow()">Sincronizar ahora</button>
-      <button type="button" class="btn-secondary" onclick="exportEverything()">Exportar todo (JSON)</button>
-      <button type="button" class="btn-secondary" onclick="signOutAccount()">Cerrar sesión</button>
-      <button type="button" class="btn-danger" onclick="deleteAccount()">Borrar mi cuenta y datos</button>`;
+      <button type="button" class="log-btn" onclick="syncNow()">${escapeHtml(trAuth('account.sync'))}</button>
+      <button type="button" class="btn-secondary" onclick="exportEverything()">${escapeHtml(trAuth('account.export'))}</button>
+      <button type="button" class="btn-secondary" onclick="signOutAccount()">${escapeHtml(trAuth('admin.signout'))}</button>
+      <button type="button" class="btn-danger" onclick="deleteAccount()">${escapeHtml(trAuth('account.delete'))}</button>`;
   }
   if (typeof Subscription !== 'undefined') box.insertAdjacentHTML('afterbegin', Subscription.summaryHtml());
   if (typeof I18n !== 'undefined') I18n.apply(box);
@@ -929,7 +930,7 @@ async function bringAccountRoutine() {
 
 async function syncNow() {
   await pushAndPull();
-  showToast('Sincronizado');
+  showToast(trAuth('sync.toast'));
   await openAccount();
   await refreshVisible();
 }
@@ -940,14 +941,8 @@ async function exportEverything() {
 }
 
 async function signOutAccount() {
-  const wipe = confirm('¿Borrar también los datos de este dispositivo? Cancelar los conserva.');
   await supabaseClient.auth.signOut();
   syncUser = null;
-  if (wipe) {
-    await Storage.setSyncChoice(null);
-    await Storage.importAll({ routine: null, routines: [], sets: [], exercises: [], bodyMetrics: [], profile: null, settings: DEFAULT_SETTINGS });
-    currentRoutine = null;
-  }
   await showLoginGate();
   closeAccount();
   updateSyncDot();
@@ -955,10 +950,10 @@ async function signOutAccount() {
 }
 
 async function deleteAccount() {
-  if (!confirm('Esto borra la cuenta y los datos en la nube. ¿Seguro?')) return;
+  if (!confirm(trAuth('account.delete.confirm'))) return;
   const client = await ensureClient();
   const { error } = await client.rpc('delete_own_account');
-  if (error) return alert('No se pudo borrar la cuenta. ' + error.message);
+  if (error) return alert(trAuth('account.delete.fail') + ' ' + error.message);
   await signOutAccount();
 }
 

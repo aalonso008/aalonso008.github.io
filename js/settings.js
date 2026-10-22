@@ -1,27 +1,32 @@
+function settingsText(key) {
+  return typeof I18n !== 'undefined' ? I18n.t(key) : key;
+}
+
 async function openSettings() {
   const settings = await Storage.getSettings();
   const modal = document.getElementById('settingsModal');
   const form = document.getElementById('settingsForm');
+  const muscle = (group) => (typeof I18n !== 'undefined' && I18n.muscle ? I18n.muscle(group) : group);
   form.innerHTML = `
-    <label>Unidad</label>
+    <label>${settingsText('settings.unit')}</label>
     <select name="unit">
-      <option value="kg"${settings.unit !== 'lb' ? ' selected' : ''}>Kilogramos</option>
-      <option value="lb"${settings.unit === 'lb' ? ' selected' : ''}>Libras</option>
+      <option value="kg"${settings.unit !== 'lb' ? ' selected' : ''}>${settingsText('settings.kg')}</option>
+      <option value="lb"${settings.unit === 'lb' ? ' selected' : ''}>${settingsText('settings.lb')}</option>
     </select>
-    <label>Descanso por defecto (segundos)</label>
+    <label>${settingsText('settings.rest')}</label>
     <input name="defaultRestSec" type="number" min="15" step="15" value="${settings.defaultRestSec}">
-    <label>Inicio del ciclo de 8 semanas</label>
+    <label>${settingsText('settings.cycle')}</label>
     <input name="cycleStart" type="date" value="${escapeHtml(settings.cycleStart || '')}">
-    <label class="check-row"><input name="vibrate" type="checkbox"${settings.vibrate !== false ? ' checked' : ''}> Vibrar al terminar el descanso</label>
-    <h3 class="block-title">Incrementos (kg)</h3>
+    <label class="check-row"><input name="vibrate" type="checkbox"${settings.vibrate !== false ? ' checked' : ''}> ${settingsText('settings.vibrate')}</label>
+    <h3 class="block-title">${settingsText('settings.increments')}</h3>
     ${MUSCLE_GROUPS.map(
       (group) =>
-        `<label>${group}</label><input name="inc-${group}" type="number" min="0.5" step="0.5" value="${settings.increments[group]}">`
+        `<label>${escapeHtml(muscle(group))}</label><input name="inc-${group}" type="number" min="0.5" step="0.5" value="${settings.increments[group]}">`
     ).join('')}
-    <button type="submit" class="log-btn">Guardar ajustes</button>
+    <button type="submit" class="log-btn">${settingsText('settings.save')}</button>
     ${
       location.hostname === 'localhost' || location.hostname === '127.0.0.1'
-        ? '<button type="button" class="btn-secondary" onclick="loadDemoData()">Cargar 8 semanas de prueba</button>'
+        ? `<button type="button" class="btn-secondary" onclick="loadDemoData()">${settingsText('settings.demo')}</button>`
         : ''
     }`;
   modal.classList.add('show');
@@ -46,7 +51,7 @@ async function saveSettingsForm(event) {
     increments,
   });
   closeSettings();
-  showToast('Ajustes guardados');
+  showToast(settingsText('settings.saved'));
   const routine = await getActiveRoutine();
   if (routine) await renderRoutineView(routine);
 }
@@ -117,7 +122,7 @@ async function loadDemoData() {
     });
   }
   closeSettings();
-  showToast('Datos de prueba cargados');
+  showToast(settingsText('settings.demo.done'));
   const active = await getActiveRoutine();
   if (active) await renderRoutineView(active);
 }

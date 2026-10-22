@@ -1,3 +1,11 @@
+function edText(key, vars) {
+  return typeof I18n !== 'undefined' ? I18n.t(key, vars) : key;
+}
+
+function muscleLabel(name) {
+  return typeof I18n !== 'undefined' && I18n.muscle ? I18n.muscle(name) : name;
+}
+
 let editorDayIndex = 0;
 let currentRoutine = null;
 let editorLibrary = [];
@@ -31,7 +39,7 @@ async function startTemplateRoutine() {
 }
 
 async function resetToTemplate() {
-  if (!confirm('¿Reemplazar la rutina activa con el ejemplo?')) return;
+  if (!confirm(edText('ed.replaceSample'))) return;
   const routine = await adoptTemplate(await loadDefaultRoutine());
   routine.id = currentRoutine ? currentRoutine.id : routine.id;
   await setCurrentRoutine(routine);
@@ -69,67 +77,67 @@ async function renderEditor() {
   const day = routine.days[editorDayIndex];
 
   el.innerHTML = `
-    <h2>Editar rutina</h2>
-    <p class="sub">Los cambios se guardan en este dispositivo</p>
+    <h2>${edText('ed.title')}</h2>
+    <p class="sub">${edText('ed.sub')}</p>
     <div class="editor-card">
-      <label>Rutina activa</label>
+      <label>${edText('ed.active')}</label>
       <select id="routineSelect" onchange="switchRoutine(this.value)">
-        ${routines.map((item) => `<option value="${item.id}"${item.id === routine.id ? ' selected' : ''}>${escapeHtml(item.title || 'Sin nombre')}</option>`).join('')}
+        ${routines.map((item) => `<option value="${item.id}"${item.id === routine.id ? ' selected' : ''}>${escapeHtml(item.title || edText('ed.untitled'))}</option>`).join('')}
       </select>
       <div class="editor-actions-row">
-        <button type="button" class="btn-secondary-sm" onclick="createRoutine()">Nueva</button>
-        <button type="button" class="btn-secondary-sm" onclick="duplicateCurrentRoutine()">Duplicar</button>
-        <button type="button" class="btn-danger-sm" onclick="deleteCurrentRoutine()">Borrar</button>
+        <button type="button" class="btn-secondary-sm" onclick="createRoutine()">${edText('ed.new')}</button>
+        <button type="button" class="btn-secondary-sm" onclick="duplicateCurrentRoutine()">${edText('ed.duplicate')}</button>
+        <button type="button" class="btn-danger-sm" onclick="deleteCurrentRoutine()">${edText('ed.delete')}</button>
       </div>
       <div class="editor-actions-row">
-        <button type="button" class="btn-secondary-sm" onclick="exportCurrentRoutine()">Exportar JSON</button>
-        <button type="button" class="btn-secondary-sm" onclick="document.getElementById('importRoutineFile').click()">Importar JSON</button>
-        <button type="button" class="btn-secondary-sm" onclick="shareCurrentRoutine()">Compartir</button>
+        <button type="button" class="btn-secondary-sm" onclick="exportCurrentRoutine()">${edText('ed.export')}</button>
+        <button type="button" class="btn-secondary-sm" onclick="document.getElementById('importRoutineFile').click()">${edText('ed.import')}</button>
+        <button type="button" class="btn-secondary-sm" onclick="shareCurrentRoutine()">${edText('ed.share')}</button>
         <input id="importRoutineFile" type="file" accept="application/json" hidden onchange="importRoutineFile(this)">
       </div>
     </div>
     <div class="editor-card">
-      <label>Nombre de la rutina</label>
+      <label>${edText('ed.name')}</label>
       <input type="text" id="edTitle" value="${escapeHtml(routine.title)}">
-      <label>Descripción</label>
+      <label>${edText('ed.desc')}</label>
       <input type="text" id="edSubtitle" value="${escapeHtml(routine.subtitle)}">
     </div>
     <div class="editor-day-tabs" id="editorDayTabs">
       ${routine.days
         .map(
           (item, i) =>
-            `<button type="button" class="tab tab-day${i === editorDayIndex ? ' active' : ''}" data-day-id="${item.id}" onclick="selectEditorDay(${i})"><span class="drag-handle" aria-label="Reordenar día">⋮⋮</span>${escapeHtml(item.short || item.name)}</button>`
+            `<button type="button" class="tab tab-day${i === editorDayIndex ? ' active' : ''}" data-day-id="${item.id}" onclick="selectEditorDay(${i})"><span class="drag-handle" aria-label="${edText('ed.reorderDay')}">⋮⋮</span>${escapeHtml(item.short || item.name)}</button>`
         )
         .join('')}
       <button type="button" class="tab tab-add" onclick="addEditorDay()">+</button>
     </div>
     <div class="editor-card">
-      <label>Día</label>
+      <label>${edText('ed.day')}</label>
       <input type="text" id="edDayName" value="${escapeHtml(day.name)}">
       <div class="editor-row">
         <div>
-          <label>Abreviatura</label>
+          <label>${edText('ed.short')}</label>
           <input type="text" id="edDayShort" value="${escapeHtml(day.short)}" maxlength="4">
         </div>
         <div>
-          <label>Enfoque</label>
+          <label>${edText('ed.focus')}</label>
           <input type="text" id="edDayFocus" value="${escapeHtml(day.focus)}">
         </div>
       </div>
-      <label>Etiqueta</label>
+      <label>${edText('ed.tag')}</label>
       <input type="text" id="edDayTag" value="${escapeHtml(day.tag?.text || '')}">
       <div class="editor-actions-row">
-        <button type="button" class="btn-secondary-sm" onclick="duplicateEditorDay()">Duplicar día</button>
-        ${routine.days.length > 1 ? '<button type="button" class="btn-danger-sm" onclick="deleteEditorDay()">Eliminar día</button>' : ''}
+        <button type="button" class="btn-secondary-sm" onclick="duplicateEditorDay()">${edText('ed.duplicateDay')}</button>
+        ${routine.days.length > 1 ? `<button type="button" class="btn-danger-sm" onclick="deleteEditorDay()">${edText('ed.deleteDay')}</button>` : ''}
       </div>
     </div>
     <div id="editorSections">${renderEditorSections(day)}</div>
-    <button type="button" class="btn-secondary" onclick="addEditorSection()">+ Agregar sección</button>
+    <button type="button" class="btn-secondary" onclick="addEditorSection()">${edText('ed.addSection')}</button>
     <div class="editor-footer">
-      <button type="button" class="btn-secondary" onclick="openRoutineWizard('editor')">✨ Generar nueva rutina</button>
-      ${routine.generatedFrom ? '<button type="button" class="btn-secondary" onclick="openRoutineWizard(\'regenerate\')">Ajustar respuestas y regenerar</button>' : ''}
-      <button type="button" class="btn-secondary" onclick="resetToTemplate()">Restaurar ejemplo</button>
-      <button type="button" class="log-btn" onclick="showPage('rutina', document.querySelector('[data-page=rutina]'))">Ver rutina</button>
+      <button type="button" class="btn-secondary" onclick="openRoutineWizard('editor')">${edText('ed.generate')}</button>
+      ${routine.generatedFrom ? `<button type="button" class="btn-secondary" onclick="openRoutineWizard('regenerate')">${edText('ed.regenerate')}</button>` : ''}
+      <button type="button" class="btn-secondary" onclick="resetToTemplate()">${edText('ed.reset')}</button>
+      <button type="button" class="log-btn" onclick="showPage('rutina', document.querySelector('[data-page=rutina]'))">${edText('ed.view')}</button>
     </div>`;
 
   bindEditorInputs();
@@ -138,7 +146,7 @@ async function renderEditor() {
 }
 
 function renderEditorSections(day) {
-  if (!day.sections.length) return '<p class="empty-day">Sin secciones. Agregá una para empezar.</p>';
+  if (!day.sections.length) return '<p class="empty-day">' + edText('ed.noSections') + '</p>';
   return day.sections
     .map((section) => {
       const exercises = (section.exercises || [])
@@ -157,41 +165,41 @@ function renderEditorSections(day) {
           return `
             <div class="editor-exercise" data-slot-id="${slot.id}" data-lib="${slot.exerciseId}">
               <div class="editor-section-head">
-                <span class="drag-handle exercise-handle" aria-label="Reordenar ejercicio">⋮⋮</span>
-                <strong>Ejercicio</strong>
-                <button type="button" class="btn-secondary-sm" onclick="duplicateEditorExercise('${section.id}','${slot.id}')">Duplicar</button>
+                <span class="drag-handle exercise-handle" aria-label="${edText('ed.reorderExercise')}">⋮⋮</span>
+                <strong>${edText('ed.exercise')}</strong>
+                <button type="button" class="btn-secondary-sm" onclick="duplicateEditorExercise('${section.id}','${slot.id}')">${edText('ed.duplicate')}</button>
               </div>
-              <input type="text" class="ed-ex-name" data-lib="${slot.exerciseId}" value="${escapeHtml(lib.name)}" placeholder="Nombre">
-              <label>Grupo</label>
+              <input type="text" class="ed-ex-name" data-lib="${slot.exerciseId}" value="${escapeHtml(lib.name)}" placeholder="${edText('ed.namePh')}">
+              <label>${edText('ed.group')}</label>
               <select class="ed-muscle" data-lib="${slot.exerciseId}">
-                ${MUSCLE_GROUPS.map((group) => `<option${group === lib.muscleGroup ? ' selected' : ''}>${group}</option>`).join('')}
+                ${MUSCLE_GROUPS.map((group) => `<option value="${escapeHtml(group)}"${group === lib.muscleGroup ? ' selected' : ''}>${escapeHtml(muscleLabel(group))}</option>`).join('')}
               </select>
               <div class="editor-row sets-edit">
-                <div><label>Series</label><input type="number" class="ed-set-count" data-slot="${slot.id}" min="1" value="${sets.count}"></div>
-                <div><label>Reps mín</label><input type="number" class="ed-set-min" data-slot="${slot.id}" min="1" value="${sets.repMin}"></div>
-                <div><label>Reps máx</label><input type="number" class="ed-set-max" data-slot="${slot.id}" min="1" value="${sets.repMax}"></div>
-                <div><label>Descanso (s)</label><input type="number" class="ed-set-rest" data-slot="${slot.id}" min="0" step="15" value="${sets.restSec}"></div>
+                <div><label>${edText('ed.sets')}</label><input type="number" class="ed-set-count" data-slot="${slot.id}" min="1" value="${sets.count}"></div>
+                <div><label>${edText('ed.repMin')}</label><input type="number" class="ed-set-min" data-slot="${slot.id}" min="1" value="${sets.repMin}"></div>
+                <div><label>${edText('ed.repMax')}</label><input type="number" class="ed-set-max" data-slot="${slot.id}" min="1" value="${sets.repMax}"></div>
+                <div><label>${edText('ed.rest')}</label><input type="number" class="ed-set-rest" data-slot="${slot.id}" min="0" step="15" value="${sets.restSec}"></div>
               </div>
-              <textarea class="ed-ex-tip" data-lib="${slot.exerciseId}" rows="2" placeholder="Tips">${escapeHtml(lib.tip || '')}</textarea>
-              <input type="text" class="ed-ex-muscles" data-lib="${slot.exerciseId}" value="${escapeHtml((lib.muscles || []).join(', '))}" placeholder="Músculos, separados por coma">
-              <input type="url" class="ed-ex-link" data-lib="${slot.exerciseId}" value="${escapeHtml(lib.linkUrl || '')}" placeholder="Link de técnica">
-              <button type="button" class="btn-danger-sm" onclick="deleteEditorExercise('${section.id}','${slot.id}')">Eliminar ejercicio</button>
+              <textarea class="ed-ex-tip" data-lib="${slot.exerciseId}" rows="2" placeholder="${edText('ed.tips')}">${escapeHtml(lib.tip || '')}</textarea>
+              <input type="text" class="ed-ex-muscles" data-lib="${slot.exerciseId}" value="${escapeHtml((lib.muscles || []).join(', '))}" placeholder="${edText('ed.muscles')}">
+              <input type="url" class="ed-ex-link" data-lib="${slot.exerciseId}" value="${escapeHtml(lib.linkUrl || '')}" placeholder="${edText('ed.link')}">
+              <button type="button" class="btn-danger-sm" onclick="deleteEditorExercise('${section.id}','${slot.id}')">${edText('ed.deleteExercise')}</button>
             </div>`;
         })
         .join('');
       const search =
         searchSectionId === section.id
-          ? `<div class="ex-search"><input id="libSearch" type="search" placeholder="Buscar en la biblioteca" oninput="filterLibrarySearch('${section.id}')"><div id="libResults"></div><button type="button" class="btn-secondary-sm" onclick="createExerciseInSection('${section.id}')">Crear nuevo</button></div>`
+          ? `<div class="ex-search"><input id="libSearch" type="search" placeholder="${edText('ed.search')}" oninput="filterLibrarySearch('${section.id}')"><div id="libResults"></div><button type="button" class="btn-secondary-sm" onclick="createExerciseInSection('${section.id}')">${edText('ed.create')}</button></div>`
           : '';
       return `
         <div class="editor-card editor-section" data-section-id="${section.id}">
           <div class="editor-section-head">
-            <span class="drag-handle section-handle" aria-label="Reordenar sección">⋮⋮</span>
+            <span class="drag-handle section-handle" aria-label="${edText('ed.reorderSection')}">⋮⋮</span>
             <input type="text" class="ed-section-label" data-section="${section.id}" value="${escapeHtml(section.label)}">
-            <button type="button" class="btn-icon-danger" onclick="deleteEditorSection('${section.id}')" aria-label="Eliminar sección">×</button>
+            <button type="button" class="btn-icon-danger" onclick="deleteEditorSection('${section.id}')" aria-label="${edText('ed.deleteSection')}">×</button>
           </div>
           <div class="exercise-list" data-section-id="${section.id}">${exercises}</div>
-          <button type="button" class="btn-secondary-sm" onclick="toggleExerciseSearch('${section.id}')">+ Ejercicio</button>
+          <button type="button" class="btn-secondary-sm" onclick="toggleExerciseSearch('${section.id}')">${edText('ed.addExercise')}</button>
           ${search}
         </div>`;
     })
@@ -320,7 +328,7 @@ async function duplicateEditorDay() {
 async function deleteEditorDay() {
   const routine = getCurrentRoutine();
   if (!routine || routine.days.length <= 1) return;
-  if (!confirm('¿Eliminar este día?')) return;
+  if (!confirm(edText('ed.deleteDayQ'))) return;
   routine.days.splice(editorDayIndex, 1);
   editorDayIndex = Math.max(0, editorDayIndex - 1);
   await Storage.saveRoutine(routine);
@@ -337,7 +345,7 @@ async function addEditorSection() {
 }
 
 async function deleteEditorSection(sectionId) {
-  if (!confirm('¿Eliminar esta sección y sus ejercicios?')) return;
+  if (!confirm(edText('ed.deleteSectionQ'))) return;
   await persistEditor();
   const day = getCurrentRoutine().days[editorDayIndex];
   day.sections = day.sections.filter((section) => section.id !== sectionId);
@@ -362,7 +370,7 @@ function filterLibrarySearch(sectionId) {
   box.innerHTML = matches
     .map(
       (ex) =>
-        `<button type="button" class="ex-option" onclick="addLibraryExercise('${sectionId}','${ex.id}')">${escapeHtml(ex.name)} · ${escapeHtml(ex.muscleGroup)}</button>`
+        `<button type="button" class="ex-option" onclick="addLibraryExercise('${sectionId}','${ex.id}')">${escapeHtml(ex.name)} · ${escapeHtml(muscleLabel(ex.muscleGroup))}</button>`
     )
     .join('') || '<p class="empty-log">Sin coincidencias. Podés crear uno nuevo.</p>';
 }
@@ -427,8 +435,8 @@ async function deleteEditorExercise(sectionId, slotId) {
     renderEditor();
     await renderRoutineView(routine);
   };
-  showToast(`${(lib && lib.name) || 'Ejercicio'} borrado`, {
-    label: 'Deshacer',
+  showToast(edText('ed.deleted', { name: (lib && lib.name) || edText('ed.exercise') }), {
+    label: edText('ed.undo'),
     ms: 5000,
     onClick: async () => {
       const restore = pendingUndo;
@@ -497,8 +505,8 @@ async function duplicateCurrentRoutine() {
 async function deleteCurrentRoutine() {
   const routine = getCurrentRoutine();
   const routines = await Storage.getRoutines();
-  if (routines.length <= 1) return alert('Tiene que quedar al menos una rutina.');
-  if (!confirm('¿Borrar esta rutina?')) return;
+  if (routines.length <= 1) return alert(edText('ed.keepOne'));
+  if (!confirm(edText('ed.deleteRoutineQ'))) return;
   await Storage.deleteRoutine(routine.id);
   currentRoutine = await Storage.getRoutine();
   editorDayIndex = 0;
@@ -600,9 +608,9 @@ async function importRoutineFile(input) {
     await setCurrentRoutine(adopted);
     editorDayIndex = 0;
     renderEditor();
-    showToast('Rutina importada');
+    showToast(edText('ed.imported'));
   } catch (error) {
-    alert(error.message || 'No se pudo importar el archivo.');
+    alert(error.message || edText('ed.importFail'));
   }
 }
 

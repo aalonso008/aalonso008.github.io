@@ -689,7 +689,7 @@ async function buildWizardRoutine(seed) {
   const next = document.getElementById('wizardNext');
   if (next) {
     next.disabled = true;
-    next.textContent = 'Armando…';
+    next.textContent = typeof I18n !== 'undefined' ? I18n.t('wiz.building') : 'Armando…';
   }
   if (!wizard.catalog) {
     const response = await fetch('data/exercise-catalog.json');
@@ -704,7 +704,7 @@ async function buildWizardRoutine(seed) {
   wizard.phase = 'preview';
   renderWizard();
   } catch (error) {
-    if (typeof alert === 'function') alert(error.message || 'No se pudo armar la rutina');
+    if (typeof alert === 'function') alert(error.message || (typeof I18n !== 'undefined' ? I18n.t('wiz.fail') : 'No se pudo armar la rutina'));
     wizard.phase = 'summary';
     renderWizard();
   }
@@ -830,7 +830,7 @@ function removeWizardExercise(dayIndex, sectionIndex, slotIndex) {
   const day = wizard.generated.routine.days[dayIndex];
   const total = day.sections.reduce((sum, section) => sum + section.exercises.length, 0);
   if (total <= 3) {
-    showToast('Dejá al menos 3 ejercicios en el día');
+    showToast(typeof I18n !== 'undefined' ? I18n.t('wiz.minExercises') : 'Deja al menos 3 ejercicios en el día');
     return;
   }
   day.sections[sectionIndex].exercises.splice(slotIndex, 1);
@@ -903,13 +903,13 @@ async function saveGeneratedForStudent(mode) {
   try {
     await saveGeneratedStudentRoutine(routine, exercises);
   } catch (error) {
-    alert(typeof trainerMessage === 'function' ? trainerMessage(error) : (error.message || 'No se pudo guardar'));
+    alert(typeof trainerMessage === 'function' ? trainerMessage(error) : (error.message || (typeof I18n !== 'undefined' ? I18n.t('wiz.saveFail') : 'No se pudo guardar')));
     return;
   }
   wizard.audience = null;
   wizard.studentName = '';
   hideWizardShell();
-  if (typeof showToast === 'function') showToast('Rutina guardada para ' + ((trainer.student && trainer.student.name) || 'el alumno'));
+  if (typeof showToast === 'function') showToast(typeof I18n !== 'undefined' ? I18n.t('wiz.savedStudent', { name: (trainer.student && trainer.student.name) || I18n.t('wiz.student') }) : 'Rutina guardada');
 }
 
 async function saveGeneratedRoutine(mode) {
@@ -962,7 +962,7 @@ async function saveGeneratedRoutine(mode) {
   if (typeof setCurrentRoutine === 'function') await setCurrentRoutine(saved);
   await Storage.clearWizardDraft();
   hideWizardShell();
-  if (typeof showToast === 'function') showToast('¡Rutina lista!');
+  if (typeof showToast === 'function') showToast(typeof I18n !== 'undefined' ? I18n.t('wiz.ready') : '¡Rutina lista!');
   const page = wizard.openEditorAfter ? 'editor' : 'rutina';
   if (typeof showPage === 'function') showPage(page, document.querySelector('[data-page="' + page + '"]'));
 }

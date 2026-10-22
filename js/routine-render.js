@@ -18,7 +18,7 @@ function lastLoggedWeight(exerciseId, logs, unit) {
 function renderExerciseCard(exercise, logs, settings) {
   const muscles = (exercise.muscles || []).map((muscle) => `<span class="muscle-tag">${escapeHtml(muscle)}</span>`).join('');
   const link = exercise.linkUrl
-    ? `<a class="ex-link" href="${escapeHtml(exercise.linkUrl)}" target="_blank" rel="noopener">${escapeHtml(exercise.linkLabel || 'Ver técnica')}</a>`
+    ? `<a class="ex-link" href="${escapeHtml(exercise.linkUrl)}" target="_blank" rel="noopener">${escapeHtml(exercise.linkLabel || (typeof I18n !== 'undefined' ? I18n.t('ed.technique') : 'Ver técnica'))}</a>`
     : '';
   const tip = exercise.tip ? `<p class="ex-tip">${escapeHtml(exercise.tip)}</p>` : '';
   const lastWeight = lastLoggedWeight(exercise.exerciseId, logs, settings && settings.unit);
@@ -64,7 +64,7 @@ function renderDayPanel(day, index, active, library, logs, settings) {
         .join('');
       return `
         <div class="section-label">${escapeHtml(section.label)}</div>
-        ${exercises || '<p class="empty-day">Sin ejercicios en esta sección.</p>'}`;
+        ${exercises || ('<p class="empty-day">' + (typeof I18n !== 'undefined' ? I18n.t('ed.noSection') : 'Sin ejercicios en esta sección.') + '</p>')}`;
     })
     .join('');
   const cycle = cycleInfo(settings.cycleStart);

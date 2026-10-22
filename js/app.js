@@ -105,7 +105,7 @@ function tickRest() {
 function finishRest() {
   sessionStorage.removeItem('restEndsAt');
   if (sessionStorage.getItem('restVibrate') !== '0' && navigator.vibrate) navigator.vibrate([200, 100, 200]);
-  showToast('Descanso listo');
+  showToast(typeof I18n !== 'undefined' ? I18n.t('rest.done') : 'Descanso listo');
 }
 
 function setAppLocked(locked) {
@@ -227,6 +227,14 @@ async function initApp() {
     if (typeof renderProgressCharts === 'function' && document.getElementById('progressCharts')) renderProgressCharts();
     if (typeof currentRoutine !== 'undefined' && currentRoutine && typeof renderRoutineView === 'function') renderRoutineView(currentRoutine);
     if (typeof I18n !== 'undefined') I18n.apply(document.getElementById('page-prog'));
+    const settingsModal = document.getElementById('settingsModal');
+    if (settingsModal && settingsModal.classList.contains('show') && typeof openSettings === 'function') openSettings();
+    const accountModal = document.getElementById('accountModal');
+    if (accountModal && accountModal.classList.contains('show') && typeof openAccount === 'function') openAccount();
+    const trainerEl = document.getElementById('trainerPanel');
+    if (trainerEl && trainerEl.classList.contains('show') && typeof renderTrainer === 'function') renderTrainer();
+    const editor = document.getElementById('page-editor');
+    if (editor && editor.classList.contains('active') && typeof renderEditor === 'function') renderEditor();
   });
 }
 
