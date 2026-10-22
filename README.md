@@ -44,9 +44,12 @@ Al abrir la app, si los datos son v1 se hace una copia en `tu_rutina_data_backup
 
 1. Creá un proyecto en [Supabase](https://supabase.com).
 2. En el SQL editor, ejecutá `supabase/schema.sql`.
-3. Authentication → URL Configuration: agregá `http://localhost:3000` y `https://aalonso008.github.io`.
-4. Si usás Google, activalo en Authentication → Providers.
-5. Copiá `js/config.example.js` sobre `js/config.js` y completá `SUPABASE_URL` y `SUPABASE_ANON_KEY` (Project Settings → API). La anon key es pública; RLS limita cada fila a su usuario.
+3. Authentication → URL Configuration: agregá la página de la app, por ejemplo `http://localhost:3000/app.html` y `https://aalonso008.github.io/app.html`. Ahí vuelve Google, el enlace y el recupero de contraseña.
+4. Authentication → Providers → Email: dejalo activo. Sirve para crear la cuenta con contraseña y para el enlace de quienes ya entraban así.
+5. Authentication → Providers → Google: activalo con el Client ID y el secret. En Google Cloud, el redirect autorizado es `https://TU_PROYECTO.supabase.co/auth/v1/callback`.
+6. Un Google con el mismo email verificado entra a la cuenta que ya existe. Supabase vincula esa identidad al mismo usuario: no se crea otra cuenta y la rutina sigue en ese `user_id`.
+7. El botón «Vincular Google» dentro de Cuenta pide Authentication → Providers → Manual linking. Sin eso, alcanza con cerrar sesión y tocar Continuar con Google usando el mismo mail.
+8. Copiá `js/config.example.js` sobre `js/config.js` y completá `SUPABASE_URL` y `SUPABASE_ANON_KEY` (Project Settings → API). La anon key es pública; RLS limita cada fila a su usuario.
 
 Sin `config.js` completo, el botón Cuenta explica que todo sigue en el dispositivo.
 
