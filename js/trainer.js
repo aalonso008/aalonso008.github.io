@@ -98,7 +98,7 @@ async function loadTrainerRole() {
 }
 
 function trainerCanCoach() {
-  return typeof Subscription !== 'undefined' && Subscription.allowsCoach(trainer.role);
+  return typeof Subscription !== 'undefined' && Subscription.allowsCoach();
 }
 
 async function renderTrainerHome(body) {

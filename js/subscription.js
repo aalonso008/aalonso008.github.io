@@ -218,8 +218,7 @@ const Subscription = (function () {
     return PLANS[id] ? id : 'pro';
   }
 
-  function allowsCoach(role) {
-    if (role === 'admin' || role === 'trainer') return true;
+  function allowsCoach() {
     const info = status();
     if (!info.sub || info.state === 'none' || info.state === 'expired') return false;
     return planIdOf(info.sub) === 'entrenador';

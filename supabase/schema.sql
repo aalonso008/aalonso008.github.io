@@ -429,19 +429,16 @@ stable
 security definer
 set search_path = public
 as $$
-  select
-    exists (
-      select 1 from profiles
-      where user_id = auth.uid() and role in ('trainer', 'admin')
-    )
-    or exists (
-      select 1 from subscriptions
-      where user_id = auth.uid()
-        and plan_id = 'entrenador'
-        and status in ('trial', 'active', 'chosen')
-        and (status <> 'trial' or trial_ends_at is null or trial_ends_at > now())
-    );
+  select exists (
+    select 1 from subscriptions
+    where user_id = auth.uid()
+      and plan_id = 'entrenador'
+      and status in ('trial', 'active', 'chosen')
+      and (status <> 'trial' or trial_ends_at is null or trial_ends_at > now())
+  );
 $$;
+
+update public.profiles set role = 'athlete' where role = 'trainer';
 
 drop policy if exists students_insert on students;
 drop policy if exists students_update on students;

@@ -40,7 +40,6 @@ function adminDateIso(value) {
 
 function adminRoleLabel(role) {
   if (role === 'admin') return adminT('admin.role.admin');
-  if (role === 'trainer') return adminT('admin.role.trainer');
   return adminT('admin.role.athlete');
 }
 
@@ -286,8 +285,9 @@ async function renderAdminUser(body, title) {
     return;
   }
   if (title) title.textContent = user.email || adminT('admin.nomail');
-  const roles = ['athlete', 'trainer', 'admin'].map((role) =>
-    `<option value="${role}"${user.role === role ? ' selected' : ''}>${adminRoleLabel(role)}</option>`
+  const currentRole = user.role === 'admin' ? 'admin' : 'athlete';
+  const roles = ['athlete', 'admin'].map((role) =>
+    `<option value="${role}"${currentRole === role ? ' selected' : ''}>${adminRoleLabel(role)}</option>`
   ).join('');
   const statuses = ['trial', 'active', 'expired', 'chosen'];
   const currentStatus = user.sub_status || 'trial';
