@@ -87,11 +87,18 @@ async function renderRoutinePicker(routine) {
   const options = routines
     .map((item) => `<option value="${escapeHtml(item.id)}"${item.id === routine.id ? ' selected' : ''}>${escapeHtml(item.title || 'Rutina')}</option>`)
     .join('');
+  const removeLabel = typeof I18n !== 'undefined' ? I18n.t('routine.remove') : 'Borrar';
+  const remove = routines.length > 1
+    ? `<button type="button" class="btn-secondary-sm" onclick="deleteRoutineFromPicker()">${escapeHtml(removeLabel)}</button>`
+    : '';
   box.hidden = false;
   box.innerHTML = `
     <label for="activeRoutine">${escapeHtml(label)}</label>
-    <select id="activeRoutine" onchange="switchActiveRoutine(this.value)">${options}</select>
-    <button type="button" class="btn-secondary-sm" onclick="openRoutineWizard('routine')">${escapeHtml(fresh)}</button>
+    <div class="routine-picker-row">
+      <select id="activeRoutine" onchange="switchActiveRoutine(this.value)">${options}</select>
+      ${remove}
+      <button type="button" class="btn-secondary-sm" onclick="openRoutineWizard('routine')">${escapeHtml(fresh)}</button>
+    </div>
     <p class="hint">${escapeHtml(shared)}</p>`;
 }
 

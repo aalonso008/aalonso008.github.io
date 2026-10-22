@@ -186,6 +186,19 @@ begin
 end;
 $$;
 
+create or replace function is_my_pupil(uid uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select uid is not null and exists (
+    select 1 from students
+    where trainer_id = auth.uid() and user_id = uid
+  );
+$$;
+
 do $$
 declare
   tbl text;
@@ -197,7 +210,7 @@ begin
     execute format('drop policy if exists %I_update on %I', tbl, tbl);
     execute format('drop policy if exists %I_delete on %I', tbl, tbl);
     execute format(
-      'create policy %I_select on %I for select using (auth.uid() = user_id or (student_id is not null and is_my_student(student_id)))',
+      'create policy %I_select on %I for select using (auth.uid() = user_id or (student_id is not null and is_my_student(student_id)) or is_my_pupil(user_id))',
       tbl, tbl
     );
     execute format(
@@ -223,7 +236,7 @@ drop policy if exists profiles_select on profiles;
 drop policy if exists profiles_insert on profiles;
 drop policy if exists profiles_update on profiles;
 drop policy if exists profiles_delete on profiles;
-create policy profiles_select on profiles for select using (auth.uid() = user_id);
+create policy profiles_select on profiles for select using (auth.uid() = user_id or is_my_pupil(user_id));
 create policy profiles_insert on profiles for insert with check (auth.uid() = user_id);
 create policy profiles_update on profiles for update using (auth.uid() = user_id);
 create policy profiles_delete on profiles for delete using (auth.uid() = user_id);
@@ -308,12 +321,14 @@ $$;
 revoke all on function delete_own_account() from public, anon;
 revoke all on function claim_student() from public, anon;
 revoke all on function is_my_student(text) from public, anon;
+revoke all on function is_my_pupil(uuid) from public, anon;
 revoke all on function my_student_row() from public, anon;
 revoke all on function can_write_row(uuid, text) from public, anon;
 revoke all on function attach_student_id() from public, anon;
 grant execute on function delete_own_account() to authenticated;
 grant execute on function claim_student() to authenticated;
 grant execute on function is_my_student(text) to authenticated;
+grant execute on function is_my_pupil(uuid) to authenticated;
 grant execute on function my_student_row() to authenticated;
 grant execute on function can_write_row(uuid, text) to authenticated;
 

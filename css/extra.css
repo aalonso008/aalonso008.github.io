@@ -533,18 +533,75 @@ nav button { font-size: 9px; letter-spacing: 0; padding: 10px 2px 14px; }
 .trainer-card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   width: 100%;
   text-align: left;
   margin-bottom: 8px;
   padding: 12px 14px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
   cursor: pointer;
 }
+.coach-avatar {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #1a2200;
+  color: var(--accent);
+  font-weight: 800;
+}
+.coach-idline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.coach-idline strong { display: block; font-size: 14px; }
+.coach-idline .trainer-pill { display: inline-block; margin-top: 6px; }
+.coach-panel, .coach-session {
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+}
+.coach-session-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.coach-session-top span, .coach-session p { color: var(--muted); font-size: 13px; }
+.coach-session ul { margin: 0; padding: 0; list-style: none; }
+.coach-session li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+.coach-session li span { color: var(--muted); font-size: 13px; }
+.coach-empty { color: var(--muted); font-size: 14px; line-height: 1.45; margin: 8px 0 16px; }
+.coach-danger {
+  display: block;
+  width: 100%;
+  margin-top: 22px;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid #5a2424;
+  background: transparent;
+  color: #eb5757;
+  font-weight: 700;
+  cursor: pointer;
+}
+.routine-picker-row { display: flex; gap: 8px; align-items: center; grid-column: 1 / -1; }
+.routine-switch .routine-picker-row select { width: auto; flex: 1; min-width: 0; }
+.routine-picker-row .btn-secondary-sm { flex: none; margin: 0; }
 .trainer-card > span:first-child { min-width: 0; flex: 1; }
 .trainer-card strong { display: block; font-size: 16px; }
 .trainer-card em { display: block; margin-top: 2px; color: var(--muted); font-style: normal; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

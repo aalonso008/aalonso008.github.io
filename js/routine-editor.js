@@ -504,6 +504,19 @@ async function deleteCurrentRoutine() {
   await renderRoutineView(currentRoutine);
 }
 
+async function deleteRoutineFromPicker() {
+  const routine = typeof getCurrentRoutine === 'function' ? getCurrentRoutine() : currentRoutine;
+  const routines = await Storage.getRoutines();
+  const say = (key, fallback) => (typeof I18n !== 'undefined' ? I18n.t(key) : fallback);
+  if (!routine || routines.length <= 1) return alert(say('routine.remove.only', 'Tiene que quedar al menos una rutina.'));
+  if (!confirm(say('routine.remove.confirm', '¿Borrar esta rutina?'))) return;
+  await Storage.deleteRoutine(routine.id);
+  currentRoutine = await Storage.getRoutine();
+  editorDayIndex = 0;
+  await renderRoutineView(currentRoutine);
+  if (typeof refreshLogExercises === 'function') await refreshLogExercises();
+}
+
 async function switchActiveRoutine(id) {
   if (!id || (currentRoutine && currentRoutine.id === id)) return;
   const editorOpen = document.getElementById('page-editor') && document.getElementById('page-editor').classList.contains('active') && document.getElementById('edTitle');

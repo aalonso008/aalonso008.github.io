@@ -10,6 +10,8 @@ const trainer = {
   exercises: [],
   sets: [],
   metrics: [],
+  profile: null,
+  chart: 'peso',
   templateId: null,
   manual: false,
   showAdd: false,
@@ -136,18 +138,20 @@ async function renderTrainerHome(body) {
   if (templates.error) throw templates.error;
   trainer.students = students.data || [];
   trainer.templates = templates.data || [];
+  const joined = trainer.students.filter((student) => student.user_id).length;
   const rows = trainer.students.map((student) => `
     <button type="button" class="trainer-card" onclick="openTrainerStudent('${student.id}')">
+      <span class="coach-avatar" aria-hidden="true">${escapeHtml(coachInitial(student.name))}</span>
       <span>
         <strong>${escapeHtml(student.name)}</strong>
         <em>${escapeHtml(student.email)}</em>
       </span>
-      <span class="trainer-pill${student.user_id ? ' is-on' : ''}">${student.user_id ? 'Ya ingresó' : 'Sin ingresar'}</span>
+      <span class="trainer-pill${student.user_id ? ' is-on' : ''}">${student.user_id ? 'Activo' : 'Invitado'}</span>
     </button>`).join('');
   const addForm = trainer.showAdd ? `
-    <form class="wizard-form trainer-block" onsubmit="createTrainerStudent(event)">
+    <form class="wizard-form coach-panel" onsubmit="createTrainerStudent(event)">
       <h3 class="wizard-title" style="font-size:18px">Nuevo alumno</h3>
-      <p class="wizard-help">No le crea una contraseña. Después entra con este email, con Google o con una cuenta.</p>
+      <p class="wizard-help">Usá el email con el que va a entrar. No le crea una contraseña.</p>
       <label for="studentName">Nombre</label>
       <input id="studentName" name="name" required placeholder="Nombre">
       <label for="studentEmail">Email</label>
@@ -155,18 +159,17 @@ async function renderTrainerHome(body) {
       <button type="submit" class="log-btn">Crear alumno</button>
     </form>` : '';
   body.innerHTML = `
-    <ol class="trainer-steps">
-      <li><strong>Agregá al alumno</strong><span>Usá el email con el que va a entrar.</span></li>
-      <li><strong>Armale la rutina</strong><span>Con el asistente, a mano o desde una plantilla.</span></li>
-      <li><strong>Cuando entre, la ve</strong><span>Si ya tenía una rutina, esta se suma en el desplegable.</span></li>
-    </ol>
+    <div class="summary-grid">
+      <div class="summary-card"><span>Alumnos</span><strong>${trainer.students.length}</strong></div>
+      <div class="summary-card"><span>Ya ingresaron</span><strong>${joined}</strong></div>
+    </div>
     <div class="trainer-actions">
       <button type="button" class="log-btn" onclick="trainer.showAdd=!trainer.showAdd; renderTrainer()">+ Alumno</button>
-      <button type="button" class="btn-secondary" onclick="showTrainerTemplates()">Plantillas (${trainer.templates.length})</button>
+      <button type="button" class="btn-secondary" onclick="showTrainerTemplates()">Plantillas · ${trainer.templates.length}</button>
     </div>
     ${addForm}
-    <h2 class="wizard-title">Tus alumnos</h2>
-    ${rows || '<p class="wizard-help">Todavía no tenés alumnos. Agregá el primero con el botón de arriba.</p>'}`;
+    <p class="wizard-help">Abrí un alumno para armarle la rutina y ver su registro, progresión y medidas.</p>
+    ${rows || '<p class="coach-empty">Todavía no tenés alumnos.</p>'}`;
 }
 
 async function createTrainerStudent(event) {
@@ -199,20 +202,48 @@ async function openTrainerStudent(id) {
   await renderTrainer();
 }
 
+function coachInitial(name) {
+  const letter = String(name || '?').trim().charAt(0);
+  return letter ? letter.toUpperCase() : '?';
+}
+
+function scopeToStudent(query, student) {
+  if (student.user_id) return query.or(`student_id.eq.${student.id},user_id.eq.${student.user_id}`);
+  return query.eq('student_id', student.id);
+}
+
+async function loadScoped(client, table, student, orderColumn) {
+  let query = scopeToStudent(client.from(table).select('*').eq('deleted', false), student);
+  if (orderColumn) query = query.order(orderColumn, { ascending: false });
+  let result = await query;
+  if (result.error && student.user_id) {
+    query = client.from(table).select('*').eq('student_id', student.id).eq('deleted', false);
+    if (orderColumn) query = query.order(orderColumn, { ascending: false });
+    result = await query;
+  }
+  return result;
+}
+
 async function loadStudentBundle() {
   const client = await ensureClient();
   const student = trainer.student;
-  const [routines, exercises, sets, metrics] = await Promise.all([
+  const [routines, exercises, sets, metrics, profile] = await Promise.all([
     client.from('routines').select('*').eq('student_id', student.id).eq('deleted', false),
-    client.from('exercises').select('*').eq('student_id', student.id).eq('deleted', false),
-    client.from('workout_sets').select('*').eq('student_id', student.id).eq('deleted', false).order('date', { ascending: false }),
-    client.from('body_metrics').select('*').eq('student_id', student.id).eq('deleted', false).order('date', { ascending: false }),
+    loadScoped(client, 'exercises', student),
+    loadScoped(client, 'workout_sets', student, 'date'),
+    loadScoped(client, 'body_metrics', student, 'date'),
+    student.user_id
+      ? client.from('profiles').select('*').eq('user_id', student.user_id).maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
   ]);
   if (routines.error) throw routines.error;
   if (exercises.error) throw exercises.error;
+  if (sets.error) throw sets.error;
+  if (metrics.error) throw metrics.error;
   trainer.exercises = (exercises.data || []).map(exerciseFromRow);
   trainer.sets = (sets.data || []).map(setFromRow);
   trainer.metrics = (metrics.data || []).map(metricFromRow);
+  trainer.profile = profile.error ? null : profile.data;
   const active = (routines.data || []).find((row) => row.is_active) || (routines.data || [])[0];
   trainer.routine = active
     ? Object.assign({}, active.data, { id: active.id })
@@ -239,13 +270,32 @@ function renderStudent(body) {
   else if (trainer.tab === 'progresion') content = renderStudentProgress();
   else content = renderStudentBody();
   const status = student.user_id
-    ? 'Ya ingresó. Esta rutina le aparece en su cuenta.'
-    : 'Todavía no ingresó. Cuando entre con este email, ve la rutina.';
+    ? 'Ya ingresó. Ve su rutina en la cuenta.'
+    : 'Invitado. Cuando entre con este email, ve la rutina.';
   body.innerHTML = `
-    <p class="trainer-status">${escapeHtml(student.email)}</p>
-    <p class="wizard-help">${status}</p>
+    <div class="coach-idline">
+      <span class="coach-avatar" aria-hidden="true">${escapeHtml(coachInitial(student.name))}</span>
+      <div>
+        <strong>${escapeHtml(student.email)}</strong>
+        <span class="trainer-pill${student.user_id ? ' is-on' : ''}">${escapeHtml(status)}</span>
+      </div>
+    </div>
     <div class="wizard-days trainer-tabs">${tabs}</div>
-    ${content}`;
+    ${content}
+    <button type="button" class="coach-danger" onclick="deleteTrainerStudent()">Quitar alumno</button>`;
+}
+
+async function deleteTrainerStudent() {
+  const student = trainer.student;
+  if (!student) return;
+  if (!confirm('¿Quitar a ' + student.name + '? Deja de figurar en tus alumnos. Su cuenta sigue.')) return;
+  const client = await ensureClient();
+  const { error } = await client.from('students').delete().eq('id', student.id).eq('trainer_id', syncUser.id);
+  if (error) return alert(trainerMessage(error));
+  trainer.student = null;
+  trainer.view = 'home';
+  showToast('Alumno quitado');
+  await renderTrainer();
 }
 
 function trainerRoutineHasExercises(routine) {
@@ -526,9 +576,13 @@ function usedInRoutine(routine, exerciseId) {
   return (routine.days || []).some((day) => (day.sections || []).some((section) => (section.exercises || []).some((slot) => slot.exerciseId === exerciseId)));
 }
 
+function trainerExerciseName(id) {
+  const found = trainer.exercises.find((exercise) => exercise.id === id);
+  return (found && found.name) || 'Ejercicio';
+}
+
 function renderStudentLog() {
-  if (!trainer.sets.length) return '<p class="wizard-help">Todavía no hay series cargadas.</p>';
-  const names = new Map(trainer.exercises.map((exercise) => [exercise.id, exercise.name]));
+  if (!trainer.sets.length) return '<p class="coach-empty">Todavía no hay series cargadas.</p>';
   const groups = new Map();
   trainer.sets.forEach((set) => {
     const list = groups.get(set.date) || [];
@@ -539,29 +593,106 @@ function renderStudentLog() {
     const lines = sets
       .slice()
       .sort((a, b) => (a.setNumber || 0) - (b.setNumber || 0))
-      .map((set) => `<li>${escapeHtml(names.get(set.exerciseId) || 'Ejercicio')} · serie ${set.setNumber || ''} · ${set.weight || 0} kg × ${set.reps || 0}</li>`)
+      .map((set) => `<li><strong>${escapeHtml(trainerExerciseName(set.exerciseId))}</strong><span>serie ${set.setNumber || '–'} · ${set.weight || 0} kg × ${set.reps || 0}</span></li>`)
       .join('');
-    return `<h3 class="wizard-title" style="font-size:16px">${escapeHtml(formatDisplayDate(date))}</h3><ul class="wizard-reasons">${lines}</ul>`;
+    return `<article class="coach-session"><div class="coach-session-top"><strong>${escapeHtml(formatDisplayDate(date))}</strong><span>${sets.length} ${sets.length === 1 ? 'serie' : 'series'}</span></div><ul>${lines}</ul></article>`;
   }).join('');
 }
 
+function setTrainerChart(metric) {
+  trainer.chart = metric;
+  trainer.tab = 'progresion';
+  renderTrainer();
+}
+
 function renderStudentProgress() {
-  if (!trainer.sets.length) return '<p class="wizard-help">Cuando el alumno registre series, vas a ver el volumen acá.</p>';
+  if (!trainer.sets.length) return '<p class="coach-empty">Cuando el alumno registre series, vas a ver el volumen, la racha y los récords.</p>';
   const bounds = weekBounds();
   const prev = previousWeekBounds();
-  const now = Math.round(sessionVolume(setsInRange(trainer.sets, bounds.start, bounds.end)));
-  const before = Math.round(sessionVolume(setsInRange(trainer.sets, prev.start, prev.end)));
+  const thisWeek = setsInRange(trainer.sets, bounds.start, bounds.end);
+  const lastWeek = setsInRange(trainer.sets, prev.start, prev.end);
+  const now = Math.round(sessionVolume(thisWeek));
+  const before = Math.round(sessionVolume(lastWeek));
+  const sessions = monthSessions(trainer.sets);
+  const streak = streakDays(trainer.sets);
+  const muscleCounts = (typeof MUSCLE_GROUPS !== 'undefined' ? MUSCLE_GROUPS : []).map((group) => {
+    const ids = new Set(trainer.exercises.filter((exercise) => exercise.muscleGroup === group).map((exercise) => exercise.id));
+    return { group, count: thisWeek.filter((set) => ids.has(set.exerciseId)).length };
+  }).filter((item) => item.count > 0);
+  const bars = muscleCounts.map((item) => {
+    const width = Math.min(100, Math.round((item.count / 20) * 100));
+    const tone = item.count < 10 ? 'low' : item.count <= 20 ? 'ok' : 'high';
+    return `<div class="muscle-bar"><div class="muscle-bar-label"><span>${escapeHtml(item.group)}</span><span>${item.count}</span></div><div class="muscle-track"><div class="muscle-fill ${tone}" style="width:${width}%"></div></div></div>`;
+  }).join('');
+  const metrics = ['peso', '1rm', 'volumen', 'reps'];
+  const switcher = metrics.map((metric) => `<button type="button" class="mf-btn${trainer.chart === metric ? ' active' : ''}" onclick="setTrainerChart('${metric}')">${metric === '1rm' ? '1RM' : metric}</button>`).join('');
+  const byExercise = new Map();
+  trainer.sets.forEach((set) => {
+    const list = byExercise.get(set.exerciseId) || [];
+    list.push(set);
+    byExercise.set(set.exerciseId, list);
+  });
+  const cards = [...byExercise.entries()].map(([id, sets]) => {
+    const sessionsOf = groupSessions(sets);
+    if (!sessionsOf.length) return '';
+    const recent = sessionsOf.slice(-12);
+    const points = recent.map((session) => ({
+      value: sessionMetric(session, trainer.chart),
+      label: formatDisplayDate(session[0].date),
+    }));
+    const bestWeight = Math.max(...sessionsOf.flat().map((set) => Number(set.weight) || 0));
+    const bestEpley = Math.max(...sessionsOf.map((session) => sessionBestEpley(session).value));
+    return `<article class="coach-session"><div class="coach-session-top"><strong>${escapeHtml(trainerExerciseName(id))}</strong><span>PR ${trimNum(bestWeight)} kg · 1RM ${trimNum(bestEpley)}</span></div>${renderLineChart(points)}</article>`;
+  }).filter(Boolean).join('');
   return `
-    <div class="summary-card"><span>Volumen de esta semana</span><strong>${now} kg</strong><small>${before ? (now - before >= 0 ? '+' : '') + (now - before) + ' vs sem. anterior' : 'Sin semana anterior'}</small></div>
-    <p class="wizard-help">${trainer.sets.length === 1 ? '1 serie cargada en total.' : trainer.sets.length + ' series cargadas en total.'}</p>`;
+    <div class="summary-grid">
+      <div class="summary-card"><span>Volumen semanal</span><strong>${now} kg</strong><small>${before ? (now - before >= 0 ? '+' : '') + (now - before) + ' vs sem. anterior' : 'Sin semana anterior'}</small></div>
+      <div class="summary-card"><span>Sesiones del mes</span><strong>${sessions}</strong><small>Racha ${streak} ${streak === 1 ? 'día' : 'días'}</small></div>
+    </div>
+    <h3 class="block-title">Días entrenados</h3>
+    ${renderHeatmap(trainer.sets)}
+    <h3 class="block-title">Series de esta semana</h3>
+    ${bars || '<p class="coach-empty">Esta semana todavía no hay series.</p>'}
+    <div class="metric-switch">${switcher}</div>
+    ${cards}`;
+}
+
+function coachMeasure(label, value, unit) {
+  if (value == null || value === '') return '';
+  return `<div class="summary-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))} ${escapeHtml(unit)}</strong></div>`;
 }
 
 function renderStudentBody() {
-  if (!trainer.metrics.length) return '<p class="wizard-help">Todavía no hay medidas.</p>';
-  return trainer.metrics.map((metric) => `
-    <div class="wizard-summary-row">
-      <div><strong>${escapeHtml(formatDisplayDate(metric.date))}</strong><span>${metric.weight != null ? metric.weight + ' kg' : 'Sin peso'}${metric.waistCm ? ' · cintura ' + metric.waistCm + ' cm' : ''}</span></div>
-    </div>`).join('');
+  const profile = trainer.profile || {};
+  const latest = trainer.metrics[0];
+  const profileBits = [
+    profile.sex === 'male' ? 'Masculino' : profile.sex === 'female' ? 'Femenino' : '',
+    profile.height_cm ? profile.height_cm + ' cm' : '',
+    profile.birth_date ? 'Nac. ' + profile.birth_date : '',
+  ].filter(Boolean);
+  const latestCards = latest ? [
+    coachMeasure('Peso', latest.weight, 'kg'),
+    coachMeasure('Cintura', latest.waistCm, 'cm'),
+    coachMeasure('Cuello', latest.neckCm, 'cm'),
+    coachMeasure('Cadera', latest.hipCm, 'cm'),
+    coachMeasure('Grasa', latest.bodyFatManual, '%'),
+  ].join('') : '';
+  const history = trainer.metrics.map((metric) => {
+    const bits = [
+      metric.weight != null ? metric.weight + ' kg' : '',
+      metric.waistCm ? 'cintura ' + metric.waistCm + ' cm' : '',
+      metric.neckCm ? 'cuello ' + metric.neckCm + ' cm' : '',
+      metric.hipCm ? 'cadera ' + metric.hipCm + ' cm' : '',
+      metric.bodyFatManual != null ? 'grasa ' + metric.bodyFatManual + '%' : '',
+    ].filter(Boolean);
+    return `<article class="coach-session"><div class="coach-session-top"><strong>${escapeHtml(formatDisplayDate(metric.date))}</strong></div><p>${escapeHtml(bits.join(' · ') || 'Sin medidas')}${metric.note ? ' · ' + escapeHtml(metric.note) : ''}</p></article>`;
+  }).join('');
+  if (!latestCards && !profileBits.length && !history) return '<p class="coach-empty">Todavía no hay medidas. Cuando el alumno cargue peso o perímetros, aparecen acá.</p>';
+  return `
+    ${profileBits.length ? `<p class="wizard-help">${escapeHtml(profileBits.join(' · '))}</p>` : ''}
+    ${latest ? `<p class="hint">Último registro · ${escapeHtml(formatDisplayDate(latest.date))}</p>` : ''}
+    ${latestCards ? `<div class="summary-grid">${latestCards}</div>` : ''}
+    ${history}`;
 }
 
 async function showTrainerTemplates() {
