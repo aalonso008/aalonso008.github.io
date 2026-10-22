@@ -120,38 +120,34 @@ async function handleSession(session) {
   if (typeof Subscription !== 'undefined' && Subscription.syncSubscription) {
     try { await Subscription.syncSubscription(); } catch (err) { console.error(err); }
   }
-  const choice = await Storage.getSyncChoice();
-  if (choice === syncUser.id) {
-    await pushAndPull();
+  await Storage.setSyncChoice(syncUser.id);
+  try {
+    await syncAccount();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function syncAccount() {
+  if (!syncUser || !navigator.onLine) {
+    updateSyncDot();
     return;
   }
   const remoteSets = await countOwnRemote('workout_sets');
-  const remoteExercises = await countOwnRemote('exercises');
-  const remoteCount = remoteSets + remoteExercises;
+  const remoteRoutines = await countOwnRemote('routines');
   const local = await Storage.exportAll();
-  const localHas = (local.sets && local.sets.length) || (local.exercises && local.exercises.length) || local.routine;
-  if (localHas && !remoteCount) {
-    openChoice(
-      typeof I18n !== 'undefined' ? I18n.t('sync.upload.q') : 'Tienes datos en este dispositivo. ¿Subirlos a tu cuenta?',
-      typeof I18n !== 'undefined' ? I18n.t('sync.upload') : 'Subir',
-      'upload',
-      typeof I18n !== 'undefined' ? I18n.t('sync.later') : 'Ahora no',
-      'skip'
-    );
-    return;
+  const localSets = (local.sets || []).length;
+  if ((remoteSets || remoteRoutines) && !localSets) {
+    await pullAll(false);
+  } else {
+    try {
+      await uploadAll();
+    } catch (err) {
+      console.error(err);
+    }
+    await pullAll(false);
   }
-  if (localHas && remoteCount) {
-    openChoice(
-      typeof I18n !== 'undefined' ? I18n.t('sync.both') : 'La cuenta ya tiene datos y este dispositivo también.',
-      typeof I18n !== 'undefined' ? I18n.t('sync.merge') : 'Combinar',
-      'merge',
-      typeof I18n !== 'undefined' ? I18n.t('sync.remote') : 'Usar los de la cuenta',
-      'remote'
-    );
-    return;
-  }
-  await Storage.setSyncChoice(syncUser.id);
-  await pushAndPull();
+  updateSyncDot();
 }
 
 function openChoice(text, okLabel, okAction, cancelLabel, cancelAction) {
@@ -225,6 +221,19 @@ async function pushAndPull() {
   updateSyncDot();
 }
 
+async function fetchOwn(table) {
+  const client = await ensureClient();
+  const page = 1000;
+  const rows = [];
+  for (let from = 0; ; from += page) {
+    const { data, error } = await client.from(table).select('*').eq('user_id', syncUser.id).order('id', { ascending: true }).range(from, from + page - 1);
+    if (error) throw error;
+    rows.push(...(data || []));
+    if (!data || data.length < page) break;
+  }
+  return rows;
+}
+
 async function countOwnRemote(table) {
   const client = await ensureClient();
   const pupils = await trainerPupilIds();
@@ -238,22 +247,20 @@ async function countOwnRemote(table) {
 
 async function pullAll(replace) {
   const client = await ensureClient();
-  const meta = await Storage.getSyncMeta();
-  const since = replace ? '1970-01-01T00:00:00Z' : meta.lastPulledAt || '1970-01-01T00:00:00Z';
   const queued = new Set((await Storage.getSyncQueue()).map((item) => item.id));
   const pupils = await trainerPupilIds();
-  const [exercises, sets, metrics, routines, profile] = await Promise.all([
-    client.from('exercises').select('*').gt('updated_at', since),
-    client.from('workout_sets').select('*').gt('updated_at', since),
-    client.from('body_metrics').select('*').gt('updated_at', since),
-    client.from('routines').select('*').gt('updated_at', since),
-    client.from('profiles').select('*').limit(1),
+  const [exerciseRows, setRows, metricRows, routineRows, profile] = await Promise.all([
+    fetchOwn('exercises'),
+    fetchOwn('workout_sets'),
+    fetchOwn('body_metrics'),
+    fetchOwn('routines'),
+    client.from('profiles').select('*').eq('user_id', syncUser.id).maybeSingle(),
   ]);
   const local = await Storage.exportAll();
-  const nextExercises = mergeRows(local.exercises, withoutPupilRows(exercises.data, pupils).map(exerciseFromRow), queued, replace);
-  const nextSets = mergeRows(local.sets, withoutPupilRows(sets.data, pupils).map(setFromRow), queued, replace);
-  const nextMetrics = mergeRows(local.bodyMetrics, withoutPupilRows(metrics.data, pupils).map(metricFromRow), queued, replace);
-  const remoteRoutines = withoutPupilRows(routines.data, pupils).map((row) => Object.assign({}, row.data, { id: row.id, updatedAt: row.updated_at, deleted: !!row.deleted }));
+  const nextExercises = mergeRows(local.exercises, withoutPupilRows(exerciseRows, pupils).map(exerciseFromRow), queued, replace);
+  const nextSets = mergeRows(local.sets, withoutPupilRows(setRows, pupils).map(setFromRow), queued, replace);
+  const nextMetrics = mergeRows(local.bodyMetrics, withoutPupilRows(metricRows, pupils).map(metricFromRow), queued, replace);
+  const remoteRoutines = withoutPupilRows(routineRows, pupils).map((row) => Object.assign({}, row.data, { id: row.id, updatedAt: row.updated_at, deleted: !!row.deleted, isActive: !!row.is_active }));
   let nextRoutines = mergeRows(local.routines || [], remoteRoutines, queued, replace);
   if (!nextRoutines.some((routine) => routine && Array.isArray(routine.days) && routine.days.length)) {
     const kept = (local.routines || []).filter((routine) => routine && Array.isArray(routine.days) && routine.days.length);
@@ -262,14 +269,14 @@ async function pullAll(replace) {
   }
   let nextProfile = local.profile;
   let nextSettings = local.settings;
-  if (profile.data && profile.data[0]) {
-    const remoteProfile = profileFromRow(profile.data[0]);
+  if (profile.data) {
+    const remoteProfile = profileFromRow(profile.data);
     if (replace || !nextProfile || String(remoteProfile.updatedAt || '') >= String(nextProfile.updatedAt || '')) {
       nextProfile = remoteProfile;
-      nextSettings = profile.data[0].settings || nextSettings;
+      nextSettings = profile.data.settings || nextSettings;
     }
   }
-  const active = nextRoutines.find((routine) => routine && local.routine && routine.id === local.routine.id) || nextRoutines[0] || local.routine;
+  const active = pickActiveRoutine(nextRoutines, nextSets, local.routine);
   await Storage.applyRemoteSnapshot({
     exercises: nextExercises,
     sets: nextSets,
@@ -281,6 +288,30 @@ async function pullAll(replace) {
   });
   await Storage.saveSyncMeta({ lastPulledAt: new Date().toISOString() });
   if (typeof currentRoutine !== 'undefined' && active) currentRoutine = active;
+}
+
+function routineExerciseIds(routine) {
+  const ids = new Set();
+  (routine.days || []).forEach((day) => {
+    (day.sections || []).forEach((section) => {
+      (section.exercises || []).forEach((slot) => {
+        if (slot && slot.exerciseId) ids.add(slot.exerciseId);
+      });
+    });
+  });
+  return ids;
+}
+
+function pickActiveRoutine(routines, sets, localRoutine) {
+  const withDays = (routines || []).filter((routine) => routine && Array.isArray(routine.days) && routine.days.length);
+  if (!withDays.length) return localRoutine || null;
+  const ranked = withDays.map((routine) => {
+    const ids = routineExerciseIds(routine);
+    const count = (sets || []).filter((set) => ids.has(set.exerciseId)).length;
+    return { routine, count, active: routine.isActive ? 1 : 0 };
+  });
+  ranked.sort((a, b) => b.count - a.count || b.active - a.active);
+  return ranked[0].routine;
 }
 
 function mergeRows(local, remote, queued, replace) {
