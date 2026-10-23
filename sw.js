@@ -1,4 +1,4 @@
-/* tu-rutina-v41: la información vive en la base, no en la caché. */
+/* tu-rutina-v44: alumnos queda a mano en el perfil de entrenador. */
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
 });

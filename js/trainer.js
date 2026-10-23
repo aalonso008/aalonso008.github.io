@@ -65,6 +65,26 @@ function closeTrainer() {
   panel.classList.remove('show');
   panel.hidden = true;
   syncTrainerWizardButton();
+  const students = document.getElementById('navStudents');
+  if (students) students.classList.remove('active');
+  const current = document.querySelector('[id^="page-"].active');
+  if (!current) return;
+  const nav = document.querySelector('nav button[data-page="' + current.id.slice('page-'.length) + '"]');
+  if (nav) nav.classList.add('active');
+}
+
+function openTrainerFromNav(button) {
+  document.querySelectorAll('nav button').forEach((item) => item.classList.remove('active'));
+  if (button) button.classList.add('active');
+  openTrainer();
+}
+
+function syncCoachNav() {
+  const button = document.getElementById('navStudents');
+  if (!button) return;
+  const coach = typeof Subscription !== 'undefined' && Subscription.allowsCoach();
+  button.hidden = !coach;
+  if (!coach) button.classList.remove('active');
 }
 
 function syncTrainerWizardButton() {
@@ -124,9 +144,12 @@ async function renderTrainerHome(body) {
   const tt = (key) => (typeof I18n !== 'undefined' ? I18n.t(key) : key);
   if (!trainerCanCoach()) {
     body.innerHTML = `
-      <h2 class="wizard-title">${tt('trainer.locked.title')}</h2>
-      <p class="wizard-help">${tt('trainer.locked')}</p>
-      <a class="log-btn" href="index.html#planes">${tt('trainer.plans')}</a>`;
+      <header class="trainer-intro">
+        <p class="trainer-kicker">${tt('trainer.kicker')}</p>
+        <h3>${tt('trainer.locked.title')}</h3>
+        <p>${tt('trainer.locked')}</p>
+      </header>
+      <a class="log-btn trainer-cta" href="index.html#planes">${tt('trainer.plans')}</a>`;
     return;
   }
   const client = await ensureClient();
@@ -138,15 +161,21 @@ async function renderTrainerHome(body) {
   if (templates.error) throw templates.error;
   trainer.students = students.data || [];
   trainer.templates = templates.data || [];
+  body.innerHTML = trainerHomeHtml();
+}
+
+function trainerHomeHtml() {
+  const tt = (key, vars) => (typeof I18n !== 'undefined' ? I18n.t(key, vars) : key);
   const joined = trainer.students.filter((student) => student.user_id).length;
   const rows = trainer.students.map((student) => `
-    <button type="button" class="trainer-card" onclick="openTrainerStudent('${student.id}')">
+    <button type="button" class="trainer-card" onclick="openTrainerStudent('${escapeHtml(student.id)}')">
       <span class="coach-avatar" aria-hidden="true">${escapeHtml(coachInitial(student.name))}</span>
       <span>
         <strong>${escapeHtml(student.name)}</strong>
         <em>${escapeHtml(student.email)}</em>
       </span>
       <span class="trainer-pill${student.user_id ? ' is-on' : ''}">${student.user_id ? tt('trainer.active') : tt('trainer.invited')}</span>
+      <span class="trainer-chevron" aria-hidden="true">›</span>
     </button>`).join('');
   const addForm = trainer.showAdd ? `
     <form class="wizard-form coach-panel" onsubmit="createTrainerStudent(event)">
@@ -158,18 +187,26 @@ async function renderTrainerHome(body) {
       <input id="studentEmail" name="email" type="email" required placeholder="alumno@email.com">
       <button type="submit" class="log-btn">${tt('trainer.create')}</button>
     </form>` : '';
-  body.innerHTML = `
-    <div class="summary-grid">
-      <div class="summary-card"><span>${tt('trainer.home')}</span><strong>${trainer.students.length}</strong></div>
-      <div class="summary-card"><span>${tt('trainer.joined')}</span><strong>${joined}</strong></div>
-    </div>
-    <div class="trainer-actions">
-      <button type="button" class="log-btn" onclick="trainer.showAdd=!trainer.showAdd; renderTrainer()">${tt('trainer.add')}</button>
-      <button type="button" class="btn-secondary" onclick="showTrainerTemplates()">${tt('trainer.templatesBtn', { n: trainer.templates.length })}</button>
-    </div>
+  const list = rows || `
+    <div class="trainer-empty-card">
+      <p class="trainer-kicker">${tt('trainer.home')}</p>
+      <h3>${tt('trainer.empty')}</h3>
+      <p>${tt('trainer.emptyLead')}</p>
+    </div>`;
+  return `
+    <header class="trainer-intro">
+      <p class="trainer-kicker">${tt('trainer.kicker')}</p>
+      <h3>${tt('trainer.home')}</h3>
+      <p>${tt('trainer.lead')}</p>
+    </header>
+    <button type="button" class="log-btn trainer-cta" onclick="trainer.showAdd=!trainer.showAdd; renderTrainer()">${trainer.showAdd ? tt('trainer.cancel') : tt('trainer.add')}</button>
     ${addForm}
-    <p class="wizard-help">${tt('trainer.help')}</p>
-    ${rows || '<p class="coach-empty">' + tt('trainer.empty') + '</p>'}`;
+    <div class="trainer-stats">
+      <span><strong>${trainer.students.length}</strong>${tt('trainer.home')}</span>
+      <span><strong>${joined}</strong>${tt('trainer.joined')}</span>
+    </div>
+    <div class="trainer-list">${list}</div>
+    <button type="button" class="trainer-templates-link" onclick="showTrainerTemplates()">${tt('trainer.templates')}<span>${trainer.templates.length}</span></button>`;
 }
 
 async function createTrainerStudent(event) {
@@ -720,7 +757,7 @@ async function renderTemplateList(body) {
       </div>
     </div>`).join('');
   body.innerHTML = `
-    <button type="button" class="btn-secondary" onclick="trainer.view='home'; renderTrainer()">Volver a alumnos</button>
+    <button type="button" class="trainer-back" onclick="trainer.view='home'; renderTrainer()">${typeof I18n !== 'undefined' ? I18n.t('trainer.back') : 'Volver a alumnos'}<span>←</span></button>
     <h2 class="wizard-title">Plantillas</h2>
     <p class="wizard-help">Armalas una vez y aplicalas a cada alumno.</p>
     ${rows || '<p class="wizard-help">' + (typeof I18n !== 'undefined' ? I18n.t('trainer.noTemplates') : 'No hay plantillas todavía.') + '</p>'}

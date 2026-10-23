@@ -23,6 +23,20 @@
         }).catch(function () {});
       });
     }
+    (function () {
+      var blob = location.hash + location.search;
+      var callback = /access_token=|refresh_token=|[?&#]code=|token_hash=|type=signup|type=recovery|type=magiclink|type=invite|type=email_change/.test(blob);
+      var stored = false;
+      try {
+        for (var i = 0; i < localStorage.length; i++) {
+          var key = localStorage.key(i) || '';
+          if (key.indexOf('auth-token') === -1 || key.indexOf('code-verifier') !== -1) continue;
+          var raw = localStorage.getItem(key) || '';
+          if (raw.indexOf('refresh_token') !== -1) stored = true;
+        }
+      } catch (err) { /* sin almacenamiento no hay sesión guardada */ }
+      if (callback || stored) document.documentElement.classList.add('auth-pending');
+    })();
   </script>
 </head>
 <body>
@@ -73,6 +87,11 @@
 
   <div id="loginGate" class="login-gate show">
     <div class="login-panel">
+      <div class="auth-loading" id="authLoading" role="status" aria-live="polite">
+        <h1>Tu Rutina</h1>
+        <div class="auth-spinner" aria-hidden="true"></div>
+        <p id="authLoadingText" data-i18n="login.entering">Entrando a tu cuenta…</p>
+      </div>
       <h1>Tu Rutina</h1>
       <div class="lang-switch" role="group" data-i18n-aria="lang.group" aria-label="Idioma">
         <button type="button" data-set-lang="es">ES</button>
@@ -161,6 +180,10 @@
     <button data-page="cuerpo" onclick="showPage('cuerpo', this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v3"/><path d="M6 10h12"/><path d="M8 10l-2 8h12l-2-8"/><circle cx="12" cy="7" r="1.2" fill="currentColor" stroke="none"/></svg>
       <span data-i18n="nav.body">Cuerpo</span>
+    </button>
+    <button id="navStudents" data-page="alumnos" type="button" hidden onclick="openTrainerFromNav(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a3 3 0 0 1 0 5.75"/></svg>
+      <span data-i18n="nav.students">Alumnos</span>
     </button>
   </nav>
 

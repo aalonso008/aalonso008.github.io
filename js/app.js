@@ -115,11 +115,27 @@ function setAppLocked(locked) {
   });
 }
 
+function showAuthLoading() {
+  document.documentElement.classList.add('auth-pending');
+  const gate = document.getElementById('loginGate');
+  if (gate) {
+    gate.classList.add('show');
+    gate.setAttribute('aria-busy', 'true');
+  }
+  setAppLocked(true);
+  const label = document.getElementById('authLoadingText');
+  if (label && typeof I18n !== 'undefined') label.textContent = I18n.t('login.entering');
+}
+
 async function showLoginGate() {
+  document.documentElement.classList.remove('auth-pending');
   if (typeof closeTrainer === 'function') closeTrainer();
   if (typeof closeAdmin === 'function') closeAdmin();
   const gate = document.getElementById('loginGate');
-  if (gate) gate.classList.add('show');
+  if (gate) {
+    gate.classList.add('show');
+    gate.removeAttribute('aria-busy');
+  }
   setAppLocked(true);
   if (typeof hideWelcome === 'function') hideWelcome();
   currentRoutine = null;
@@ -140,8 +156,12 @@ async function showLoginGate() {
 }
 
 function hideLoginGate() {
+  document.documentElement.classList.remove('auth-pending');
   const gate = document.getElementById('loginGate');
-  if (gate) gate.classList.remove('show');
+  if (gate) {
+    gate.classList.remove('show');
+    gate.removeAttribute('aria-busy');
+  }
   setAppLocked(false);
   if (typeof Subscription !== 'undefined') Subscription.refreshUi();
 }
@@ -154,7 +174,11 @@ async function bootApp() {
     return;
   }
   const choice = document.getElementById('syncChoice');
-  if (choice && choice.classList.contains('show')) return;
+  if (choice && choice.classList.contains('show')) {
+    hideLoginGate();
+    return;
+  }
+  showAuthLoading();
   const role = typeof loadOwnRole === 'function' ? await loadOwnRole() : null;
   if (role === 'admin') {
     if (typeof hideWelcome === 'function') hideWelcome();
@@ -166,34 +190,38 @@ async function bootApp() {
     }
     return;
   }
-  hideLoginGate();
-  if (typeof repairExerciseLibrary === 'function') await repairExerciseLibrary();
-  if (!appBooted) {
-    appBooted = true;
-    const theory = await loadHtml('content/progression.html');
-    const progPage = document.getElementById('page-prog');
-    progPage.innerHTML = '<div id="progressCharts"></div><div class="prog-theory">' + theory + '</div>';
-    if (typeof I18n !== 'undefined') I18n.apply(progPage);
-    tickRest();
-    offerResumeWorkout();
-  }
-  const routine = await Storage.getRoutine();
-  if (routine) {
-    currentRoutine = routine;
-    await renderRoutineView(routine);
-    await renderLogPage();
-    if (document.getElementById('progressCharts')) await renderProgressCharts();
-  } else {
-    showWelcome(syncUser ? 'account' : 'new');
-    document.getElementById('routineDays').innerHTML = '<p class="empty-day">' + (typeof I18n !== 'undefined' ? I18n.t(syncUser ? 'welcome.account' : 'empty.routine') : 'Crea tu rutina para empezar.') + '</p>';
-    await renderLogPage();
+  try {
+    if (typeof repairExerciseLibrary === 'function') await repairExerciseLibrary();
+    if (!appBooted) {
+      appBooted = true;
+      const theory = await loadHtml('content/progression.html');
+      const progPage = document.getElementById('page-prog');
+      progPage.innerHTML = '<div id="progressCharts"></div><div class="prog-theory">' + theory + '</div>';
+      if (typeof I18n !== 'undefined') I18n.apply(progPage);
+      tickRest();
+      offerResumeWorkout();
+    }
+    const routine = await Storage.getRoutine();
+    if (routine) {
+      currentRoutine = routine;
+      await renderRoutineView(routine);
+      await renderLogPage();
+      if (document.getElementById('progressCharts')) await renderProgressCharts();
+    } else {
+      showWelcome(syncUser ? 'account' : 'new');
+      document.getElementById('routineDays').innerHTML = '<p class="empty-day">' + (typeof I18n !== 'undefined' ? I18n.t(syncUser ? 'welcome.account' : 'empty.routine') : 'Crea tu rutina para empezar.') + '</p>';
+      await renderLogPage();
+    }
+  } finally {
+    if (syncUser) hideLoginGate();
   }
 }
 
 async function initApp() {
   await Storage.migrate();
   currentSettings = await Storage.getSettings();
-  await showLoginGate();
+  if (document.documentElement.classList.contains('auth-pending')) showAuthLoading();
+  else await showLoginGate();
   document.getElementById('settingsBtn').addEventListener('click', () => {
     if (!syncUser && !currentRoutine) return showLoginGate();
     openSettings();

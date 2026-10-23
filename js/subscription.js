@@ -171,6 +171,7 @@ const Subscription = (function () {
     }
     const loginTrial = document.getElementById('loginTrial');
     if (loginTrial) loginTrial.textContent = loginCopy(info);
+    if (typeof syncCoachNav === 'function') syncCoachNav();
   }
 
   function configReady() {
