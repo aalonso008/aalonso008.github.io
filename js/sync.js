@@ -1,7 +1,11 @@
 let supabaseClient = null;
 let syncTimer = null;
 let syncUser = null;
+let signingIn = null;
 let loginMode = 'signup';
+let syncProblem = '';
+let droppedQueueIds = new Set();
+const omitColumns = new Set();
 
 function syncConfigured() {
   return typeof APP_CONFIG === 'object' && APP_CONFIG.SUPABASE_URL && APP_CONFIG.SUPABASE_ANON_KEY;
@@ -44,23 +48,41 @@ async function initSync() {
   let pendingRecovery = peekAuthType('recovery');
   updateSyncDot();
   if (authError) showAuthError(authError);
-  if (!syncConfigured()) return;
+  if (!syncConfigured()) {
+    showLoginGate();
+    return;
+  }
   try {
     const client = await ensureClient();
-    client.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY' || (pendingRecovery && session)) {
-        pendingRecovery = false;
-        showSetPassword();
-      }
-      if (session) onSignedIn(session).catch((error) => console.error(error));
-      else if (event !== 'INITIAL_SESSION') {
-        syncUser = null;
-        showLoginGate();
-        updateSyncDot();
-      }
+    let sawInitial = false;
+    const initialSession = new Promise((resolve) => {
+      client.auth.onAuthStateChange((event, session) => {
+        if (event === 'PASSWORD_RECOVERY' || (pendingRecovery && session)) {
+          pendingRecovery = false;
+          showSetPassword();
+        }
+        if (!sawInitial && event === 'INITIAL_SESSION') {
+          sawInitial = true;
+          resolve(session || null);
+        }
+        if (session) onSignedIn(session).catch((error) => console.error(error));
+        else if (event !== 'INITIAL_SESSION') {
+          syncUser = null;
+          signingIn = null;
+          showLoginGate();
+          updateSyncDot();
+        }
+      });
     });
+    const session = await Promise.race([
+      initialSession,
+      new Promise((resolve) => setTimeout(() => resolve(undefined), 10000)),
+    ]);
+    if (session) showAuthLoading();
+    else if (!syncUser) showLoginGate();
   } catch (error) {
     console.error(error);
+    showLoginGate();
   }
 }
 
@@ -90,7 +112,7 @@ async function updateSyncDot() {
   if (queue.length) {
     dot.classList.add('pending');
     dot.textContent = '⏳';
-    dot.title = 'Cambios pendientes';
+    dot.title = syncProblem || 'Cambios pendientes';
     return;
   }
   dot.classList.add('synced');
@@ -99,9 +121,28 @@ async function updateSyncDot() {
 }
 
 async function onSignedIn(session) {
+  if (!session || !session.user) return;
+  const gate = document.getElementById('loginGate');
+  const gateOpen = !gate || gate.classList.contains('show');
+  const sameUser = syncUser && syncUser.id === session.user.id;
   syncUser = session.user;
-  await handleSession(session);
-  if (typeof bootApp === 'function') await bootApp();
+  if (sameUser && !gateOpen) return;
+  if (typeof showAuthLoading === 'function') showAuthLoading();
+  if (!signingIn) {
+    signingIn = (async () => {
+      try {
+        await handleSession(session);
+      } catch (error) {
+        console.error(error);
+      }
+      if (typeof bootApp === 'function') await bootApp();
+    })();
+  }
+  try {
+    await signingIn;
+  } finally {
+    signingIn = null;
+  }
 }
 
 async function trainerPupilIds() {
@@ -141,24 +182,87 @@ function savedResult(result) {
   return result;
 }
 
+function errorText(error) {
+  return ((error && (error.message || error.details)) || String(error || '')).replace(/\s+/g, ' ').trim();
+}
+
+function noteSyncProblem(error) {
+  syncProblem = errorText(error).slice(0, 180);
+  console.error(error);
+}
+
+function timeOf(value) {
+  const n = Date.parse(value || '');
+  return Number.isFinite(n) ? n : 0;
+}
+
+function numericOrNull(value) {
+  if (value == null || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function intOrNull(value) {
+  const n = numericOrNull(value);
+  return n == null ? null : Math.round(n);
+}
+
+function missingColumn(error) {
+  const text = errorText(error);
+  const patterns = [
+    /Could not find the '([^']+)' column/i,
+    /column "([^"]+)" of relation/i,
+    /column "([^"]+)" does not exist/i,
+  ];
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) return match[1];
+  }
+  return '';
+}
+
+async function upsertRow(client, table, row, returning) {
+  const payload = Object.assign({}, row);
+  omitColumns.forEach((key) => {
+    const splitAt = key.indexOf('.');
+    if (key.slice(0, splitAt) === table) delete payload[key.slice(splitAt + 1)];
+  });
+  for (let attempt = 0; attempt < 4; attempt++) {
+    let query = client.from(table).upsert(payload);
+    if (returning) query = query.select().maybeSingle();
+    const result = await query;
+    if (!result.error) return result;
+    const column = missingColumn(result.error);
+    if (!column || !Object.prototype.hasOwnProperty.call(payload, column)) throw result.error;
+    omitColumns.add(table + '.' + column);
+    delete payload[column];
+  }
+  throw new Error('No se pudo guardar');
+}
+
 async function syncAccount() {
   if (!syncUser || !navigator.onLine) {
     updateSyncDot();
     return;
   }
-  const queue = await Storage.getSyncQueue();
-  const remoteSets = await countOwnRemote('workout_sets');
-  const remoteRoutines = await countOwnRemote('routines');
-  const remoteExercises = await countOwnRemote('exercises');
-  const local = await Storage.exportAll();
-  const remoteHasData = remoteSets || remoteRoutines || remoteExercises;
-  const localHasData = (local.sets || []).length || (local.routines || []).length || (local.exercises || []).length;
   try {
+    const queue = await Storage.getSyncQueue();
+    let remoteHasData = true;
+    try {
+      const remoteSets = await countOwnRemote('workout_sets');
+      const remoteRoutines = await countOwnRemote('routines');
+      const remoteExercises = await countOwnRemote('exercises');
+      remoteHasData = remoteSets || remoteRoutines || remoteExercises;
+    } catch (error) {
+      console.error(error);
+    }
+    const local = await Storage.exportAll();
+    const localHasData = (local.sets || []).length || (local.routines || []).length || (local.exercises || []).length;
     if (queue.length) await pushAndPull();
     else if (!remoteHasData && localHasData) await uploadAll();
     else await pullAll(true);
   } catch (err) {
-    console.error(err);
+    noteSyncProblem(err);
   }
   updateSyncDot();
 }
@@ -189,52 +293,105 @@ async function uploadAll() {
   if (!client || !syncUser) return;
   const data = await Storage.exportAll();
   const userId = syncUser.id;
-  if (data.profile || data.settings) {
-    savedResult(await client.from('profiles').upsert(profileRow(data.profile || { id: 'profile' }, data.settings, userId)));
-  }
-  if (data.exercises) {
-    for (const exercise of data.exercises) savedResult(await client.from('exercises').upsert(exerciseRow(exercise, userId)));
-  }
-  if (data.routines) {
-    for (const routine of data.routines) {
-      savedResult(await client.from('routines').upsert(routineRow(routine, userId, data.routine && routine.id === data.routine.id)));
+  let failed = false;
+  const step = async (fn) => {
+    try {
+      await fn();
+    } catch (error) {
+      failed = true;
+      noteSyncProblem(error);
     }
-  } else if (data.routine) {
-    savedResult(await client.from('routines').upsert(routineRow(data.routine, userId, true)));
+  };
+  if (data.profile || data.settings) {
+    await step(() => upsertRow(client, 'profiles', profileRow(data.profile || {}, data.settings, userId)));
   }
-  for (const set of data.sets || []) savedResult(await client.from('workout_sets').upsert(setRow(set, userId)));
-  for (const metric of data.bodyMetrics || []) savedResult(await client.from('body_metrics').upsert(metricRow(metric, userId)));
-  await Storage.clearSyncQueue();
+  for (const exercise of data.exercises || []) {
+    if (!exercise || !String(exercise.name || '').trim() || placeholderExerciseName(exercise.name)) continue;
+    await step(() => upsertRow(client, 'exercises', exerciseRow(exercise, userId)));
+  }
+  const routines = data.routines && data.routines.length ? data.routines : (data.routine ? [data.routine] : []);
+  for (const routine of routines) {
+    if (routine) await step(() => upsertRow(client, 'routines', routineRow(routine, userId, data.routine && routine.id === data.routine.id)));
+  }
+  for (const set of data.sets || []) await step(() => upsertRow(client, 'workout_sets', setRow(set, userId)));
+  for (const metric of data.bodyMetrics || []) await step(() => upsertRow(client, 'body_metrics', metricRow(metric, userId)));
+  if (!failed) {
+    await Storage.clearSyncQueue();
+    syncProblem = '';
+  }
   await Storage.saveSyncMeta({ lastPulledAt: new Date().toISOString() });
   updateSyncDot();
 }
 
 async function pushQueueItem(client, item) {
   if (item.op === 'delete') {
-    savedResult(await client.from(item.table).update({ deleted: true, updated_at: new Date().toISOString() }).eq('id', item.id).eq('user_id', syncUser.id));
+    const result = await client.from(item.table).update({ deleted: true, updated_at: new Date().toISOString() }).eq('id', item.id).eq('user_id', syncUser.id);
+    if (result.error) throw result.error;
     return;
   }
   if (item.table === 'profiles') {
     const data = await Storage.exportAll();
-    savedResult(await client.from('profiles').upsert(profileRow(item.record, data.settings, syncUser.id)));
+    await upsertRow(client, 'profiles', profileRow(item.record || data.profile || {}, data.settings, syncUser.id));
     return;
   }
+  if (!item.record) return;
   if (item.table === 'routines') {
     const active = await Storage.getRoutine();
-    savedResult(await client.from('routines').upsert(routineRow(item.record, syncUser.id, active && active.id === item.record.id)));
+    await upsertRow(client, 'routines', routineRow(item.record, syncUser.id, active && active.id === item.record.id));
     return;
   }
   if (item.table === 'exercises') {
-    savedResult(await client.from('exercises').upsert(exerciseRow(item.record, syncUser.id)));
+    if (!String(item.record.name || '').trim() || placeholderExerciseName(item.record.name)) return;
+    await upsertRow(client, 'exercises', exerciseRow(item.record, syncUser.id));
     return;
   }
   if (item.table === 'workout_sets') {
-    savedResult(await client.from('workout_sets').upsert(setRow(item.record, syncUser.id)));
+    await upsertRow(client, 'workout_sets', setRow(item.record, syncUser.id));
     return;
   }
   if (item.table === 'body_metrics') {
-    savedResult(await client.from('body_metrics').upsert(metricRow(item.record, syncUser.id)));
+    await upsertRow(client, 'body_metrics', metricRow(item.record, syncUser.id));
   }
+}
+
+async function remoteUpdatedAt(client, table, ids) {
+  const found = new Map();
+  for (let index = 0; index < ids.length; index += 100) {
+    const slice = ids.slice(index, index + 100);
+    const { data, error } = await client.from(table).select('id, updated_at').in('id', slice).eq('user_id', syncUser.id);
+    if (error) throw error;
+    (data || []).forEach((row) => found.set(row.id, row.updated_at));
+  }
+  return found;
+}
+
+async function dropStaleQueue(client, queue) {
+  const stale = [];
+  const blocked = new Set();
+  const groups = new Map();
+  const keyOf = (item) => [item.table, item.id, item.op, item.queuedAt].join('\0');
+  (queue || []).forEach((item) => {
+    if (!item || item.op === 'delete' || !item.record || !item.id || item.table === 'profiles') return;
+    if (!groups.has(item.table)) groups.set(item.table, []);
+    groups.get(item.table).push(item);
+  });
+  for (const [table, items] of groups) {
+    let remote;
+    try {
+      remote = await remoteUpdatedAt(client, table, items.map((item) => item.id));
+    } catch (error) {
+      noteSyncProblem(error);
+      items.forEach((item) => blocked.add(keyOf(item)));
+      continue;
+    }
+    items.forEach((item) => {
+      if (!remote.has(item.id)) return;
+      if (timeOf(remote.get(item.id)) > timeOf(item.record.updatedAt)) stale.push(item);
+    });
+  }
+  if (stale.length) await Storage.ackSyncQueue(stale);
+  const gone = new Set(stale.map(keyOf));
+  return (queue || []).filter((item) => !gone.has(keyOf(item)) && !blocked.has(keyOf(item)));
 }
 
 async function pushAndPull() {
@@ -244,14 +401,16 @@ async function pushAndPull() {
   }
   const client = await ensureClient();
   if (!client) return;
-  const queue = await Storage.getSyncQueue();
+  syncProblem = '';
+  let queue = await Storage.getSyncQueue();
+  queue = await dropStaleQueue(client, queue);
   const done = [];
   for (const item of queue) {
     try {
       await pushQueueItem(client, item);
       done.push(item);
     } catch (error) {
-      console.error(error);
+      noteSyncProblem(error);
     }
   }
   if (done.length) await Storage.ackSyncQueue(done);
@@ -275,7 +434,8 @@ async function fetchOwn(table) {
 async function countOwnRemote(table) {
   const client = await ensureClient();
   const pupils = await trainerPupilIds();
-  const owned = await client.from(table).select('id, student_id').eq('user_id', syncUser.id);
+  let owned = await client.from(table).select('id, student_id').eq('user_id', syncUser.id);
+  if (owned.error) owned = await client.from(table).select('id').eq('user_id', syncUser.id);
   if (owned.error) throw owned.error;
   return withoutPupilRows(owned.data, pupils).length;
 }
@@ -285,10 +445,15 @@ async function insertMissing(client, table, localRows, remoteRows, toRow) {
   const added = [];
   for (const record of localRows || []) {
     if (!record || !record.id || ids.has(record.id) || record.deleted) continue;
-    const result = savedResult(await client.from(table).upsert(toRow(record)).select().single());
-    if (result.data) {
-      added.push(result.data);
-      ids.add(record.id);
+    if (table === 'exercises' && (!String(record.name || '').trim() || placeholderExerciseName(record.name))) continue;
+    try {
+      const result = await upsertRow(client, table, toRow(record), true);
+      if (result.data) {
+        added.push(result.data);
+        ids.add(record.id);
+      }
+    } catch (error) {
+      noteSyncProblem(error);
     }
   }
   return (remoteRows || []).concat(added);
@@ -296,7 +461,9 @@ async function insertMissing(client, table, localRows, remoteRows, toRow) {
 
 async function pullAll(replace) {
   const client = await ensureClient();
-  const queued = new Set((await Storage.getSyncQueue()).map((item) => item.id));
+  const queuedItems = await Storage.getSyncQueue();
+  const queued = new Set(queuedItems.map((item) => item.id));
+  droppedQueueIds = new Set();
   const pupils = await trainerPupilIds();
   let [exerciseRows, setRows, metricRows, routineRows, profile] = await Promise.all([
     fetchOwn('exercises'),
@@ -313,8 +480,12 @@ async function pullAll(replace) {
     metricRows = await insertMissing(client, 'body_metrics', local.bodyMetrics, metricRows, (row) => metricRow(row, userId));
     routineRows = await insertMissing(client, 'routines', local.routines, routineRows, (row) => routineRow(row, userId, local.routine && row.id === local.routine.id));
     if (!profile.data && (local.profile || local.settings)) {
-      const result = savedResult(await client.from('profiles').upsert(profileRow(local.profile || { id: 'profile' }, local.settings, userId)).select().maybeSingle());
-      profile = { data: result.data };
+      try {
+        const result = await upsertRow(client, 'profiles', profileRow(local.profile || {}, local.settings, userId), true);
+        profile = { data: result.data };
+      } catch (error) {
+        noteSyncProblem(error);
+      }
     }
   }
   const nextExercises = mergeRows(local.exercises, withoutPupilRows(exerciseRows, pupils).map(exerciseFromRow), queued, replace);
@@ -331,7 +502,7 @@ async function pullAll(replace) {
   let nextSettings = local.settings;
   if (profile.data) {
     const remoteProfile = profileFromRow(profile.data);
-    if (replace || !nextProfile || String(remoteProfile.updatedAt || '') >= String(nextProfile.updatedAt || '')) {
+    if (replace || !nextProfile || timeOf(remoteProfile.updatedAt) >= timeOf(nextProfile.updatedAt)) {
       nextProfile = remoteProfile;
       nextSettings = profile.data.settings || nextSettings;
     }
@@ -347,6 +518,9 @@ async function pullAll(replace) {
     settings: nextSettings,
   });
   await Storage.saveSyncMeta({ lastPulledAt: new Date().toISOString() });
+  if (droppedQueueIds.size) {
+    await Storage.ackSyncQueue(queuedItems.filter((item) => item.op !== 'delete' && droppedQueueIds.has(item.id)));
+  }
   if (typeof currentRoutine !== 'undefined' && active) currentRoutine = active;
 }
 
@@ -410,27 +584,34 @@ function mergeRows(local, remote, queued, replace) {
   });
   remote.forEach((item) => {
     if (!item || !item.id) return;
+    const localItem = localById.get(item.id);
+    const queuedHere = !!(queued && queued.has(item.id));
+    const localIsNewer = queuedHere && localItem && timeOf(localItem.updatedAt) > timeOf(item.updatedAt);
     if (item.deleted) {
-      if (!(queued && queued.has(item.id))) map.delete(item.id);
+      if (localIsNewer) return;
+      if (queuedHere) droppedQueueIds.add(item.id);
+      map.delete(item.id);
       return;
     }
-    if (queued && queued.has(item.id)) return;
+    if (localIsNewer) return;
+    if (queuedHere) droppedQueueIds.add(item.id);
     const prev = map.get(item.id);
-    const newer = !prev || String(item.updatedAt || '') >= String(prev.updatedAt || '');
+    const newer = !prev || timeOf(item.updatedAt) >= timeOf(prev.updatedAt);
     const winner = newer ? item : prev;
-    const other = newer ? (prev || localById.get(item.id)) : item;
+    const other = newer ? (prev || localItem) : item;
     map.set(item.id, healMerged(winner, other));
   });
   return [...map.values()];
 }
 
 function exerciseRow(ex, userId) {
+  const muscles = Array.isArray(ex.muscles) ? ex.muscles : (ex.muscles ? [ex.muscles] : []);
   return {
     id: ex.id,
     user_id: userId,
     name: ex.name,
-    muscle_group: ex.muscleGroup,
-    muscles: ex.muscles || [],
+    muscle_group: ex.muscleGroup || null,
+    muscles: muscles.map((item) => String(item)),
     tip: ex.tip || '',
     link_url: ex.linkUrl || '',
     link_label: ex.linkLabel || '',
@@ -456,19 +637,21 @@ function exerciseFromRow(row) {
 }
 
 function setRow(set, userId) {
+  const bodyweight = !!set.bodyweight;
+  const weight = bodyweight ? 0 : numericOrNull(set.weight);
   return {
     id: set.id,
     user_id: userId,
-    exercise_id: set.exerciseId,
-    session_id: set.sessionId,
-    date: set.date,
-    set_number: set.setNumber,
-    weight: set.bodyweight ? 0 : set.weight,
-    bodyweight: !!set.bodyweight,
-    reps: set.reps,
-    rpe: set.rpe,
+    exercise_id: set.exerciseId || null,
+    session_id: set.sessionId || null,
+    date: set.date || null,
+    set_number: intOrNull(set.setNumber),
+    weight: weight == null ? 0 : weight,
+    bodyweight,
+    reps: intOrNull(set.reps),
+    rpe: numericOrNull(set.rpe),
     note: set.note || '',
-    ts: set.ts,
+    ts: intOrNull(set.ts),
     updated_at: set.updatedAt || new Date().toISOString(),
     deleted: false,
   };
@@ -497,11 +680,11 @@ function metricRow(metric, userId) {
     id: metric.id,
     user_id: userId,
     date: metric.date,
-    weight: metric.weight,
-    waist_cm: metric.waistCm,
-    neck_cm: metric.neckCm,
-    hip_cm: metric.hipCm,
-    body_fat_manual: metric.bodyFatManual,
+    weight: numericOrNull(metric.weight),
+    waist_cm: numericOrNull(metric.waistCm),
+    neck_cm: numericOrNull(metric.neckCm),
+    hip_cm: numericOrNull(metric.hipCm),
+    body_fat_manual: numericOrNull(metric.bodyFatManual),
     note: metric.note || '',
     updated_at: metric.updatedAt || new Date().toISOString(),
     deleted: false,
@@ -579,17 +762,18 @@ async function openAccount() {
       ? `<button type="button" class="log-btn" onclick="openAdmin()">${escapeHtml(trAuth('admin.title'))}</button>`
       : '';
     const coachBtn = coach
-      ? `<button type="button" class="btn-secondary" onclick="openTrainer()">${studentsLabel}</button>`
+      ? `<button type="button" class="trainer-entry" onclick="openTrainer()"><span class="trainer-kicker">${escapeHtml(trAuth('trainer.kicker'))}</span><strong>${escapeHtml(studentsLabel)}</strong><em>${escapeHtml(trAuth('trainer.entryLead'))}</em></button>`
       : '';
     const googleBtn = userHasProvider(syncUser, 'google')
       ? ''
       : `<button type="button" class="btn-secondary" onclick="linkGoogle()" data-i18n="login.linkgoogle">${escapeHtml(trAuth('login.linkgoogle'))}</button>`;
-    const status = queue.length ? trAuth('account.pending').replace('{n}', String(queue.length)) : trAuth('account.synced');
+    let status = queue.length ? trAuth('account.pending').replace('{n}', String(queue.length)) : trAuth('account.synced');
+    if (syncProblem) status += '. ' + trAuth('account.syncFail').replace('{error}', syncProblem);
     box.innerHTML = `
+      ${coachBtn}
       <p>${escapeHtml(syncUser.email || trAuth('account.session'))}</p>
       <p class="sub">${escapeHtml(status)}</p>
       ${adminBtn}
-      ${coachBtn}
       ${googleBtn}
       <button type="button" class="log-btn" onclick="syncNow()">${escapeHtml(trAuth('account.sync'))}</button>
       <button type="button" class="btn-secondary" onclick="exportEverything()">${escapeHtml(trAuth('account.export'))}</button>
@@ -930,7 +1114,9 @@ async function bringAccountRoutine() {
 
 async function syncNow() {
   await pushAndPull();
-  showToast(trAuth('sync.toast'));
+  const queue = await Storage.getSyncQueue();
+  if (queue.length || syncProblem) showToast(syncProblem || trAuth('account.pending').replace('{n}', String(queue.length)));
+  else showToast(trAuth('sync.toast'));
   await openAccount();
   await refreshVisible();
 }

@@ -183,11 +183,35 @@ const Storage = (function () {
     return enqueue(() => readJson(KEYS.exercises, []));
   }
 
+  function exerciseSignature(ex) {
+    return JSON.stringify({
+      name: (ex && ex.name) || '',
+      muscleGroup: (ex && ex.muscleGroup) || '',
+      muscles: (ex && ex.muscles) || [],
+      tip: (ex && ex.tip) || '',
+      linkUrl: (ex && ex.linkUrl) || '',
+      linkLabel: (ex && ex.linkLabel) || '',
+      archived: !!(ex && ex.archived),
+    });
+  }
+
   function replaceExercises(list) {
     const snapshot = clone(list || []);
     return enqueue(() => {
+      const prev = readJson(KEYS.exercises, []);
+      const prevById = new Map(prev.map((ex) => [ex && ex.id, ex]));
+      snapshot.forEach((ex) => {
+        if (!ex || !ex.id) return;
+        const old = prevById.get(ex.id);
+        if (!old || exerciseSignature(old) !== exerciseSignature(ex)) ex.updatedAt = new Date().toISOString();
+        else if (old.updatedAt) ex.updatedAt = old.updatedAt;
+      });
       writeJson(KEYS.exercises, snapshot);
-      snapshot.forEach((ex) => queueUpsert('exercises', ex));
+      snapshot.forEach((ex) => {
+        if (!ex || !ex.id) return;
+        const old = prevById.get(ex.id);
+        if (!old || exerciseSignature(old) !== exerciseSignature(ex)) queueUpsert('exercises', ex);
+      });
       emit('exercises');
       return snapshot;
     });
