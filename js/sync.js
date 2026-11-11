@@ -221,7 +221,21 @@ function missingColumn(error) {
   return '';
 }
 
-async function upsertRow(client, table, row, returning) {
+function idPrefix(table) {
+  if (table === 'exercises') return 'ex';
+  if (table === 'routines') return 'rt';
+  if (table === 'workout_sets') return 'set';
+  if (table === 'body_metrics') return 'bm';
+  return 'id';
+}
+
+function markIdTaken(error) {
+  const text = errorText(error);
+  if (error && (error.code === '23505' || /duplicate key/i.test(text) || /USING expression/i.test(text))) error.idTaken = true;
+  return error;
+}
+
+async function upsertConflict(client, table, row, returning) {
   const payload = Object.assign({}, row);
   omitColumns.forEach((key) => {
     const splitAt = key.indexOf('.');
@@ -238,6 +252,109 @@ async function upsertRow(client, table, row, returning) {
     delete payload[column];
   }
   throw new Error('No se pudo guardar');
+}
+
+async function writeOwned(client, table, row, returning) {
+  const payload = Object.assign({}, row);
+  omitColumns.forEach((key) => {
+    const splitAt = key.indexOf('.');
+    if (key.slice(0, splitAt) === table) delete payload[key.slice(splitAt + 1)];
+  });
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const patch = Object.assign({}, payload);
+    delete patch.id;
+    const updated = await client.from(table).update(patch).eq('id', payload.id).eq('user_id', payload.user_id).select(returning ? '*' : 'id');
+    if (updated.error) {
+      const column = missingColumn(updated.error);
+      if (column && Object.prototype.hasOwnProperty.call(payload, column)) {
+        omitColumns.add(table + '.' + column);
+        delete payload[column];
+        continue;
+      }
+      throw updated.error;
+    }
+    if (updated.data && updated.data.length) return { data: returning ? updated.data[0] : updated.data, error: null };
+    if (updated.data == null) {
+      const again = await client.from(table).select('id').eq('id', payload.id).eq('user_id', payload.user_id).maybeSingle();
+      if (again.error) throw again.error;
+      if (again.data) return { data: again.data, error: null };
+    }
+    const created = await client.from(table).insert(payload).select(returning ? '*' : 'id');
+    if (!created.error) return { data: returning ? (created.data && created.data[0]) || null : created.data, error: null };
+    const column = missingColumn(created.error);
+    if (column && Object.prototype.hasOwnProperty.call(payload, column)) {
+      omitColumns.add(table + '.' + column);
+      delete payload[column];
+      continue;
+    }
+    throw markIdTaken(created.error);
+  }
+  throw new Error('No se pudo guardar');
+}
+
+async function upsertRow(client, table, row, returning) {
+  if (table === 'profiles') return upsertConflict(client, table, row, returning);
+  return writeOwned(client, table, row, returning);
+}
+
+async function payloadFor(item) {
+  if (!item || !item.record) return null;
+  if (item.table === 'exercises') return exerciseRow(item.record, syncUser.id);
+  if (item.table === 'workout_sets') return setRow(item.record, syncUser.id);
+  if (item.table === 'body_metrics') return metricRow(item.record, syncUser.id);
+  if (item.table === 'routines') {
+    const active = await Storage.getRoutine();
+    return routineRow(item.record, syncUser.id, !!(active && active.id === item.record.id));
+  }
+  return null;
+}
+
+async function flushQueuedData(client) {
+  const queue = await Storage.getSyncQueue();
+  const done = [];
+  let failed = false;
+  for (const item of queue) {
+    if (!item || item.table === 'profiles') continue;
+    try {
+      await pushQueueItem(client, item);
+      done.push(item);
+    } catch (error) {
+      failed = true;
+      noteSyncProblem(error);
+    }
+  }
+  if (done.length) await Storage.ackSyncQueue(done);
+  if (!failed) syncProblem = '';
+}
+
+async function releaseTakenIds(client) {
+  const queued = await Storage.getSyncQueue();
+  if (!queued.length) return;
+  let rewritten = false;
+  for (let guard = 0; guard < 60; guard++) {
+    const queue = await Storage.getSyncQueue();
+    let moved = false;
+    for (const item of queue) {
+      if (!item || item.op === 'delete' || !item.record || !item.id || item.table === 'profiles') continue;
+      if (item.table === 'exercises' && (!String(item.record.name || '').trim() || placeholderExerciseName(item.record.name))) continue;
+      const payload = await payloadFor(item);
+      if (!payload) continue;
+      try {
+        await writeOwned(client, item.table, payload, false);
+      } catch (error) {
+        if (!error.idTaken) {
+          noteSyncProblem(error);
+          continue;
+        }
+        await Storage.retargetId(item.table, item.id, createId(idPrefix(item.table)));
+        rewritten = true;
+        moved = true;
+        break;
+      }
+    }
+    if (!moved) break;
+  }
+  if (rewritten) await flushQueuedData(client);
 }
 
 async function syncAccount() {
@@ -291,6 +408,11 @@ async function finishChoice(action) {
 async function uploadAll() {
   const client = await ensureClient();
   if (!client || !syncUser) return;
+  try {
+    await releaseTakenIds(client);
+  } catch (error) {
+    noteSyncProblem(error);
+  }
   const data = await Storage.exportAll();
   const userId = syncUser.id;
   let failed = false;
@@ -402,6 +524,11 @@ async function pushAndPull() {
   const client = await ensureClient();
   if (!client) return;
   syncProblem = '';
+  try {
+    await releaseTakenIds(client);
+  } catch (error) {
+    noteSyncProblem(error);
+  }
   let queue = await Storage.getSyncQueue();
   queue = await dropStaleQueue(client, queue);
   const done = [];
@@ -443,24 +570,45 @@ async function countOwnRemote(table) {
 async function insertMissing(client, table, localRows, remoteRows, toRow) {
   const ids = new Set((remoteRows || []).map((row) => row && row.id).filter(Boolean));
   const added = [];
+  let rewritten = false;
   for (const record of localRows || []) {
     if (!record || !record.id || ids.has(record.id) || record.deleted) continue;
     if (table === 'exercises' && (!String(record.name || '').trim() || placeholderExerciseName(record.name))) continue;
     try {
-      const result = await upsertRow(client, table, toRow(record), true);
-      if (result.data) {
+      let result;
+      try {
+        result = await upsertRow(client, table, toRow(record), true);
+      } catch (error) {
+        if (!error.idTaken) throw error;
+        const newId = createId(idPrefix(table));
+        await Storage.retargetId(table, record.id, newId);
+        rewritten = true;
+        const data = await Storage.exportAll();
+        const list = table === 'exercises' ? data.exercises : table === 'routines' ? data.routines : table === 'workout_sets' ? data.sets : data.bodyMetrics;
+        const fresh = (list || []).find((item) => item && item.id === newId);
+        if (!fresh) continue;
+        result = await upsertRow(client, table, toRow(fresh), true);
+      }
+      if (result && result.data) {
         added.push(result.data);
-        ids.add(record.id);
+        ids.add(result.data.id || record.id);
       }
     } catch (error) {
       noteSyncProblem(error);
     }
   }
-  return (remoteRows || []).concat(added);
+  return { rows: (remoteRows || []).concat(added), rewritten };
 }
 
 async function pullAll(replace) {
   const client = await ensureClient();
+  if (replace) {
+    try {
+      await releaseTakenIds(client);
+    } catch (error) {
+      noteSyncProblem(error);
+    }
+  }
   const queuedItems = await Storage.getSyncQueue();
   const queued = new Set(queuedItems.map((item) => item.id));
   droppedQueueIds = new Set();
@@ -472,13 +620,30 @@ async function pullAll(replace) {
     fetchOwn('routines'),
     client.from('profiles').select('*').eq('user_id', syncUser.id).maybeSingle(),
   ]);
-  const local = await Storage.exportAll();
+  let local = await Storage.exportAll();
   if (replace) {
     const userId = syncUser.id;
-    exerciseRows = await insertMissing(client, 'exercises', local.exercises, exerciseRows, (row) => exerciseRow(row, userId));
-    setRows = await insertMissing(client, 'workout_sets', local.sets, setRows, (row) => setRow(row, userId));
-    metricRows = await insertMissing(client, 'body_metrics', local.bodyMetrics, metricRows, (row) => metricRow(row, userId));
-    routineRows = await insertMissing(client, 'routines', local.routines, routineRows, (row) => routineRow(row, userId, local.routine && row.id === local.routine.id));
+    const exerciseInsert = await insertMissing(client, 'exercises', local.exercises, exerciseRows, (row) => exerciseRow(row, userId));
+    if (exerciseInsert.rewritten) local = await Storage.exportAll();
+    const setInsert = await insertMissing(client, 'workout_sets', local.sets, setRows, (row) => setRow(row, userId));
+    if (setInsert.rewritten) local = await Storage.exportAll();
+    const metricInsert = await insertMissing(client, 'body_metrics', local.bodyMetrics, metricRows, (row) => metricRow(row, userId));
+    if (metricInsert.rewritten) local = await Storage.exportAll();
+    const routineInsert = await insertMissing(client, 'routines', local.routines, routineRows, (row) => routineRow(row, userId, local.routine && row.id === local.routine.id));
+    exerciseRows = exerciseInsert.rows;
+    setRows = setInsert.rows;
+    metricRows = metricInsert.rows;
+    routineRows = routineInsert.rows;
+    if (exerciseInsert.rewritten || setInsert.rewritten || metricInsert.rewritten || routineInsert.rewritten) {
+      await flushQueuedData(client);
+      [exerciseRows, setRows, metricRows, routineRows] = await Promise.all([
+        fetchOwn('exercises'),
+        fetchOwn('workout_sets'),
+        fetchOwn('body_metrics'),
+        fetchOwn('routines'),
+      ]);
+      local = await Storage.exportAll();
+    }
     if (!profile.data && (local.profile || local.settings)) {
       try {
         const result = await upsertRow(client, 'profiles', profileRow(local.profile || {}, local.settings, userId), true);

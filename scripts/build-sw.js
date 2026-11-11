@@ -4,7 +4,7 @@ const path = require('path');
 const site = (process.env.SITE_URL || 'https://aalonso008.github.io').replace(/\/$/, '');
 const scopePath = new URL(site + '/').pathname;
 
-const sw = `/* tu-rutina-v44: alumnos queda a mano en el perfil de entrenador. */
+const sw = `/* tu-rutina-v45: un ejercicio con id ocupado se guarda con uno nuevo. */
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
 });

@@ -1,4 +1,4 @@
-/* tu-rutina-v44: alumnos queda a mano en el perfil de entrenador. */
+/* tu-rutina-v45: un ejercicio con id ocupado se guarda con uno nuevo. */
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
 });
