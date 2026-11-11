@@ -1,4 +1,4 @@
-/* tu-rutina-v45: un ejercicio con id ocupado se guarda con uno nuevo. */
+/* tu-rutina-v46: borrar la cuenta tambien limpia este dispositivo, y recuperar clave abre el formulario. */
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
 });

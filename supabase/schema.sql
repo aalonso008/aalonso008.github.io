@@ -307,6 +307,9 @@ security definer
 set search_path = public
 as $$
 begin
+  if auth.uid() is null then
+    raise exception 'not authenticated';
+  end if;
   delete from workout_sets where user_id = auth.uid() or student_id in (select id from students where trainer_id = auth.uid());
   delete from body_metrics where user_id = auth.uid() or student_id in (select id from students where trainer_id = auth.uid());
   delete from exercises where user_id = auth.uid() or student_id in (select id from students where trainer_id = auth.uid());

@@ -471,6 +471,27 @@ const Storage = (function () {
     });
   }
 
+  function clearAccountData() {
+    return enqueue(() => {
+      [
+        KEYS.routine,
+        KEYS.routines,
+        KEYS.logs,
+        KEYS.sets,
+        KEYS.exercises,
+        KEYS.body,
+        KEYS.profile,
+        KEYS.queue,
+        KEYS.syncMeta,
+        KEYS.backupRoutine,
+        KEYS.backupLogs,
+        KEYS.wizardDraft,
+        KEYS.meta,
+      ].forEach((key) => localStorage.removeItem(key));
+      localStorage.removeItem('tu_rutina_sync_choice');
+      localStorage.removeItem('tu_rutina_subscription');
+    });
+  }
   function clearWizardDraft() {
     return enqueue(() => {
       localStorage.removeItem(KEYS.wizardDraft);
@@ -661,6 +682,7 @@ const Storage = (function () {
     getWizardDraft,
     saveWizardDraft,
     clearWizardDraft,
+    clearAccountData,
     getProfile,
     saveProfile,
     getSettings,
