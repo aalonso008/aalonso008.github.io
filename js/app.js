@@ -116,6 +116,7 @@ function setAppLocked(locked) {
 }
 
 function showAuthLoading() {
+  if (typeof passwordModalOpen === 'function' && passwordModalOpen()) return;
   document.documentElement.classList.add('auth-pending');
   const gate = document.getElementById('loginGate');
   if (gate) {

@@ -4,6 +4,18 @@ let syncUser = null;
 let signingIn = null;
 let loginMode = 'signup';
 let syncProblem = '';
+let accountGone = false;
+const syncFlights = new Set();
+
+function beginSync() {
+  let release = function () {};
+  const tracked = new Promise((resolve) => { release = resolve; });
+  syncFlights.add(tracked);
+  return function () {
+    syncFlights.delete(tracked);
+    release();
+  };
+}
 let droppedQueueIds = new Set();
 const omitColumns = new Set();
 
@@ -30,7 +42,9 @@ async function ensureClient() {
   if (!syncConfigured()) return null;
   if (supabaseClient) return supabaseClient;
   await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js');
-  supabaseClient = window.supabase.createClient(APP_CONFIG.SUPABASE_URL, APP_CONFIG.SUPABASE_ANON_KEY);
+  supabaseClient = window.supabase.createClient(APP_CONFIG.SUPABASE_URL, APP_CONFIG.SUPABASE_ANON_KEY, {
+    auth: { flowType: 'implicit', detectSessionInUrl: true, persistSession: true },
+  });
   return supabaseClient;
 }
 
@@ -66,7 +80,7 @@ async function initSync() {
           resolve(session || null);
         }
         if (session) onSignedIn(session).catch((error) => console.error(error));
-        else if (event !== 'INITIAL_SESSION') {
+        else if (event !== 'INITIAL_SESSION' && !passwordModalOpen()) {
           syncUser = null;
           signingIn = null;
           showLoginGate();
@@ -74,12 +88,13 @@ async function initSync() {
         }
       });
     });
+    await acceptEmailLink(client);
     const session = await Promise.race([
       initialSession,
       new Promise((resolve) => setTimeout(() => resolve(undefined), 10000)),
     ]);
     if (session) showAuthLoading();
-    else if (!syncUser) showLoginGate();
+    else if (!syncUser && !passwordModalOpen()) showLoginGate();
   } catch (error) {
     console.error(error);
     showLoginGate();
@@ -358,7 +373,9 @@ async function releaseTakenIds(client) {
 }
 
 async function syncAccount() {
-  if (!syncUser || !navigator.onLine) {
+  const endSync = beginSync();
+  try {
+  if (accountGone || !syncUser || !navigator.onLine) {
     updateSyncDot();
     return;
   }
@@ -382,6 +399,9 @@ async function syncAccount() {
     noteSyncProblem(err);
   }
   updateSyncDot();
+  } finally {
+    endSync();
+  }
 }
 
 function openChoice(text, okLabel, okAction, cancelLabel, cancelAction) {
@@ -406,8 +426,10 @@ async function finishChoice(action) {
 }
 
 async function uploadAll() {
+  const endSync = beginSync();
+  try {
   const client = await ensureClient();
-  if (!client || !syncUser) return;
+  if (accountGone || !client || !syncUser) return;
   try {
     await releaseTakenIds(client);
   } catch (error) {
@@ -417,6 +439,7 @@ async function uploadAll() {
   const userId = syncUser.id;
   let failed = false;
   const step = async (fn) => {
+    if (accountGone) return;
     try {
       await fn();
     } catch (error) {
@@ -443,6 +466,9 @@ async function uploadAll() {
   }
   await Storage.saveSyncMeta({ lastPulledAt: new Date().toISOString() });
   updateSyncDot();
+  } finally {
+    endSync();
+  }
 }
 
 async function pushQueueItem(client, item) {
@@ -517,7 +543,9 @@ async function dropStaleQueue(client, queue) {
 }
 
 async function pushAndPull() {
-  if (!syncUser || !navigator.onLine) {
+  const endSync = beginSync();
+  try {
+  if (accountGone || !syncUser || !navigator.onLine) {
     updateSyncDot();
     return;
   }
@@ -533,6 +561,7 @@ async function pushAndPull() {
   queue = await dropStaleQueue(client, queue);
   const done = [];
   for (const item of queue) {
+    if (accountGone) return;
     try {
       await pushQueueItem(client, item);
       done.push(item);
@@ -540,9 +569,13 @@ async function pushAndPull() {
       noteSyncProblem(error);
     }
   }
+  if (accountGone) return;
   if (done.length) await Storage.ackSyncQueue(done);
   await pullAll(true);
   updateSyncDot();
+  } finally {
+    endSync();
+  }
 }
 
 async function fetchOwn(table) {
@@ -572,6 +605,7 @@ async function insertMissing(client, table, localRows, remoteRows, toRow) {
   const added = [];
   let rewritten = false;
   for (const record of localRows || []) {
+    if (accountGone) break;
     if (!record || !record.id || ids.has(record.id) || record.deleted) continue;
     if (table === 'exercises' && (!String(record.name || '').trim() || placeholderExerciseName(record.name))) continue;
     try {
@@ -601,7 +635,11 @@ async function insertMissing(client, table, localRows, remoteRows, toRow) {
 }
 
 async function pullAll(replace) {
+  const endSync = beginSync();
+  try {
+  if (accountGone) return;
   const client = await ensureClient();
+  if (!client || accountGone) return;
   if (replace) {
     try {
       await releaseTakenIds(client);
@@ -673,6 +711,7 @@ async function pullAll(replace) {
     }
   }
   const active = pickActiveRoutine(nextRoutines, nextSets, local.routine);
+  if (accountGone) return;
   await Storage.applyRemoteSnapshot({
     exercises: nextExercises,
     sets: nextSets,
@@ -687,6 +726,9 @@ async function pullAll(replace) {
     await Storage.ackSyncQueue(queuedItems.filter((item) => item.op !== 'delete' && droppedQueueIds.has(item.id)));
   }
   if (typeof currentRoutine !== 'undefined' && active) currentRoutine = active;
+  } finally {
+    endSync();
+  }
 }
 
 function routineExerciseIds(routine) {
@@ -1216,9 +1258,53 @@ async function sendPasswordReset(event) {
   }
 }
 
+function passwordModalOpen() {
+  const modal = document.getElementById('passwordModal');
+  return !!(modal && modal.classList.contains('show'));
+}
+
 function showSetPassword() {
+  const gate = document.getElementById('loginGate');
+  if (gate) gate.classList.remove('show');
+  document.documentElement.classList.remove('auth-pending');
   const modal = document.getElementById('passwordModal');
   if (modal) modal.classList.add('show');
+}
+
+function stripAuthParams(keys) {
+  const url = new URL(window.location.href);
+  keys.forEach((key) => url.searchParams.delete(key));
+  if (url.hash && url.hash.length > 1) {
+    const hash = new URLSearchParams(url.hash.slice(1));
+    let changed = false;
+    keys.forEach((key) => {
+      if (hash.has(key)) {
+        hash.delete(key);
+        changed = true;
+      }
+    });
+    if (changed) url.hash = hash.toString() ? '#' + hash.toString() : '';
+  }
+  history.replaceState({}, '', url.pathname + url.search + url.hash);
+}
+
+async function acceptEmailLink(client) {
+  const params = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
+  const type = params.get('type') || hash.get('type') || '';
+  const tokenHash = params.get('token_hash') || hash.get('token_hash') || '';
+  if (tokenHash && type) {
+    const { error } = await client.auth.verifyOtp({ token_hash: tokenHash, type });
+    stripAuthParams(['token_hash', 'type']);
+    if (error) showAuthError(error);
+    else if (type === 'recovery') showSetPassword();
+    return;
+  }
+  const code = params.get('code');
+  if (!code) return;
+  const { error } = await client.auth.exchangeCodeForSession(code);
+  stripAuthParams(['code']);
+  if (error) showAuthError(error);
 }
 
 function closeSetPassword() {
@@ -1291,21 +1377,44 @@ async function exportEverything() {
   downloadJson(`tu-rutina-${todayIso()}.json`, data);
 }
 
-async function signOutAccount() {
-  await supabaseClient.auth.signOut();
+async function signOutAccount(localOnly) {
+  clearTimeout(syncTimer);
+  try {
+    if (supabaseClient) await supabaseClient.auth.signOut(localOnly ? { scope: 'local' } : undefined);
+  } catch (err) {
+    console.error(err);
+  }
   syncUser = null;
+  signingIn = null;
   await showLoginGate();
   closeAccount();
   updateSyncDot();
-  await refreshVisible();
 }
 
 async function deleteAccount() {
   if (!confirm(trAuth('account.delete.confirm'))) return;
+  accountGone = true;
+  clearTimeout(syncTimer);
+  await Promise.all(Array.from(syncFlights));
   const client = await ensureClient();
+  if (!client) {
+    accountGone = false;
+    return alert(trAuth('account.delete.fail'));
+  }
   const { error } = await client.rpc('delete_own_account');
-  if (error) return alert(trAuth('account.delete.fail') + ' ' + error.message);
-  await signOutAccount();
+  if (error) {
+    accountGone = false;
+    return alert(trAuth('account.delete.fail') + ' ' + error.message);
+  }
+  if (typeof Storage.clearAccountData === 'function') await Storage.clearAccountData();
+  currentRoutine = null;
+  try {
+    sessionStorage.removeItem('tu_rutina_workout');
+    sessionStorage.removeItem('restEndsAt');
+    sessionStorage.removeItem('restVibrate');
+  } catch (err) { /* el navegador puede bloquear sessionStorage */ }
+  await signOutAccount(true);
+  accountGone = false;
 }
 
 async function refreshVisible() {
