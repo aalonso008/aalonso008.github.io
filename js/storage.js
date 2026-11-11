@@ -61,12 +61,145 @@ const Storage = (function () {
   function queueUpsert(table, record) {
     if (!record || !record.id) return;
     const queue = readJson(KEYS.queue, []);
-    const entry = { op: 'upsert', table, id: record.id, record: clone(record), queuedAt: Date.now() };
-    const index = queue.findIndex((item) => item.table === table && item.id === record.id);
-    if (index >= 0) queue[index] = entry;
-    else queue.push(entry);
+    queueReplace(queue, table, record);
     writeJson(KEYS.queue, queue);
     document.dispatchEvent(new CustomEvent('sync:queued'));
+  }
+
+  function queueReplace(queue, table, record) {
+    if (!record || !record.id) return;
+    const entry = { op: 'upsert', table, id: record.id, record: clone(record), queuedAt: Date.now() };
+    const index = queue.findIndex((item) => item && item.op !== 'delete' && item.table === table && item.id === record.id);
+    if (index >= 0) queue[index] = entry;
+    else queue.push(entry);
+  }
+
+  function repointExercise(routine, oldId, newId) {
+    let changed = false;
+    (routine && routine.exercises ? routine.exercises : []).forEach((exercise) => {
+      if (exercise && exercise.id === oldId) {
+        exercise.id = newId;
+        changed = true;
+      }
+    });
+    (routine && routine.days ? routine.days : []).forEach((day) => {
+      (day.sections || []).forEach((section) => {
+        (section.exercises || []).forEach((slot) => {
+          if (slot && slot.exerciseId === oldId) {
+            slot.exerciseId = newId;
+            changed = true;
+          }
+        });
+      });
+    });
+    return changed;
+  }
+
+  function retargetId(table, oldId, newId) {
+    return enqueue(() => {
+      if (!oldId || !newId || oldId === newId) return;
+      const now = new Date().toISOString();
+      const queue = readJson(KEYS.queue, []);
+      if (table === 'exercises') {
+        const list = readJson(KEYS.exercises, []);
+        list.forEach((exercise) => {
+          if (exercise && exercise.id === oldId) {
+            exercise.id = newId;
+            exercise.updatedAt = now;
+          }
+        });
+        writeJson(KEYS.exercises, list);
+        const routines = readRoutineList();
+        const changedRoutines = [];
+        routines.forEach((routine) => {
+          if (routine && repointExercise(routine, oldId, newId)) {
+            routine.updatedAt = now;
+            changedRoutines.push(routine);
+          }
+        });
+        const active = readJson(KEYS.routine, null);
+        if (active && repointExercise(active, oldId, newId)) {
+          active.updatedAt = now;
+          const index = routines.findIndex((item) => item && item.id === active.id);
+          if (index >= 0) routines[index] = active;
+          else routines.push(active);
+          if (!changedRoutines.some((item) => item.id === active.id)) changedRoutines.push(active);
+        }
+        if (changedRoutines.length) {
+          writeJson(KEYS.routines, routines);
+          if (active) {
+            const saved = routines.find((item) => item && item.id === active.id);
+            if (saved) writeJson(KEYS.routine, saved);
+          }
+          changedRoutines.forEach((routine) => queueReplace(queue, 'routines', routine));
+        }
+        const sets = readJson(KEYS.sets, []);
+        const changedSets = [];
+        sets.forEach((set) => {
+          if (set && set.exerciseId === oldId) {
+            set.exerciseId = newId;
+            set.updatedAt = now;
+            changedSets.push(set);
+          }
+        });
+        if (changedSets.length) {
+          writeJson(KEYS.sets, sets);
+          changedSets.forEach((set) => queueReplace(queue, 'workout_sets', set));
+        }
+        const backup = readJson(KEYS.backupRoutine, null);
+        if (backup && repointExercise(backup, oldId, newId)) writeJson(KEYS.backupRoutine, backup);
+        queue.forEach((item) => {
+          if (!item || item.op === 'delete') return;
+          if (item.table === 'exercises' && item.id === oldId) {
+            item.id = newId;
+            if (item.record) item.record.id = newId;
+          }
+          if (item.record && item.record.exerciseId === oldId) item.record.exerciseId = newId;
+          if (item.record && (item.record.days || item.record.exercises)) repointExercise(item.record, oldId, newId);
+        });
+        const stored = list.find((exercise) => exercise && exercise.id === newId);
+        if (stored) queueReplace(queue, 'exercises', stored);
+      } else if (table === 'routines' || table === 'workout_sets' || table === 'body_metrics') {
+        queue.forEach((item) => {
+          if (!item || item.op === 'delete') return;
+          if (item.table === table && item.id === oldId) {
+            item.id = newId;
+            if (item.record) item.record.id = newId;
+          }
+        });
+        if (table === 'routines') {
+          const routines = readRoutineList();
+          routines.forEach((routine) => {
+            if (routine && routine.id === oldId) {
+              routine.id = newId;
+              routine.updatedAt = now;
+            }
+          });
+          writeJson(KEYS.routines, routines);
+          const active = readJson(KEYS.routine, null);
+          if (active && active.id === oldId) {
+            active.id = newId;
+            active.updatedAt = now;
+            writeJson(KEYS.routine, active);
+          }
+          const stored = routines.find((routine) => routine && routine.id === newId) || (active && active.id === newId ? active : null);
+          if (stored) queueReplace(queue, 'routines', stored);
+        } else {
+          const key = table === 'workout_sets' ? KEYS.sets : KEYS.body;
+          const list = readJson(key, []);
+          list.forEach((row) => {
+            if (row && row.id === oldId) {
+              row.id = newId;
+              row.updatedAt = now;
+            }
+          });
+          writeJson(key, list);
+          const stored = list.find((row) => row && row.id === newId);
+          if (stored) queueReplace(queue, table, stored);
+        }
+      }
+      writeJson(KEYS.queue, queue);
+    });
   }
 
   function queueDelete(table, id) {
@@ -533,6 +666,7 @@ const Storage = (function () {
     getSettings,
     saveSettings,
     getSyncQueue,
+    retargetId,
     clearSyncQueue,
     ackSyncQueue,
     getSyncMeta,
