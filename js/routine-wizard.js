@@ -44,6 +44,7 @@ const WIZARD_STEPS = [
       icon: '📅',
       title: days + ' días',
       desc: days === 2 ? 'Poco tiempo, cuerpo completo.' : 'Sesiones repartidas en la semana.',
+      recommended: days === 4,
     })),
   },
   {
@@ -59,7 +60,7 @@ const WIZARD_STEPS = [
     type: 'single',
     options: [
       { value: '30-45', icon: '⏱️', title: '30–45 min', desc: 'Sesión corta.' },
-      { value: '45-60', icon: '⏱️', title: '45–60 min', desc: 'Lo más habitual.' },
+      { value: '45-60', icon: '⏱️', title: '45–60 min', desc: 'Lo más habitual.', recommended: true },
       { value: '60-75', icon: '⏱️', title: '60–75 min', desc: 'Da para accesorios.' },
       { value: '75-90', icon: '⏱️', title: '75–90 min', desc: 'Sesión larga.' },
     ],
@@ -163,8 +164,48 @@ function defaultPreferredDays(count) {
   return (presets[count] || presets[3]).slice();
 }
 
+const ONBOARD_BODY = [
+  {
+    key: 'sex',
+    title: '¿Cuál es tu sexo?',
+    help: 'Lo usamos en los cálculos de cuerpo.',
+    type: 'sex',
+  },
+  {
+    key: 'birth',
+    title: '¿Cuándo naciste?',
+    help: 'Sirve para la edad en los cálculos.',
+    type: 'birth',
+  },
+  {
+    key: 'weight',
+    title: '¿Cuánto pesas?',
+    help: 'Puedes omitirlo y cargarlo después en Cuerpo.',
+    type: 'weight',
+    optional: true,
+  },
+  {
+    key: 'height',
+    title: '¿Cuánto mides?',
+    help: 'En centímetros. También puedes omitirlo.',
+    type: 'height',
+    optional: true,
+  },
+];
+
+function isOnboarding() {
+  return wizard.from === 'welcome' && wizard.audience !== 'student';
+}
+
+function isBodyStep(step) {
+  return !!step && (step.type === 'profile' || step.type === 'sex' || step.type === 'birth' || step.type === 'weight' || step.type === 'height');
+}
+
 function wizardSteps() {
-  return WIZARD_STEPS.filter((step) => {
+  const source = isOnboarding()
+    ? ONBOARD_BODY.concat(WIZARD_STEPS.filter((step) => step.key !== 'profile'))
+    : WIZARD_STEPS;
+  return source.filter((step) => {
     if (step.key === 'profile' && !(wizard.forceProfile || !wizard.skipProfile)) return false;
     if (step.key === 'equipment' && wizard.answers.style === 'calisthenics') return false;
     return true;
@@ -219,16 +260,38 @@ function daysAreConsecutive(days) {
   return WIZARD_DAYS.some((day, index) => selected.has(day.value) && selected.has(WIZARD_DAYS[(index + 1) % 7].value));
 }
 
+function birthOk(value) {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(value + 'T00:00:00');
+  if (Number.isNaN(date.getTime())) return false;
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  return date.getFullYear() >= 1920 && date <= today;
+}
+
+function weightOk(value) {
+  const n = Number(value);
+  return n >= 30 && n <= 250;
+}
+
+function heightOk(value) {
+  const n = Number(value);
+  return n >= 120 && n <= 230;
+}
+
 function stepIsValid(step) {
   if (!step) return false;
   if (step.type === 'single') return wizard.answers[step.key] != null && wizard.answers[step.key] !== '';
   if (step.type === 'days') return wizardAnswerList('preferredDays').length === Number(wizard.answers.daysPerWeek);
   if (step.type === 'multi') return wizardAnswerList(step.key).length <= (step.max || 99);
-  if (step.type === 'profile') {
-    const height = wizard.answers.profile && wizard.answers.profile.heightCm;
+  const profile = (wizard.answers && wizard.answers.profile) || {};
+  if (step.type === 'sex') return profile.sex === 'M' || profile.sex === 'F';
+  if (step.type === 'birth') return birthOk(profile.birthDate);
+  if (step.type === 'weight') return profile.weight === '' || profile.weight == null || weightOk(profile.weight);
+  if (step.type === 'height' || step.type === 'profile') {
+    const height = profile.heightCm;
     if (height === '' || height == null) return true;
-    const cm = Number(height);
-    return cm >= 120 && cm <= 230;
+    return heightOk(height);
   }
   return true;
 }
@@ -241,6 +304,7 @@ function wizardAudienceNote() {
 async function persistWizard() {
   if (wizard.audience === 'student') return;
   await Storage.saveWizardDraft({
+    from: wizard.from,
     phase: wizard.phase,
     stepKey: wizard.stepKey,
     answers: wizard.answers,
@@ -269,6 +333,13 @@ function hideWizardShell() {
   root.hidden = true;
   setWizardLocked(false);
   clearTimeout(wizard.timer);
+}
+
+function welcomeDraftHasProgress(draft) {
+  if (!draft || draft.from !== 'welcome' || !draft.answers) return false;
+  if (draft.phase && draft.phase !== 'start' && draft.phase !== 'resume') return true;
+  const profile = draft.answers.profile || {};
+  return !!(draft.answers.goal || draft.answers.level || draft.answers.daysPerWeek || profile.sex || profile.birthDate || profile.heightCm || profile.weight);
 }
 
 async function openRoutineWizard(from) {
@@ -300,9 +371,12 @@ async function openRoutineWizard(from) {
   ]);
   wizard.storedProfile = profile;
   wizard.prefill = preloadWizardProfile(profile, metrics);
-  wizard.skipProfile = knownBodyProfile(profile);
+  wizard.skipProfile = from === 'welcome' ? true : knownBodyProfile(profile);
   showWizardShell();
-  if (draft && draft.answers) {
+  const canResume = from === 'welcome'
+    ? welcomeDraftHasProgress(draft)
+    : !!(draft && draft.answers && draft.from !== 'welcome');
+  if (canResume) {
     wizard.phase = 'resume';
     wizard.pendingDraft = draft;
     renderWizard();
@@ -314,19 +388,23 @@ async function openRoutineWizard(from) {
 function beginWizard(fromDraft) {
   wizard.forceProfile = false;
   wizard.returnToSummary = false;
-  if (!fromDraft) wizard.skipProfile = wizard.audience === 'student' ? true : knownBodyProfile(wizard.storedProfile);
+  if (!fromDraft) wizard.skipProfile = wizard.audience === 'student' || isOnboarding() ? true : knownBodyProfile(wizard.storedProfile);
   if (fromDraft && wizard.pendingDraft) {
     const draft = wizard.pendingDraft;
     wizard.answers = draft.answers || {};
     wizard.answers.profile = Object.assign(emptyProfile(), wizard.prefill, wizard.answers.profile || {});
-    wizard.skipProfile = draft.skipProfile != null ? draft.skipProfile : wizard.skipProfile;
-    wizard.phase = draft.phase === 'resume' ? 'questions' : draft.phase || 'questions';
-    wizard.stepKey = draft.stepKey || 'goal';
-    if (!wizardSteps().some((step) => step.key === wizard.stepKey)) wizard.stepKey = 'goal';
+    wizard.skipProfile = isOnboarding() ? true : (draft.skipProfile != null ? draft.skipProfile : wizard.skipProfile);
+    let phase = draft.phase === 'resume' ? 'questions' : draft.phase || 'questions';
+    if (isOnboarding() && ['program', 'preview', 'save-choice', 'swap', 'ready'].indexOf(phase) >= 0) phase = 'summary';
+    wizard.phase = phase;
+    wizard.stepKey = draft.stepKey || (isOnboarding() ? 'sex' : 'goal');
+    if (wizard.phase === 'questions' && !wizardSteps().some((step) => step.key === wizard.stepKey)) {
+      wizard.stepKey = (wizardSteps()[0] || {}).key || 'goal';
+    }
   } else {
     wizard.answers = { profile: Object.assign(emptyProfile(), wizard.prefill) };
-    wizard.phase = 'questions';
-    wizard.stepKey = 'goal';
+    wizard.phase = isOnboarding() ? 'start' : 'questions';
+    wizard.stepKey = isOnboarding() ? 'sex' : 'goal';
   }
   wizard.pendingDraft = null;
   renderWizard();
@@ -353,9 +431,29 @@ function wizardBack() {
     persistWizard();
     return;
   }
-  if (wizard.phase === 'preview' || wizard.phase === 'save-choice') {
+  if (wizard.phase === 'ready') {
+    wizard.phase = 'preview';
+    renderWizard();
+    return;
+  }
+  if (wizard.phase === 'swap') {
+    cancelWizardSwap();
+    return;
+  }
+  if (wizard.phase === 'save-choice') {
+    wizard.phase = 'preview';
+    renderWizard();
+    return;
+  }
+  if (wizard.phase === 'preview') {
+    wizard.phase = isOnboarding() && wizard.generated ? 'program' : 'summary';
+    renderWizard();
+    return;
+  }
+  if (wizard.phase === 'program') {
     wizard.phase = 'summary';
     renderWizard();
+    persistWizard();
     return;
   }
   if (wizard.phase === 'summary') {
@@ -366,9 +464,17 @@ function wizardBack() {
     persistWizard();
     return;
   }
+  if (wizard.phase === 'start') return;
   const steps = wizardSteps();
   const index = steps.findIndex((step) => step.key === wizard.stepKey);
-  if (index <= 0) return;
+  if (index <= 0) {
+    if (isOnboarding()) {
+      wizard.phase = 'start';
+      renderWizard();
+      persistWizard();
+    }
+    return;
+  }
   wizard.stepKey = steps[index - 1].key;
   renderWizard();
   persistWizard();
@@ -380,6 +486,12 @@ async function wizardNext() {
     await buildWizardRoutine();
     return;
   }
+  if (wizard.phase === 'program') {
+    wizard.phase = 'preview';
+    renderWizard();
+    persistWizard();
+    return;
+  }
   if (wizard.phase === 'preview') {
     await askSaveGenerated(false);
     return;
@@ -387,13 +499,18 @@ async function wizardNext() {
   if (wizard.phase !== 'questions') return;
   const step = wizardStep();
   if (!stepIsValid(step)) return;
-  if (step.type === 'profile') await commitWizardProfile();
+  await advanceWizardStep();
+}
+
+async function advanceWizardStep() {
+  const step = wizardStep();
+  if (isBodyStep(step)) await commitWizardProfile();
   if (wizard.returnToSummary) {
     wizard.returnToSummary = false;
     wizard.phase = 'summary';
   } else {
     const steps = wizardSteps();
-    const index = steps.findIndex((item) => item.key === step.key);
+    const index = steps.findIndex((item) => item.key === wizard.stepKey);
     if (index < steps.length - 1) wizard.stepKey = steps[index + 1].key;
     else wizard.phase = 'summary';
   }
@@ -502,11 +619,188 @@ function editWizardStep(key) {
 function optionButton(step, option, selected) {
   const desc = option.desc ? `<em>${escapeHtml(option.desc)}</em>` : '';
   const icon = option.icon ? escapeHtml(option.icon) + ' ' : '';
+  const badge = isOnboarding() && option.recommended ? `<span class="wizard-recommend">${escapeHtml(wt('wiz.recommended'))}</span>` : '';
   const role = step.type === 'single' ? 'radio' : 'checkbox';
-  return `<button type="button" class="wizard-option${selected ? ' selected' : ''}" role="${role}" aria-checked="${selected ? 'true' : 'false'}" onclick="${step.type === 'single' ? `chooseWizardSingle('${step.key}', '${option.value}')` : `toggleWizardMulti(wizardStep(), '${option.value}')`}">${icon}<strong>${escapeHtml(option.title)}</strong>${desc}</button>`;
+  return `<button type="button" class="wizard-option${selected ? ' selected' : ''}" role="${role}" aria-checked="${selected ? 'true' : 'false'}" onclick="${step.type === 'single' ? `chooseWizardSingle('${step.key}', '${option.value}')` : `toggleWizardMulti(wizardStep(), '${option.value}')`}">${icon}<strong>${escapeHtml(option.title)}${badge}</strong>${desc}</button>`;
+}
+
+function privacyLine() {
+  return `<p class="wizard-privacy">${escapeHtml(wt('wiz.privacy'))}</p>`;
+}
+
+function renderBodyQuestion(step) {
+  const profile = Object.assign(emptyProfile(), wizard.answers.profile);
+  if (step.type === 'sex') {
+    const cards = [
+      { value: 'M', title: wt('wiz.male') },
+      { value: 'F', title: wt('wiz.female') },
+    ].map((option) => {
+      const selected = profile.sex === option.value;
+      return `<button type="button" class="wizard-option${selected ? ' selected' : ''}" role="radio" aria-checked="${selected ? 'true' : 'false'}" onclick="chooseWizardSex('${option.value}')"><strong>${escapeHtml(option.title)}</strong></button>`;
+    }).join('');
+    return cards + privacyLine();
+  }
+  const field = step.type === 'birth' ? 'birthDate' : step.type === 'weight' ? 'weight' : 'heightCm';
+  const inputId = step.type === 'birth' ? 'wizardBirth' : step.type === 'weight' ? 'wizardWeight' : 'wizardHeight';
+  const input = step.type === 'birth'
+    ? `<input id="${inputId}" type="date" max="${todayIso()}" value="${escapeHtml(profile.birthDate || '')}" oninput="setWizardProfileField('birthDate', this.value)">`
+    : step.type === 'weight'
+      ? `<input id="${inputId}" type="number" inputmode="decimal" min="30" max="250" step="0.1" placeholder="70" value="${escapeHtml(profile.weight)}" oninput="setWizardProfileField('weight', this.value)">`
+      : `<input id="${inputId}" type="number" inputmode="decimal" min="120" max="230" placeholder="170" value="${escapeHtml(profile.heightCm)}" oninput="setWizardProfileField('heightCm', this.value)">`;
+  const label = step.type === 'birth' ? wt('wiz.birth') : step.type === 'weight' ? wt('wiz.weight') : wt('wiz.height');
+  const message = step.type === 'height' && profile.heightCm !== '' && profile.heightCm != null && !heightOk(profile.heightCm)
+    ? wt('wiz.height.bad')
+    : step.type === 'weight' && profile.weight !== '' && profile.weight != null && !weightOk(profile.weight)
+      ? wt('wiz.weight.bad')
+      : step.type === 'birth' && profile.birthDate && !birthOk(profile.birthDate)
+        ? wt('wiz.birth.bad')
+        : '';
+  const skip = step.optional
+    ? `<button type="button" class="btn-secondary wizard-skip" onclick="skipOnboardMeasure('${field}')">${escapeHtml(wt('wiz.skip'))}</button>`
+    : '';
+  return `<form class="wizard-form" onsubmit="event.preventDefault(); wizardNext();"><label for="${inputId}">${escapeHtml(label)}</label>${input}${message ? `<p class="wizard-note">${escapeHtml(message)}</p>` : ''}${skip}</form>${privacyLine()}`;
+}
+
+function chooseWizardSex(value) {
+  clearTimeout(wizard.timer);
+  wizard.answers.profile = Object.assign(emptyProfile(), wizard.answers.profile, { sex: value });
+  renderWizard();
+  persistWizard();
+  wizard.timer = setTimeout(() => {
+    wizardNext().catch((error) => console.error(error));
+  }, 250);
+}
+
+function skipOnboardMeasure(field) {
+  wizard.answers.profile = Object.assign(emptyProfile(), wizard.answers.profile, { [field]: '' });
+  advanceWizardStep().catch((error) => console.error(error));
+}
+
+function beginGuidedOnboarding() {
+  if (!wizard.answers || !wizard.answers.profile) wizard.answers = { profile: Object.assign(emptyProfile(), wizard.prefill) };
+  wizard.phase = 'questions';
+  wizard.stepKey = 'sex';
+  renderWizard();
+  persistWizard();
+}
+
+async function leaveOnboarding(kind) {
+  await Storage.clearWizardDraft();
+  hideWizardShell();
+  wizard.from = 'editor';
+  if (kind === 'blank' && typeof startBlankRoutine === 'function') await startBlankRoutine();
+  if (kind === 'template' && typeof startTemplateRoutine === 'function') await startTemplateRoutine();
+}
+
+async function bringFromOnboarding() {
+  if (typeof bringAccountRoutine !== 'function') return;
+  await bringAccountRoutine();
+  const routine = await Storage.getRoutine();
+  if (routine && Array.isArray(routine.days) && routine.days.length) {
+    await Storage.clearWizardDraft();
+    hideWizardShell();
+    wizard.from = 'editor';
+  }
+}
+
+function renderStart() {
+  return `<h2 id="wizardTitle" class="wizard-title">${escapeHtml(wt('onboard.title'))}</h2>
+    <p class="wizard-help">${escapeHtml(wt('onboard.lead'))}</p>
+    <button type="button" class="wizard-option" onclick="beginGuidedOnboarding()"><strong>${escapeHtml(wt('onboard.guided'))}</strong><em>${escapeHtml(wt('onboard.guided.desc'))}</em></button>
+    <button type="button" class="wizard-option" onclick="leaveOnboarding('blank')"><strong>${escapeHtml(wt('onboard.own'))}</strong><em>${escapeHtml(wt('onboard.own.desc'))}</em></button>
+    <button type="button" class="wizard-option" onclick="leaveOnboarding('template')"><strong>${escapeHtml(wt('onboard.sample'))}</strong><em>${escapeHtml(wt('onboard.sample.desc'))}</em></button>
+    <button type="button" class="btn-secondary wizard-skip" onclick="bringFromOnboarding()">${escapeHtml(wt('onboard.bring'))}</button>`;
+}
+
+function placeLabel() {
+  if (wizard.answers.style === 'calisthenics') {
+    const step = WIZARD_STEPS.find((item) => item.key === 'style');
+    return labelFor(step, 'calisthenics');
+  }
+  const step = WIZARD_STEPS.find((item) => item.key === 'equipment');
+  return labelFor(step, wizard.answers.equipment);
+}
+
+function renderProgram() {
+  const goalStep = WIZARD_STEPS.find((step) => step.key === 'goal');
+  const levelStep = WIZARD_STEPS.find((step) => step.key === 'level');
+  const daysStep = WIZARD_STEPS.find((step) => step.key === 'daysPerWeek');
+  const cards = [
+    [wt('onboard.card.goal'), labelFor(goalStep, wizard.answers.goal)],
+    [wt('onboard.card.place'), placeLabel()],
+    [wt('onboard.card.level'), labelFor(levelStep, wizard.answers.level)],
+    [wt('onboard.card.days'), summaryValue(daysStep)],
+  ];
+  const reasons = ((wizard.generated && wizard.generated.meta && wizard.generated.meta.reasons) || []).map((line) => `<li>${escapeHtml(line)}</li>`).join('');
+  const grid = cards.map(([title, value]) => `<div class="wizard-program-card"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(String(value || ''))}</span></div>`).join('');
+  return `<p class="wizard-kicker">${escapeHtml(wt('onboard.program.kicker'))}</p>
+    <h2 id="wizardTitle" class="wizard-title">${escapeHtml(wt('onboard.program.title'))}</h2>
+    <p class="wizard-help">${escapeHtml(wt('onboard.program.help'))}</p>
+    <div class="wizard-program-grid">${grid}</div>
+    <h3 class="wizard-title" style="font-size:18px">${escapeHtml(wt('wiz.why'))}</h3>
+    <ul class="wizard-reasons">${reasons}</ul>`;
+}
+
+function renderReady() {
+  return `<h2 id="wizardTitle" class="wizard-title">${escapeHtml(wt('onboard.ready.title'))}</h2>
+    <p class="wizard-help">${escapeHtml(wt('onboard.ready.lead'))}</p>
+    <div class="wizard-ready-card"><strong>${escapeHtml(wt('onboard.ready.log'))}</strong><span>${escapeHtml(wt('onboard.ready.log.desc'))}</span></div>
+    <div class="wizard-ready-card"><strong>${escapeHtml(wt('onboard.ready.progress'))}</strong><span>${escapeHtml(wt('onboard.ready.progress.desc'))}</span></div>`;
+}
+
+function finishOnboarding() {
+  hideWizardShell();
+  wizard.from = 'editor';
+  if (typeof showPage === 'function') showPage('rutina', document.querySelector('[data-page="rutina"]'));
+}
+
+function paintWizardChrome() {
+  const root = document.getElementById('routineWizard');
+  const onboarding = isOnboarding();
+  const closeBtn = root && root.querySelector('.wizard-close');
+  const back = document.getElementById('wizardBack');
+  const nav = root && root.querySelector('.wizard-nav');
+  const bar = root && root.querySelector('.wizard-progress');
+  const segments = document.getElementById('wizardSegments');
+  if (back) back.hidden = onboarding;
+  if (nav) nav.hidden = onboarding && (wizard.phase === 'start' || wizard.phase === 'resume');
+  if (closeBtn) {
+    const atStart = onboarding && wizard.phase === 'start';
+    const showBack = onboarding && !atStart && wizard.phase !== 'resume';
+    closeBtn.hidden = atStart;
+    if (showBack) {
+      closeBtn.textContent = '←';
+      closeBtn.setAttribute('aria-label', wt('wiz.back'));
+      closeBtn.onclick = () => wizardBack();
+    } else if (onboarding && wizard.phase === 'resume') {
+      closeBtn.textContent = '✕';
+      closeBtn.setAttribute('aria-label', wt('aria.exit'));
+      closeBtn.onclick = () => {
+        wizard.phase = 'start';
+        renderWizard();
+        persistWizard();
+      };
+    } else {
+      closeBtn.textContent = '✕';
+      closeBtn.setAttribute('aria-label', wt('aria.exit'));
+      closeBtn.onclick = () => closeRoutineWizard();
+    }
+  }
+  const showSegments = onboarding && ['questions', 'summary', 'program', 'preview', 'save-choice', 'swap'].indexOf(wizard.phase) >= 0;
+  if (bar) bar.hidden = showSegments || (onboarding && ['start', 'ready', 'resume'].indexOf(wizard.phase) >= 0);
+  if (segments) {
+    segments.hidden = !showSegments;
+    if (showSegments) {
+      const steps = wizardSteps();
+      let index = steps.findIndex((step) => step.key === wizard.stepKey);
+      if (wizard.phase !== 'questions') index = steps.length - 1;
+      segments.innerHTML = steps.map((_, i) => `<span class="${i <= index ? 'is-on' : ''}"></span>`).join('');
+    }
+  }
 }
 
 function renderQuestion(step) {
+  if (step.type === 'sex' || step.type === 'birth' || step.type === 'weight' || step.type === 'height') return renderBodyQuestion(step);
   if (step.type === 'days') {
     const selected = wizardAnswerList('preferredDays');
     const needed = Number(wizard.answers.daysPerWeek) || 0;
@@ -547,25 +841,37 @@ function renderQuestion(step) {
 
 function setWizardProfileField(field, value) {
   wizard.answers.profile = Object.assign(emptyProfile(), wizard.answers.profile, { [field]: value });
-  const note = document.querySelector('.wizard-form .wizard-note');
-  const invalid = field === 'heightCm' && value !== '' && (Number(value) < 120 || Number(value) > 230);
-  if (invalid && !note) {
-    document.querySelector('.wizard-form').insertAdjacentHTML('beforeend', '<p class="wizard-note">' + escapeHtml(wt('wiz.height.bad')) + '</p>');
-  }
-  if (!invalid && note && field === 'heightCm') note.remove();
+  const form = document.querySelector('.wizard-form');
+  const note = form && form.querySelector('.wizard-note');
+  let message = '';
+  if (field === 'heightCm' && value !== '' && !heightOk(value)) message = wt('wiz.height.bad');
+  if (field === 'weight' && value !== '' && !weightOk(value)) message = wt('wiz.weight.bad');
+  if (field === 'birthDate' && value !== '' && !birthOk(value)) message = wt('wiz.birth.bad');
+  if (message && note) note.textContent = message;
+  else if (message && form) form.insertAdjacentHTML('beforeend', '<p class="wizard-note">' + escapeHtml(message) + '</p>');
+  else if (!message && note && (field === 'heightCm' || field === 'weight' || field === 'birthDate')) note.remove();
   const next = document.getElementById('wizardNext');
   if (next) next.disabled = !stepIsValid(wizardStep());
   persistWizard();
 }
 
 function labelFor(step, value) {
+  if (!step) return wt('wiz.unanswered');
   if (step.type === 'days') {
     return wizardAnswerList('preferredDays')
       .map((day) => wt('dow.' + day))
       .join(', ');
   }
+  const profile = wizard.answers.profile || {};
+  if (step.type === 'sex') {
+    if (profile.sex === 'M') return wt('wiz.male');
+    if (profile.sex === 'F') return wt('wiz.female');
+    return wt('wiz.skipped');
+  }
+  if (step.type === 'birth') return profile.birthDate || wt('wiz.skipped');
+  if (step.type === 'weight') return profile.weight ? profile.weight + ' kg' : wt('wiz.skipped');
+  if (step.type === 'height') return profile.heightCm ? profile.heightCm + ' cm' : wt('wiz.skipped');
   if (step.type === 'profile') {
-    const profile = wizard.answers.profile || {};
     const sex = profile.sex === 'M' ? wt('wiz.male') : profile.sex === 'F' ? wt('wiz.female') : '';
     const bits = [sex, profile.birthDate, profile.heightCm ? profile.heightCm + ' cm' : '', profile.weight ? profile.weight + ' kg' : ''].filter(Boolean);
     return bits.length ? bits.join(' · ') : wt('wiz.skipped');
@@ -588,7 +894,10 @@ function summaryValue(step) {
 }
 
 function renderSummary() {
-  const rows = WIZARD_STEPS.filter((step) => step.key !== 'equipment' || wizard.answers.style !== 'calisthenics').map((raw) => {
+  const source = isOnboarding()
+    ? wizardSteps()
+    : WIZARD_STEPS.filter((step) => step.key !== 'equipment' || wizard.answers.style !== 'calisthenics');
+  const rows = source.map((raw) => {
     const step = shownStep(raw);
     return `
     <div class="wizard-summary-row">
@@ -636,6 +945,38 @@ function renderWizard() {
     back.disabled = true;
     next.disabled = true;
     next.textContent = wt('wiz.next');
+    paintWizardChrome();
+    return;
+  }
+  if (wizard.phase === 'start') {
+    label.textContent = '';
+    bar.style.width = '0%';
+    body.innerHTML = `<div class="wizard-pane">${renderStart()}</div>`;
+    back.disabled = true;
+    next.disabled = true;
+    paintWizardChrome();
+    return;
+  }
+  if (wizard.phase === 'program') {
+    label.textContent = wt('onboard.program.kicker');
+    bar.style.width = '100%';
+    body.innerHTML = `<div class="wizard-pane">${renderProgram()}</div>`;
+    back.disabled = false;
+    next.disabled = false;
+    next.textContent = wt('wiz.continue');
+    next.onclick = () => wizardNext();
+    paintWizardChrome();
+    return;
+  }
+  if (wizard.phase === 'ready') {
+    label.textContent = '';
+    bar.style.width = '100%';
+    body.innerHTML = `<div class="wizard-pane">${renderReady()}</div>`;
+    back.disabled = false;
+    next.disabled = false;
+    next.textContent = wt('onboard.start');
+    next.onclick = () => finishOnboarding();
+    paintWizardChrome();
     return;
   }
   if (wizard.phase === 'summary') {
@@ -646,6 +987,7 @@ function renderWizard() {
     next.disabled = false;
     next.textContent = wizard.audience === 'student' ? 'Generar la rutina' : wt('wiz.generate');
     next.onclick = () => wizardNext();
+    paintWizardChrome();
     return;
   }
   if (wizard.phase === 'preview' || wizard.phase === 'save-choice' || wizard.phase === 'swap') {
@@ -656,6 +998,7 @@ function renderWizard() {
     next.disabled = wizard.phase !== 'preview';
     next.textContent = wizard.audience === 'student' ? wt('wiz.save.student') : wt('wiz.save');
     next.onclick = () => wizardNext();
+    paintWizardChrome();
     return;
   }
   const step = wizardStep();
@@ -663,10 +1006,11 @@ function renderWizard() {
   label.textContent = wt('wiz.step', { n: index + 1, total: steps.length });
   bar.style.width = Math.round(((index + 1) / steps.length) * 100) + '%';
   body.innerHTML = `<div class="wizard-pane">${wizardAudienceNote()}<h2 id="wizardTitle" class="wizard-title">${escapeHtml(step.title)}</h2><p class="wizard-help">${escapeHtml(step.help)}</p>${renderQuestion(step)}</div>`;
-  back.disabled = index === 0 && !wizard.returnToSummary;
+  back.disabled = index === 0 && !wizard.returnToSummary && !isOnboarding();
   next.disabled = !stepIsValid(step);
-  next.textContent = wizard.returnToSummary ? wt('wiz.done') : wt('wiz.next');
+  next.textContent = wizard.returnToSummary ? wt('wiz.done') : (isOnboarding() ? wt('wiz.continue') : wt('wiz.next'));
   next.onclick = () => wizardNext();
+  paintWizardChrome();
 }
 
 function wizardResumeNew() {
@@ -701,7 +1045,8 @@ async function buildWizardRoutine(seed) {
   wizard.generated = generated;
   wizard.seed = generated.meta.seed;
   wizard.previewDay = 0;
-  wizard.phase = 'preview';
+  const keepPreview = wizard.phase === 'preview' || wizard.phase === 'swap';
+  wizard.phase = keepPreview ? 'preview' : (isOnboarding() ? 'program' : 'preview');
   renderWizard();
   } catch (error) {
     if (typeof alert === 'function') alert(error.message || (typeof I18n !== 'undefined' ? I18n.t('wiz.fail') : 'No se pudo armar la rutina'));
@@ -961,6 +1306,11 @@ async function saveGeneratedRoutine(mode) {
   const saved = await Storage.saveRoutine(routine);
   if (typeof setCurrentRoutine === 'function') await setCurrentRoutine(saved);
   await Storage.clearWizardDraft();
+  if (isOnboarding() && !wizard.openEditorAfter) {
+    wizard.phase = 'ready';
+    renderWizard();
+    return;
+  }
   hideWizardShell();
   if (typeof showToast === 'function') showToast(typeof I18n !== 'undefined' ? I18n.t('wiz.ready') : '¡Rutina lista!');
   const page = wizard.openEditorAfter ? 'editor' : 'rutina';

@@ -229,7 +229,10 @@
 
   <div id="routineWizard" class="wizard" role="dialog" aria-modal="true" aria-labelledby="wizardTitle" hidden>
     <div class="wizard-top">
-      <button type="button" class="wizard-close" onclick="closeRoutineWizard()" data-i18n-aria="aria.exit" aria-label="Salir">✕</button>
+      <div class="wizard-top-row">
+        <button type="button" class="wizard-close" onclick="closeRoutineWizard()" data-i18n-aria="aria.exit" aria-label="Salir">✕</button>
+        <div id="wizardSegments" class="wizard-segments" hidden></div>
+      </div>
       <p id="wizardStepLabel" class="wizard-step-label" aria-live="polite"></p>
       <div class="wizard-progress" aria-hidden="true"><div id="wizardProgressBar" class="wizard-progress-bar"></div></div>
     </div>

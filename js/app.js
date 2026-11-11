@@ -208,12 +208,21 @@ async function bootApp() {
       await renderLogPage();
       if (document.getElementById('progressCharts')) await renderProgressCharts();
     } else {
-      showWelcome(syncUser ? 'account' : 'new');
-      document.getElementById('routineDays').innerHTML = '<p class="empty-day">' + (typeof I18n !== 'undefined' ? I18n.t(syncUser ? 'welcome.account' : 'empty.routine') : 'Crea tu rutina para empezar.') + '</p>';
+      const sets = await Storage.getSets();
+      const hasHistory = Array.isArray(sets) && sets.length > 0;
+      const days = document.getElementById('routineDays');
+      if (days) {
+        days.innerHTML = '<p class="empty-day">' + (typeof I18n !== 'undefined' ? I18n.t(hasHistory ? 'welcome.account' : 'empty.routine') : 'Crea tu rutina para empezar.') + '</p>';
+      }
       await renderLogPage();
+      if (hasHistory) showWelcome('account');
+      else if (typeof openRoutineWizard === 'function') await openRoutineWizard('welcome');
+      else showWelcome('new');
     }
   } finally {
     if (syncUser) hideLoginGate();
+    const wizardEl = document.getElementById('routineWizard');
+    if (wizardEl && !wizardEl.hidden && typeof setWizardLocked === 'function') setWizardLocked(true);
   }
 }
 
